@@ -1,0 +1,24 @@
+{
+	"name": "easy-vibe-coding",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"workspaces": [
+		"app",
+		"api",
+		"packages/*"
+	],
+	"scripts": {
+		"dev": "bun scripts/dev.ts",
+		"build": "vp run -r build",
+		"type-check": "vp run -r type-check",
+		"check": "bun scripts/check.ts",
+		"check:fix": "bun scripts/check.ts --fix"
+	},
+	"packageManager": "bun@1.3.10",
+	"devDependencies": {
+		"@voidzero-dev/vite-plus-core": "^0.2.9",
+		"typescript": "^7.0.2",
+		"vite-plus": "^0.2.9"
+	}
+}

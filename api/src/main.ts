@@ -1,0 +1,50 @@
+import { Elysia } from 'elysia';
+import { cors } from '@elysiajs/cors';
+import { openapi } from '@elysia/openapi';
+import { usersController } from './modules/users/controller';
+import { authController } from './modules/auth/controller';
+import { ENV } from './env';
+import { normalizeError } from './libs/error';
+
+export const app = new Elysia({ prefix: '/api' })
+	.use(cors())
+	.use(
+		openapi({
+			path: '/docs',
+			documentation: {
+				info: {
+					title: 'Easy Vibe Coding API',
+					description:
+						'Full-stack starter API (Elysia + Drizzle + Postgres). Request and response schemas live in packages/shared — the single source of truth for the wire contract.',
+					version: '0.0.0',
+				},
+				tags: [
+					{
+						name: 'Users',
+						description:
+							'User management — the canonical CRUD module.',
+					},
+					{
+						name: 'Auth',
+						description:
+							'Authentication — register, sign in, current session (JWT bearer).',
+					},
+				],
+			},
+		}),
+	)
+	.onError(({ code, error, set }) => {
+		const { status, body } = normalizeError(code, error);
+		set.status = status;
+		return body;
+	})
+	.use(usersController)
+	.use(authController);
+
+export type App = typeof app;
+
+app.listen({
+	port: Number(ENV.PORT),
+	hostname: ENV.HOST,
+});
+console.log(`API ready at http://${ENV.HOST}:${ENV.PORT}/api`);
