@@ -43,7 +43,7 @@ export function AuthCard<TValues extends object>({
 			    blur blooms the image's bright areas into a white halo. */}
 			<div
 				aria-hidden
-				className="fixed inset-0 -z-10 bg-cover bg-center blur-md brightness-90 dark:brightness-50"
+				className="fixed inset-0 -z-10 bg-cover bg-center blur-2xl brightness-90 dark:brightness-50"
 				style={{ backgroundImage: HERO_LAYERS }}
 			/>
 			<div className="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-muted shadow-2xl md:grid-cols-2">
