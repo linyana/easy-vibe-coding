@@ -15,11 +15,14 @@ interface AuthCardProps<TValues extends object> extends HeaderContentProps {
  * `src/assets` and it's bundled and used automatically. Glob (not a static
  * import) so the photo is OPTIONAL — with no match the hero panel renders
  * without a background. */
-const heroModules = import.meta.glob<string>('/src/assets/hero.{png,jpg,jpeg,webp,svg}', {
-	eager: true,
-	query: '?url',
-	import: 'default',
-});
+const heroModules = import.meta.glob<string>(
+	'/src/assets/hero.{png,jpg,jpeg,webp,svg}',
+	{
+		eager: true,
+		query: '?url',
+		import: 'default',
+	},
+);
 const HERO_IMAGE = Object.values(heroModules)[0];
 const HERO_LAYERS = HERO_IMAGE ? `url(${HERO_IMAGE})` : '';
 
@@ -52,11 +55,17 @@ export function AuthCard<TValues extends object>({
 					/>
 				</div>
 				<div className="flex flex-col justify-center p-6 sm:p-10 lg:px-12">
-					{Icon && <Icon className="mb-5 size-6" strokeWidth={2.25} />}
+					{Icon && (
+						<Icon className="mb-5 size-6" strokeWidth={2.25} />
+					)}
 					<div className="space-y-1.5">
-						<h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+						<h1 className="text-2xl font-bold tracking-tight">
+							{title}
+						</h1>
 						{description && (
-							<p className="text-sm text-muted-foreground">{description}</p>
+							<p className="text-sm text-muted-foreground">
+								{description}
+							</p>
 						)}
 					</div>
 					<Form
