@@ -53,17 +53,12 @@ cd api && bun run db:studio   # inspect the DB
 
 ## AI tool integration (skills)
 
-Pattern skills live in [`.agents/skills/`](./.agents/skills/) — loaded on demand by the AI (`feature` builds anything: scaffold/list/form/remove as progressive-disclosure reference files; `feature-verify` checks changes end-to-end). To use them from other AI tools, sync them with the setup script (creates junctions/symlinks, so `.agents/skills/` stays the single source):
-
-```bash
-bun run setup
-```
-
-Select the tools you use (Claude Code, Trae, …) — your selection is saved to `.agents/config.json` (gitignored).
+Pattern skills live in [`.agents/skills/`](./.agents/skills/) — loaded on demand by the AI (`feature` builds anything: scaffold/list/form/remove as progressive-disclosure reference files; `feature-verify` checks changes end-to-end). Tools that read skills from their own directories need them symlinked over; a sync script for that is on the roadmap — until then, point your tool at `.agents/skills/` directly.
 
 ## Next steps
 
 - Example features (detail/dashboard/settings archetypes)
+- Skill sync script (`bun run setup`) for tools that read skills from their own directories
 - Auth is done: JWT bearer (jose) + argon2id (Bun.password), `/login` `/register` pages, protected `/_app` shell, 401 auto-logout. See AGENTS.md → Auth.
 
 ## The manual

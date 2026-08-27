@@ -313,7 +313,7 @@ export function DateRangeFilter({
 - **页码钳制**：删掉最后一页最后一行（或结果集缩小）不会留在不存在的页——useAPIList 的 clamp effect 兜底。
 - **选择语义**：勾选是本地 UI 状态（按 `getRowId` 键控，跨 refetch 存活）；每次翻页/过滤变化时重置（批量操作永远瞄准当前屏幕上的行）；`selectedItems` 从**实时数据**推导——服务端删除的行自然掉出，工具栏计数归零自动卸载，不需要显式清理。
 - **`dropEmpty`**：空过滤值（undefined/''）从 state 里剥掉——清空搜索会真正移除过滤条件。
-- **列表错误内联渲染**（`toastError` 默认关）：ListTable 用共享 ErrorState 渲染收窄后的错误，绝不静默空表。
+- **列表错误内联渲染**：ListTable 用共享 ErrorState 渲染收窄后的错误，绝不静默空表；同时保留默认的 toast 提示（`toastError` 默认开）——toast 是瞬时信号，ErrorState 是持久恢复面，两者并存是刻意设计。单内容块的页面（如 Home 的 stats 卡片）才关 toast 只留 ErrorState。
 - **动作列 `meta: { fixed: 'right' }`**：列固定 + antd 风格阴影只在表格可横向滚动时出现。
 
 ## 自检清单

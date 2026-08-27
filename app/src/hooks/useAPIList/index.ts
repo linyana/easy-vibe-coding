@@ -8,7 +8,6 @@ import { useAPIQuery, type UseAPIQueryOptions } from '@/hooks/useAPIQuery';
 export interface APIListSearch {
 	page?: number;
 	pageSize?: number;
-	q?: string;
 }
 
 export interface APIListResponse<TItem> {

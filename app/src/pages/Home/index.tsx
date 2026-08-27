@@ -66,9 +66,6 @@ function HomePage() {
 	const stats = useAPIQuery({
 		queryKey: ['users', 'stats'],
 		queryFn: () => API.users.stats.get(),
-		// Inline ErrorState with Retry is the recovery surface for the page's
-		// single content block — lists opt out of the toast for the same reason.
-		toastError: false,
 	});
 
 	usePageHeader({

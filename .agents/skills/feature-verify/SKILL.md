@@ -56,31 +56,39 @@ bun dev                     # api (:3000) + app (:5173)
 > 下面的示例都用 users 资源——换成你正在验证的资源路径/字段/消息（如 `/products`、`price`、`'Product not found'`）。
 
 ```bash
-# 成功：列表（注意 URL 里的 ? 要用引号包住）
-curl "http://localhost:3000/api/users?page=1&pageSize=5"
-
-# 成功：创建 → 记住返回的 id 和 email
-curl -X POST http://localhost:3000/api/users \
+# 0) 先拿 token——/users 全部端点需要 Authorization，漏了会得到 401（探测失误，不是 bug）。
+#    注册（密码 ≥8 字符）；邮箱已存在时改用 login。
+TOKEN=$(curl -s -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"name":"Verify Tester","email":"verify@example.com"}'
+  -d '{"name":"Verify Operator","email":"operator@example.com","password":"v3ry-Secret"}' \
+  | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+AUTH="Authorization: Bearer $TOKEN"
+
+# 成功：列表（注意 URL 里的 ? 要用引号包住）
+curl -H "$AUTH" "http://localhost:3000/api/users?page=1&pageSize=5"
+
+# 成功：创建 → 记住返回的 id 和 email（创建的也是真实可登录的用户）
+curl -X POST http://localhost:3000/api/users \
+  -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"name":"Verify Tester","email":"tester@example.com","password":"v3ry-Secret"}'
 
 # 失败路径逐一验证（这是统一错误管线的验收）：
-curl http://localhost:3000/api/users/99999
+curl -H "$AUTH" http://localhost:3000/api/users/99999
 # → 404 { "code": "NOT_FOUND", "message": "User not found" }
 
 curl -X POST http://localhost:3000/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":""}'          # 缺 email + 空 name
-# → 422 { "code": "VALIDATION", "fields": [{ "field": "email", ... }] }
+  -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"name":""}'          # 缺 email、缺 password、空 name
+# → 422 { "code": "VALIDATION", "fields": [{ "field": "email", ... }, { "field": "password", ... }] }
 
 curl -X POST http://localhost:3000/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Verify Tester","email":"verify@example.com"}'
+  -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"name":"Verify Tester","email":"tester@example.com","password":"v3ry-Secret"}'
 # → 409 { "code": "CONFLICT", "message": "This email is already registered" }（唯一约束）
 
 # 批量删除：删掉刚才的测试数据（成功路径）
 curl -X POST http://localhost:3000/api/users/batch-delete \
-  -H "Content-Type: application/json" \
+  -H "$AUTH" -H "Content-Type: application/json" \
   -d '{"ids":[<上面返回的 id>]}'
 # → { "deleted": 1 }
 ```
@@ -89,14 +97,11 @@ curl -X POST http://localhost:3000/api/users/batch-delete \
 
 - 响应字段形状必须与 `packages/shared/src/api/<resource>/` 的响应 schema 完全一致（Eden 客户端类型由它推导——**前端看到的形状就是这里校验的形状**）。
 - 时间戳是 RFC 3339 UTC 字符串（`2024-01-14T16:00:00.000Z`），不是 Date 序列化。
-- 日期过滤是 HALF-OPEN：`createdTo` 传"所选日之后那个凌晨"，服务端 `lt` 比较。
+- 列表过滤用 `search`；日期过滤是 HALF-OPEN 的 `createdRange:{from,to}`（ISO datetime）——客户端把 "to 所选日之后那个凌晨" 提交为区间终点，服务端 `lt` 比较，不猜时区。
 - 批量删除语义：不存在的 id **静默跳过**（`deleted` 计数少，不是 4xx）——单条删除才是 404。
 
 ## 已知坑位（这个仓库特有的）
 
-- **Windows shell 引号**：本仓库的 curl 示例按 Git Bash 写——`curl` 可用，JSON body 用单引号 `'...'` 包裹。若在 cmd/PowerShell 里测，引号转义会坑（`-d '{"a":"b"}'` 里的引号会被吃掉导致服务端 PARSE 错误）——优先在 Git Bash 或 `--data @file.json`。
-- **前端无缓存默认**（`gcTime 0` / `staleTime 0` / `refetchOnMount 'always'`）：改 API 后刷新页面即真实请求，不会命中陈旧缓存；但**每次挂载都重新请求**——验证"列表数据是新的"时直接刷新即可。
-- **重试是用户发起的**：接口失败 settle 后只有 ErrorState 的 Retry 按钮会重试——curl 探测时 5xx 不会自动重试，别等。
 - **改 shared 契约后**：API 要重启（L2 的 watch 行为）+ `bun run check` 重新过（类型全链路会立刻暴露契约不匹配）。前端 Eden 客户端类型来自 API 响应 schema——契约改了，前端编译错误就是最快的验证信号。
 - **错误码只增不删**：新错误码 = 改 `packages/shared/src/error` 的 `ERROR_DEFAULTS` 一处（status + 默认 message），两侧跟随。验证时确认新 code 的 status/message 与默认值一致（如 `CONFLICT` → 409）。
 
