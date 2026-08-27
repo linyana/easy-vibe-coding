@@ -15,6 +15,20 @@
       "when": 1787672574740,
       "tag": "0001_big_calypso",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787841638407,
+      "tag": "0002_hesitant_energizer",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1787843076311,
+      "tag": "0003_aberrant_maddog",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from '@/hooks/useForm';
 import { useGlobal } from '@/hooks/useGlobal';
 import { safeRedirect } from '@/libs/utils';
+import { bootstrapCurrentTenant } from '@/libs/tenant';
 import { AuthCard } from '../AuthCard';
 
 export function RegisterPage() {
@@ -21,9 +22,13 @@ export function RegisterPage() {
 			call: (values) => API.auth.register.post(values),
 			queryKey: ['auth'],
 			successMessage: 'Account created — you are signed in',
-			onSuccess: ({ token, user }) => {
+			onSuccess: async ({ token, user }) => {
 				setSession(token, user);
-				void navigate({ href: safeRedirect(redirect) });
+				const where = await bootstrapCurrentTenant();
+				void navigate({
+					href:
+						where === 'pick' ? '/tenants' : safeRedirect(redirect),
+				});
 			},
 		},
 	});

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from '@/hooks/useForm';
 import { useGlobal } from '@/hooks/useGlobal';
 import { safeRedirect } from '@/libs/utils';
+import { bootstrapCurrentTenant } from '@/libs/tenant';
 import { AuthCard } from '../AuthCard';
 
 export function LoginPage() {
@@ -21,9 +22,15 @@ export function LoginPage() {
 			call: (values) => API.auth.login.post(values),
 			queryKey: ['auth'],
 			successMessage: 'Signed in',
-			onSuccess: ({ token, user }) => {
+			onSuccess: async ({ token, user }) => {
 				setSession(token, user);
-				void navigate({ href: safeRedirect(redirect) });
+				// Pick the current tenant (auto-select on one, keep a valid persisted
+				// choice) — land on the Tenants page when there's nothing to pick.
+				const where = await bootstrapCurrentTenant();
+				void navigate({
+					href:
+						where === 'pick' ? '/tenants' : safeRedirect(redirect),
+				});
 			},
 		},
 	});

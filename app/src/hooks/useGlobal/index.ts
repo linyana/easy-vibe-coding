@@ -24,9 +24,14 @@ export interface AuthState {
 
 interface GlobalState {
 	themeMode: ThemeMode;
+	/** The tenant the user is currently working in — null until they create or
+	 * pick one. Persisted on purpose: the last-used tenant survives reloads
+	 * and logins (bootstrapCurrentTenant keeps or resets it). */
+	currentTenantId: number | null;
 	auth: AuthState;
 	actions: {
 		setThemeMode: (mode: ThemeMode) => void;
+		setCurrentTenantId: (tenantId: number) => void;
 		setSession: (token: string, user: SessionUser) => void;
 		setAuthStatus: (status: AuthStatus) => void;
 		clearSession: () => void;
@@ -39,9 +44,12 @@ export const useGlobal = create<GlobalState>()(
 	persist(
 		(set) => ({
 			themeMode: 'system',
+			currentTenantId: null,
 			auth: { token: null, user: null, status: 'unauthenticated' },
 			actions: {
 				setThemeMode: (themeMode) => set({ themeMode }),
+				setCurrentTenantId: (currentTenantId) =>
+					set({ currentTenantId }),
 				setSession: (token, user) =>
 					set({ auth: { token, user, status: 'authenticated' } }),
 				setAuthStatus: (status) =>
@@ -58,10 +66,11 @@ export const useGlobal = create<GlobalState>()(
 		}),
 		{
 			name: 'easy-vibe-global',
-			// Persist theme + token only — a persisted stale user would lie
-			// about the session (the user refetches from /auth/me on boot).
+			// Persist theme + token + current tenant only — a persisted stale user
+			// would lie about the session (the user refetches from /auth/me on boot).
 			partialize: (state) => ({
 				themeMode: state.themeMode,
+				currentTenantId: state.currentTenantId,
 				auth: { token: state.auth.token },
 			}),
 		},

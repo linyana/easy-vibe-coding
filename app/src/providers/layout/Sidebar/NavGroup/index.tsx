@@ -15,6 +15,8 @@ export type NavItem = {
 	title: string;
 	to?: keyof FileRoutesByTo;
 	icon?: LucideIcon;
+	/** Only shown to platform admins (isAdmin on the session user). */
+	adminOnly?: boolean;
 };
 
 export function NavGroup({

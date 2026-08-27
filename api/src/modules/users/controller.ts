@@ -12,7 +12,7 @@ import {
 	successResponseSchema,
 } from '@easy-vibe-coding/shared';
 import { userService } from './service';
-import { authGuard } from '../../libs/guards';
+import { adminScope } from '../../libs/guards';
 
 export const usersController = new Elysia({
 	prefix: '/users',
@@ -20,8 +20,9 @@ export const usersController = new Elysia({
 		tags: ['Users'],
 	},
 })
-	.use(authGuard)
-	.guard({ auth: true })
+	// Platform admin surface — every route below requires is_admin (the
+	// derive verifies the token inline and checks the users row).
+	.derive(adminScope)
 	.get('/', ({ query }) => userService.list(query), {
 		query: userListQuerySchema,
 		response: userListResponseSchema,

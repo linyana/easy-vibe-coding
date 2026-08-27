@@ -4,6 +4,9 @@ export const userResponseSchema = z.object({
 	id: z.number(),
 	name: z.string(),
 	email: z.string(),
+	// Global platform role — gates the /users module and admin tenant views.
+	// Not settable via create/update (promotion is a manual DB op).
+	isAdmin: z.boolean(),
 	createdAt: z.iso.datetime(),
 	updatedAt: z.iso.datetime(),
 });

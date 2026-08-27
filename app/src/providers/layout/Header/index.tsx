@@ -2,6 +2,7 @@ import { ArrowLeftIcon, InfoIcon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ThemeToggle } from './Theme';
+import { TenantSwitcher } from './TenantSwitcher';
 import { useIsMobile } from '@/hooks';
 import { usePageHeaderStore } from '@/hooks/usePageHeader';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,7 @@ export function SiteHeader() {
 					</TooltipProvider>
 				) : null}
 				<div className="ml-auto flex items-center gap-2">
+					<TenantSwitcher />
 					<ThemeToggle />
 				</div>
 			</div>
