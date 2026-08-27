@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
-import { getIcon } from '@/libs/icons';
 import type { HeaderContentProps } from '@/components/data/Header';
 
-interface AuthCardProps extends HeaderContentProps {
+interface AuthCardProps extends Pick<
+	HeaderContentProps,
+	'title' | 'description'
+> {
 	footer?: ReactNode;
 	children: ReactNode;
 }
@@ -23,14 +25,11 @@ const HERO_IMAGE = Object.values(heroModules)[0];
 const HERO_LAYERS = HERO_IMAGE ? `url(${HERO_IMAGE})` : '';
 
 export function AuthCard({
-	icon,
 	title,
 	description,
 	footer,
 	children,
 }: AuthCardProps) {
-	const Icon = icon ? getIcon(icon.name) : null;
-
 	return (
 		<div className="flex min-h-dvh items-center justify-center p-4 sm:p-6">
 			{/* Photo backdrop behind the card. Only lightly blurred — a heavy
@@ -49,9 +48,6 @@ export function AuthCard({
 					/>
 				</div>
 				<div className="flex flex-col justify-center p-6 sm:p-10 lg:px-12">
-					{Icon && (
-						<Icon className="mb-5 size-6" strokeWidth={2.25} />
-					)}
 					<div className="space-y-1.5">
 						<h1 className="text-2xl font-bold tracking-tight">
 							{title}

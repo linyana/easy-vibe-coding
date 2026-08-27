@@ -30,7 +30,6 @@ export function RegisterPage() {
 
 	return (
 		<AuthCard
-			icon={{ name: 'UserPlus' }}
 			title="Create account"
 			description="Sign up to start using the workspace."
 			footer={

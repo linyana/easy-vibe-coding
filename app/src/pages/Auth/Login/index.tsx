@@ -30,7 +30,6 @@ export function LoginPage() {
 
 	return (
 		<AuthCard
-			icon={{ name: 'LogIn' }}
 			title="Sign in"
 			description="Welcome back — sign in to continue."
 			footer={
