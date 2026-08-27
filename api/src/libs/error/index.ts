@@ -82,16 +82,91 @@ export function normalizeError(
 		};
 	}
 
-	if (code === 'NOT_FOUND') {
-		return {
+	// Framework-level codes Elysia hands to onError: every thrown value
+	// resolves to one of these via `error.code ?? error[ERROR_CODE] ??
+	// 'UNKNOWN'` (elysia 1.x compose.js). Keeping this a full Record forces
+	// every known code to be explicitly classified — client-side ones get
+	// translated into our wire shape instead of masquerading as 500s.
+	type FrameworkCode =
+		| 'PARSE'
+		| 'INVALID_COOKIE_SIGNATURE'
+		| 'INVALID_FILE_TYPE'
+		| 'INTERNAL_SERVER_ERROR'
+		| 'UNKNOWN'
+		// Handled by instanceof checks above; listed here so the Record stays
+		// exhaustive over the union.
+		| 'VALIDATION'
+		| 'NOT_FOUND';
+
+	interface FrameworkMapping {
+		status: number;
+		code: ErrorCode;
+		message: string;
+		// True for genuinely unexpected failures: log them, stay a 500.
+		log?: boolean;
+	}
+
+	const FRAMEWORK_ERRORS: Record<FrameworkCode, FrameworkMapping> = {
+		// Client-side mistakes — fixed messages; never surface parser internals.
+		PARSE: {
+			status: 400,
+			code: 'BAD_REQUEST',
+			message: 'Malformed request body',
+		},
+		INVALID_COOKIE_SIGNATURE: {
+			status: 400,
+			code: 'BAD_REQUEST',
+			message: 'Invalid signed cookie',
+		},
+		INVALID_FILE_TYPE: {
+			status: 400,
+			code: 'BAD_REQUEST',
+			message: 'Unsupported file type',
+		},
+		NOT_FOUND: {
 			status: 404,
-			body: { code: 'NOT_FOUND', message: 'Route not found' },
+			code: 'NOT_FOUND',
+			message: 'Route not found',
+		},
+		VALIDATION: {
+			status: 422,
+			code: 'VALIDATION',
+			message: 'Validation failed',
+		},
+		// Server-side / unrecognized — correctly a 500. Logging keeps these
+		// visible; new framework codes introduced by an elysia upgrade land
+		// here until classified above.
+		INTERNAL_SERVER_ERROR: {
+			status: 500,
+			code: 'INTERNAL',
+			message: 'Internal server error',
+			log: true,
+		},
+		UNKNOWN: {
+			status: 500,
+			code: 'INTERNAL',
+			message: 'Internal server error',
+			log: true,
+		},
+	};
+
+	const mapping =
+		typeof code === 'string'
+			? FRAMEWORK_ERRORS[code as FrameworkCode]
+			: undefined;
+	if (!mapping) {
+		console.error('[unhandled error]', code, error);
+		return {
+			status: 500,
+			body: { code: 'INTERNAL', message: 'Internal server error' },
 		};
 	}
 
-	console.error('[unhandled error]', error);
+	if (mapping.log) {
+		console.error('[framework error]', code, error);
+	}
 	return {
-		status: 500,
-		body: { code: 'INTERNAL', message: 'Internal server error' },
+		status: mapping.status,
+		body: { code: mapping.code, message: mapping.message },
 	};
 }
