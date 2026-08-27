@@ -1,7 +1,6 @@
-import { useId, type ReactNode } from 'react';
-import { CircleAlertIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { getIcon, type IconObject } from '@/libs/icons';
+import type { ReactNode } from 'react';
+import { getIcon } from '@/libs/icons';
+import { Form } from '@/components/form/Form';
 import type { HeaderContentProps } from '@/components/data/Header';
 import type { FormApi } from '@/hooks/useForm';
 
@@ -33,7 +32,6 @@ export function AuthCard<TValues extends object>({
 	footer,
 	children,
 }: AuthCardProps<TValues>) {
-	const formId = useId();
 	const Icon = icon ? getIcon(icon.name) : null;
 
 	return (
@@ -61,31 +59,14 @@ export function AuthCard<TValues extends object>({
 							<p className="text-sm text-muted-foreground">{description}</p>
 						)}
 					</div>
-					<form
-						id={formId}
+					<Form
+						form={form}
+						submitLabel={submitLabel}
 						className="mt-6 space-y-4 [&_input]:h-10 [&_input]:bg-background [&_input]:shadow-sm"
-						onSubmit={(e) => {
-							e.preventDefault();
-							form.submit();
-						}}
+						submitClassName="mt-2 h-10 text-sm"
 					>
 						{children}
-						{form.formError && (
-							<div className="flex items-start gap-1.5 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-								<CircleAlertIcon className="mt-0.5 size-4 shrink-0" />
-								{form.formError}
-							</div>
-						)}
-						<Button
-							type="submit"
-							className="mt-2 h-10 w-full text-sm"
-							loading={form.isPending}
-							disabled={form.submitDisabledReason !== undefined}
-							tooltip={form.submitDisabledReason}
-						>
-							{submitLabel}
-						</Button>
-					</form>
+					</Form>
 					{footer && (
 						<p className="mt-6 text-center text-sm text-muted-foreground">
 							{footer}

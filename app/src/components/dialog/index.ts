@@ -4,4 +4,3 @@ export {
 	type RemoveMutation,
 	type RemoveDialogProps,
 } from './RemoveDialog';
-export { FormDialog } from './FormDialog';

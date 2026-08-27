@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/dialog/Dialog';
 import type { HeaderContentProps } from '@/components/data/Header';
 import { Input } from '@/components/ui/input';
@@ -55,11 +56,26 @@ export function RemoveDialog({
 			icon={icon}
 			title={title}
 			description={description}
-			actionLabel={confirmLabel}
-			actionVariant="destructive"
-			actionDisabled={!matches}
-			isPending={mutation.isPending}
-			onAction={() => mutation.mutate()}
+			footer={
+				<>
+					<Button
+						variant="outline"
+						disabled={mutation.isPending}
+						onClick={() => onOpenChange(false)}
+					>
+						Cancel
+					</Button>
+					<Button
+						variant="destructive"
+						icon={icon}
+						loading={mutation.isPending}
+						disabled={!matches}
+						onClick={() => mutation.mutate()}
+					>
+						{confirmLabel}
+					</Button>
+				</>
+			}
 		>
 			{/* Label states the exact text to type; Radix auto-focuses the
 				first focusable on open — the input is first, so typing can

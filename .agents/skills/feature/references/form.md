@@ -7,7 +7,8 @@
 ```text
 useAPIMutation   基础写 hook：callEden → 失效 queryKey 前缀 → toast 成功 → onSuccess
 useForm          表单写：state + 校验 + submit 一体，submit 内部委托 useAPIMutation
-FormDialog       create/edit 表单的对话框 chrome（Enter 提交 + 整体错误槽）
+Form             form 元素 + Enter 提交 + 整体错误槽——页面表单和对话框共用
+FormSubmitButton useForm 按钮接线只写一次的地方（loading/disabled/tooltip）——内联和对话框 footer 都拼它
 FormField        字段绑定（label/tooltip/description + 错误注入）——列表过滤和表单共用
 ```
 
@@ -62,7 +63,7 @@ export type ProductUpdate = z.infer<typeof productUpdateSchema>;
 规则：
 
 - **为什么 edit 不从 create `.partial()` 派生**：zod 4 的 `.partial()` 拒绝带 object 级 refine 的 schema——共享字段基座让两边各自组装，create 可以有 refine、edit 可以 partial。
-- **表单级规则**（需要时）：不带 `path` 的 `.refine()` 落在 useForm 的 `formError` 槽（FormDialog 在字段下方渲染）；跨字段规则应加 `path: ['field']` 锚到具体字段。
+- **表单级规则**（需要时）：不带 `path` 的 `.refine()` 落在 useForm 的 `formError` 槽（Form 在字段下方渲染）；跨字段规则应加 `path: ['field']` 锚到具体字段。
 - 在 `packages/shared/src/api/products/index.ts` 追加 `export * from './create';` 等。
 
 ## 2. API：controller 接线 + service
@@ -98,12 +99,13 @@ async create(data: ProductCreate): Promise<typeof products.$inferSelect> {
 
 ## 3. Create 对话框
 
-`app/src/pages/Products/Create/index.tsx`——feature 表面只有：schema + initialValues + submit config + 字段。共享层（useForm + FormDialog + FormField）owns 校验、错误显示、提交编排、pending 状态。
+`app/src/pages/Products/Create/index.tsx`——feature 表面只有：schema + initialValues + submit config + 字段 + footer 按钮。共享层（useForm + Form/FormSubmitButton/FormField）owns 校验、错误显示、提交编排、pending 状态；create/edit 对话框没有专属组件——就是 `Dialog` + `Form` 的显式组合。
 
 ```tsx
 import { productCreateSchema } from '@easy-vibe-coding/shared';
 import { API } from '@/libs/api';
-import { FormDialog, FormField } from '@/components';
+import { Dialog, Form, FormField, FormSubmitButton } from '@/components';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useForm } from '@/hooks/useForm';
 
@@ -126,26 +128,43 @@ export function CreateProductDialog({
 	});
 
 	return (
-		<FormDialog
+		<Dialog
 			open={open}
 			onOpenChange={onOpenChange}
 			title="Create product"
 			description="Add a new product."
-			submitLabel="Create"
-			form={form}
+			// Tooltip buttons precede the inputs in DOM order — Radix's default
+			// first-focusable would light one up.
+			preventAutoFocus
+			footer={
+				<>
+					<Button
+						variant="outline"
+						disabled={form.isPending}
+						onClick={() => onOpenChange(false)}
+					>
+						Cancel
+					</Button>
+					<FormSubmitButton form={form}>
+						Create
+					</FormSubmitButton>
+				</>
+			}
 		>
-			<FormField form={form} name="name" label="Name">
-				<Input placeholder="Name" />
-			</FormField>
-			<FormField
-				form={form}
-				name="price"
-				label="Price"
-				tooltip="Must be ≥ 0."
-			>
-				<Input type="number" placeholder="0" />
-			</FormField>
-		</FormDialog>
+			<Form form={form}>
+				<FormField form={form} name="name" label="Name">
+					<Input placeholder="Name" />
+				</FormField>
+				<FormField
+					form={form}
+					name="price"
+					label="Price"
+					tooltip="Must be ≥ 0."
+				>
+					<Input type="number" placeholder="0" />
+				</FormField>
+			</Form>
+		</Dialog>
 	);
 }
 ```
@@ -186,12 +205,12 @@ export function EditProductDialog({
 
 ## 5. useForm 契约要点（FormApi）
 
-`FormDialog` 通过 `form={form}` 整体消费；feature 只需要知道这些决策点：
+`Form` 通过 `form={form}` 整体消费；feature 只需要知道这些决策点：
 
 - **校验是活的**：每次编辑重跑共享 schema，但字段错误**只在被编辑过后显示**（touched 门）——编辑一个字段绝不点亮整个表单。必填 `*` 来自 schema（`isRequired`），submit 按钮 tooltip 显示第一个问题。
 - **submit 编排**（hook 内部）：重校验 → callEden → 失效 queryKey → toast 成功 → reset → `onSuccess`（通常关对话框）。
-- **服务器失败落在表单里，不 toast**：字段路径匹配表单字段的错误 → `errors[name]`（标记 touched 以显示）；其余（网络断、无字段冲突）→ `formError`（FormDialog 的整表错误槽）。**服务器是权威**——conflict、竞态、schema 表达不了的规则都在这层兜底。
-- **submit 按钮只在整表有效时可用**（也顺带禁了 Enter 隐式提交）；`submitDisabledReason` 解释禁用原因（第一个校验问题，或 `requireDirty` 下 "No changes to save"），FormDialog 渲染成 tooltip。
+- **服务器失败落在表单里，不 toast**：字段路径匹配表单字段的错误 → `errors[name]`（标记 touched 以显示）；其余（网络断、无字段冲突）→ `formError`（`Form` 的整表错误槽）。**服务器是权威**——conflict、竞态、schema 表达不了的规则都在这层兜底。
+- **submit 按钮只在整表有效时可用**（也顺带禁了 Enter 隐式提交）；`submitDisabledReason` 解释禁用原因（第一个校验问题，或 `requireDirty` 下 "No changes to save"），由 `FormSubmitButton` 渲染成 tooltip——它把按钮接线写一次，页面表单内联、对话框 footer 都拼同一个组件。
 - **整表单契约检查在 submit 调用点免费发生**：`call: (values) => API.products.post(values)` 结构性对比表单类型与 API schema——缺字段/多字段/类型不符都是编译错误。
 
 ## 自检清单

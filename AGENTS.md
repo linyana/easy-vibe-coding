@@ -40,7 +40,7 @@
 1. 契约层  packages/shared/src/api/<resource>/<endpoint>/   每端点一文件夹一 index.ts（请求+响应 zod schema）
 2. API 层  api/src/modules/<name>/  controller 只接线（schema 全从 shared 导入）· service 写逻辑（抛 Errors）· main.ts 挂载
 3. 页面类型 app/src/pages/<name>/types/  实体类型 = UseAPIItem<typeof API.x.get>（推导，不手写）· action 词汇 = union
-4. 行为模块 app/src/pages/<name>/<Behavior>/  List/（useAPIList+ListTable）· Create/、Edit/（useForm+FormDialog）· Delete/（useAPIMutation+RemoveDialog）
+4. 行为模块 app/src/pages/<name>/<Behavior>/  List/（useAPIList+ListTable）· Create/、Edit/（useForm+Dialog+Form 组合）· Delete/（useAPIMutation+RemoveDialog）
 5. 编排      index.tsx  只管"哪个对话框开着、为谁开"，按 action.kind 分支；Edit/Delete 用 key={...} 重挂载
 6. 路由      routes/<name>.tsx  createFileRoute + 页面 re-export（列表不加 validateSearch）
 7. 验证      bun run check → 起服务 curl 探测成功/失败路径

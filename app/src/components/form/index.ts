@@ -1,4 +1,7 @@
-// FormDialog lives in components/dialog/ — dialog chrome first, form vocabulary second.
+// Form dialogs (create/edit) are explicit Dialog + Form compositions —
+// no dedicated wrapper component.
+export { Form } from './Form';
+export { FormSubmitButton } from './FormSubmitButton';
 export type { FormControl, FormFieldSource } from './FormField';
 export { FormField } from './FormField';
 export { SearchInput } from './SearchInput';

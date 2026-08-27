@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useId, useMemo, useRef, useState } from 'react';
 import type { z, ZodType } from 'zod';
 import type { EdenCall } from '@/libs/api';
 import { deepEqual } from '@/libs/utils';
@@ -15,6 +15,10 @@ interface UseFormSubmitConfig<TValues, TData> {
 }
 
 export interface FormApi<TValues extends object> {
+	/** Stable DOM identity for this form's <form> element — submit buttons
+	 * outside the element (dialog footers) reference it via the HTML `form`
+	 * attribute instead of threading an id through every layer. */
+	id: string;
 	values: TValues;
 	set: (patch: Partial<TValues>) => void;
 	reset: (next?: TValues) => void;
@@ -51,6 +55,11 @@ export function useForm<
 	submit: submitConfig,
 }: UseFormOptions<TSchema, TValues, TData>): FormApi<TValues> {
 	type TField = keyof TValues;
+
+	// One FormApi renders one <form> — the id is born with the form itself
+	// (Edit dialogs re-create the whole hook via key remount, so reuse is
+	// already excluded at the page-orchestration level).
+	const id = useId();
 
 	// Stable snapshot: reset() restores the hook's original values even if the
 	// caller re-passes a fresh literal each render.
@@ -159,7 +168,7 @@ export function useForm<
 		[values],
 	);
 
-	// FormDialog renders this in a tooltip on the disabled button.
+	// FormSubmitButton renders this in a tooltip on the disabled button.
 	const submitDisabledReason = useMemo(() => {
 		if (submitConfig.requireDirty && !isDirty) return 'No changes to save';
 		if (!validation.success) {
@@ -225,6 +234,7 @@ export function useForm<
 	);
 
 	return {
+		id,
 		values,
 		set,
 		reset,
