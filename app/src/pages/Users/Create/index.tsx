@@ -41,9 +41,7 @@ export function CreateUserDialog({
 					>
 						Cancel
 					</Button>
-					<FormSubmitButton form={form}>
-						Create
-					</FormSubmitButton>
+					<FormSubmitButton form={form}>Create</FormSubmitButton>
 				</>
 			}
 		>

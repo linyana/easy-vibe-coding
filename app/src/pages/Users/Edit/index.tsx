@@ -48,9 +48,7 @@ export function EditUserDialog({
 					>
 						Cancel
 					</Button>
-					<FormSubmitButton form={form}>
-						Save
-					</FormSubmitButton>
+					<FormSubmitButton form={form}>Save</FormSubmitButton>
 				</>
 			}
 		>
