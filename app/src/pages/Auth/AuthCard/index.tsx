@@ -1,12 +1,8 @@
 import type { ReactNode } from 'react';
 import { getIcon } from '@/libs/icons';
-import { Form } from '@/components/form/Form';
 import type { HeaderContentProps } from '@/components/data/Header';
-import type { FormApi } from '@/hooks/useForm';
 
-interface AuthCardProps<TValues extends object> extends HeaderContentProps {
-	submitLabel?: string;
-	form: FormApi<TValues>;
+interface AuthCardProps extends HeaderContentProps {
 	footer?: ReactNode;
 	children: ReactNode;
 }
@@ -26,15 +22,13 @@ const heroModules = import.meta.glob<string>(
 const HERO_IMAGE = Object.values(heroModules)[0];
 const HERO_LAYERS = HERO_IMAGE ? `url(${HERO_IMAGE})` : '';
 
-export function AuthCard<TValues extends object>({
+export function AuthCard({
 	icon,
 	title,
 	description,
-	submitLabel = 'Submit',
-	form,
 	footer,
 	children,
-}: AuthCardProps<TValues>) {
+}: AuthCardProps) {
 	const Icon = icon ? getIcon(icon.name) : null;
 
 	return (
@@ -68,14 +62,7 @@ export function AuthCard<TValues extends object>({
 							</p>
 						)}
 					</div>
-					<Form
-						form={form}
-						submitLabel={submitLabel}
-						className="mt-6 space-y-4 [&_input]:h-10 [&_input]:bg-background [&_input]:shadow-sm"
-						submitClassName="mt-2 h-10 text-sm"
-					>
-						{children}
-					</Form>
+					{children}
 					{footer && (
 						<p className="mt-6 text-center text-sm text-muted-foreground">
 							{footer}

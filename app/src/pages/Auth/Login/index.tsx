@@ -2,6 +2,7 @@ import { authLoginSchema } from '@easy-vibe-coding/shared';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { API } from '@/libs/api';
 import { FormField } from '@/components';
+import { Form } from '@/components/form/Form';
 import { Input } from '@/components/ui/input';
 import { useForm } from '@/hooks/useForm';
 import { useGlobal } from '@/hooks/useGlobal';
@@ -32,8 +33,6 @@ export function LoginPage() {
 			icon={{ name: 'LogIn' }}
 			title="Sign in"
 			description="Welcome back — sign in to continue."
-			submitLabel="Sign in"
-			form={form}
 			footer={
 				<>
 					No account?{' '}
@@ -46,20 +45,27 @@ export function LoginPage() {
 				</>
 			}
 		>
-			<FormField form={form} name="email" label="Email">
-				<Input
-					placeholder="you@example.com"
-					autoComplete="email"
-					autoFocus
-				/>
-			</FormField>
-			<FormField form={form} name="password" label="Password">
-				<Input
-					type="password"
-					placeholder="Your password"
-					autoComplete="current-password"
-				/>
-			</FormField>
+			<Form
+				form={form}
+				submitLabel="Sign in"
+				className="mt-6 space-y-4 [&_input]:h-10 [&_input]:bg-background [&_input]:shadow-sm"
+				submitClassName="mt-2 h-10 text-sm"
+			>
+				<FormField form={form} name="email" label="Email">
+					<Input
+						placeholder="you@example.com"
+						autoComplete="email"
+						autoFocus
+					/>
+				</FormField>
+				<FormField form={form} name="password" label="Password">
+					<Input
+						type="password"
+						placeholder="Your password"
+						autoComplete="current-password"
+					/>
+				</FormField>
+			</Form>
 		</AuthCard>
 	);
 }
