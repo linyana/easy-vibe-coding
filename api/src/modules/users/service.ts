@@ -9,6 +9,7 @@ import { users, type User } from '../../db/schema';
 import { isUniqueViolation } from '../../libs/dbError';
 import { normalizeEmail } from '../../libs/email';
 import { Errors } from '../../libs/error';
+import { escapeLikePattern } from '../../libs/like';
 
 export const userService = {
 	// Duration windows (7/30 days before now), not calendar units — a duration
@@ -33,8 +34,8 @@ export const userService = {
 		const where = and(
 			keyword
 				? or(
-						ilike(users.name, `%${keyword}%`),
-						ilike(users.email, `%${keyword}%`),
+						ilike(users.name, `%${escapeLikePattern(keyword)}%`),
+						ilike(users.email, `%${escapeLikePattern(keyword)}%`),
 					)
 				: undefined,
 			createdRange?.from
