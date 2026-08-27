@@ -118,9 +118,13 @@ function Button({
 		<TooltipProvider delayDuration={0}>
 			<Tooltip>
 				<TooltipTrigger asChild>
+					{/* flex, not inline-flex: a wrapped `w-full` button must keep
+					    filling its row — an inline wrapper collapses it to
+					    content width. In flex containers the wrapper stays a
+					    content-sized item, so toolbars are unaffected. */}
 					<span
 						tabIndex={isDisabled ? 0 : undefined}
-						className="inline-flex"
+						className="flex"
 					>
 						{button}
 					</span>
