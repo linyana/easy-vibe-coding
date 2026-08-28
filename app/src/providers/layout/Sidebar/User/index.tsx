@@ -23,8 +23,7 @@ import { useGlobal } from '@/hooks/useGlobal';
 export function NavUser() {
 	const { isMobile } = useSidebar();
 	const navigate = useNavigate();
-	const user = useGlobal((s) => s.auth.user);
-	const clearSession = useGlobal((s) => s.actions.clearSession);
+	const { user, update } = useGlobal();
 
 	const displayName = user?.name ?? 'Guest';
 	const displayEmail = user?.email ?? 'Not signed in';
@@ -37,7 +36,7 @@ export function NavUser() {
 			.toUpperCase() || '?';
 
 	const handleLogout = () => {
-		clearSession();
+		update({ token: null, user: null });
 		void navigate({ to: '/login' });
 	};
 

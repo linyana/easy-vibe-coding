@@ -13,14 +13,14 @@ export const API = treaty<App>(baseUrl, {
 	// Runs per request, reads the live store — the token stays current without
 	// recreating the client after login/logout.
 	headers: () => {
-		const token = useGlobal.getState().auth.token;
+		const token = useGlobal.getState().token;
 		return token ? { Authorization: `Bearer ${token}` } : undefined;
 	},
 	// 401 → drop the session (the _app gate then redirects to /login). Idempotent:
 	// bad-credential 401s find no session to clear.
 	onResponse: (response) => {
 		if (response.status === 401) {
-			useGlobal.getState().actions.clearSession();
+			useGlobal.getState().update({ token: null, user: null });
 		}
 	},
 }).api;

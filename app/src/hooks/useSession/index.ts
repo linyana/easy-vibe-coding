@@ -2,22 +2,24 @@ import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
 import type { UseAPIError } from '@/libs/error';
-import type { AuthStatus } from '@/hooks/useGlobal';
+
+export type AuthStatus =
+	| 'loading' // token present, current user not fetched yet (boot)
+	| 'authenticated'
+	| 'unauthenticated'
+	| 'error'; // me fetch failed non-401 (network/5xx) — retry is user-initiated
 
 // Session lifecycle for the _app gate: no token → unauthenticated; token
 // without user → loading (me fetch); me 200 → authenticated; me 401 is
-// already cleared by the global response hook (libs/api), so this hook only
-// marks non-401 failures as error. Runs once per boot — the query disables
-// as soon as the user is stored.
+// already cleared by the global response hook (libs/api), so the derived
+// status drops to unauthenticated instead of showing the error state. Runs
+// once per boot — the query disables as soon as the user is stored.
 export function useSession(): {
 	status: AuthStatus;
 	error: UseAPIError | null;
 	refetch: () => void;
 } {
-	const token = useGlobal((s) => s.auth.token);
-	const user = useGlobal((s) => s.auth.user);
-	const setSession = useGlobal((s) => s.actions.setSession);
-	const setAuthStatus = useGlobal((s) => s.actions.setAuthStatus);
+	const { token, user, update } = useGlobal();
 
 	const query = useAPIQuery({
 		queryKey: ['auth', 'me'],
@@ -25,16 +27,12 @@ export function useSession(): {
 		enabled: Boolean(token) && !user,
 		toastError: false,
 		onSuccess: (me) => {
-			if (token) setSession(token, me);
-		},
-		onError: (error) => {
-			// A 401 already cleared the session via the global response hook —
-			// overriding the status here would show the error state instead of
-			// redirecting to login. Any other failure is the retryable error state.
-			if (error.code !== 'UNAUTHORIZED') setAuthStatus('error');
+			if (token) update({ token, user: me });
 		},
 	});
 
+	// Status is fully derived — nothing to store: a 401 clears token/user via
+	// the global response hook; any other failure surfaces through query.isError.
 	const status: AuthStatus = !token
 		? 'unauthenticated'
 		: user

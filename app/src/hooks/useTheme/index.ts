@@ -4,8 +4,7 @@ import { useGlobal, type ThemeMode } from '@/hooks/useGlobal';
 export type { ThemeMode };
 
 export function useTheme() {
-	const themeMode = useGlobal((s) => s.themeMode);
-	const setThemeMode = useGlobal((s) => s.actions.setThemeMode);
+	const { themeMode, update } = useGlobal();
 
 	const resolvedTheme = useMemo(() => {
 		if (themeMode !== 'system') return themeMode;
@@ -21,5 +20,9 @@ export function useTheme() {
 		);
 	}, [resolvedTheme]);
 
-	return { theme: themeMode, resolvedTheme, setTheme: setThemeMode };
+	return {
+		theme: themeMode,
+		resolvedTheme,
+		setTheme: (mode: ThemeMode) => update({ themeMode: mode }),
+	};
 }

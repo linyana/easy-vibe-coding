@@ -11,7 +11,7 @@ export const Route = createFileRoute('/login')({
 	// `redirect` — the path the guard was heading to when it sent the user here.
 	validateSearch: zodValidator(z.object({ redirect: z.string().optional() })),
 	beforeLoad: () => {
-		if (useGlobal.getState().auth.token) throw redirect({ to: '/' });
+		if (useGlobal.getState().token) throw redirect({ to: '/' });
 	},
 	component: LoginPage,
 });

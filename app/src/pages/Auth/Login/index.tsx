@@ -12,7 +12,7 @@ import { AuthCard } from '../AuthCard';
 export function LoginPage() {
 	const navigate = useNavigate();
 	const { redirect } = useSearch({ from: '/login' });
-	const setSession = useGlobal((s) => s.actions.setSession);
+	const { update } = useGlobal();
 
 	const form = useForm({
 		schema: authLoginSchema,
@@ -22,7 +22,7 @@ export function LoginPage() {
 			queryKey: ['auth'],
 			successMessage: 'Signed in',
 			onSuccess: ({ token, user }) => {
-				setSession(token, user);
+				update({ token, user });
 				void navigate({ href: safeRedirect(redirect) });
 			},
 		},

@@ -17,7 +17,7 @@ export const Route = createFileRoute('/_app')({
 	beforeLoad: ({ location }) => {
 		// No token → sign-in, remembering where we were heading (login returns
 		// there via `redirect`; searchStr is the raw query string).
-		if (!useGlobal.getState().auth.token) {
+		if (!useGlobal.getState().token) {
 			throw redirect({
 				to: '/login',
 				search: {

@@ -12,7 +12,7 @@ import { AuthCard } from '../AuthCard';
 export function RegisterPage() {
 	const navigate = useNavigate();
 	const { redirect } = useSearch({ from: '/register' });
-	const setSession = useGlobal((s) => s.actions.setSession);
+	const { update } = useGlobal();
 
 	const form = useForm({
 		schema: authRegisterSchema,
@@ -22,7 +22,7 @@ export function RegisterPage() {
 			queryKey: ['auth'],
 			successMessage: 'Account created — you are signed in',
 			onSuccess: ({ token, user }) => {
-				setSession(token, user);
+				update({ token, user });
 				void navigate({ href: safeRedirect(redirect) });
 			},
 		},

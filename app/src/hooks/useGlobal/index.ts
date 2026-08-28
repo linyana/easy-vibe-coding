@@ -6,55 +6,42 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 
 // The shared contract's user wire shape — imported here to keep the session
 // store free of a type-level cycle with libs/api.
-export type SessionUser = UserResponse;
+type SessionUser = UserResponse;
 
-export type AuthStatus =
-	| 'loading' // token present, current user not fetched yet (boot)
-	| 'authenticated'
-	| 'unauthenticated'
-	| 'error'; // me fetch failed non-401 (network/5xx) — retry is user-initiated
-
-export interface AuthState {
+/** The store's data fields (what persist may write; update/reset are verbs, not data). */
+interface GlobalStateData {
+	themeMode: ThemeMode;
 	/** JWT bearer token — persisted across reloads (the user refetches from /auth/me on boot). */
 	token: string | null;
 	/** Memory-only: set from login/register/me. */
 	user: SessionUser | null;
-	status: AuthStatus;
 }
 
-interface GlobalState {
-	themeMode: ThemeMode;
-	auth: AuthState;
-	actions: {
-		setThemeMode: (mode: ThemeMode) => void;
-		setSession: (token: string, user: SessionUser) => void;
-		setAuthStatus: (status: AuthStatus) => void;
-		clearSession: () => void;
-	};
+export interface GlobalState extends GlobalStateData {
+	/** Merge a partial state — the store's one write vocabulary (login, logout, theme, any future field). */
+	update: (patch: Partial<GlobalStateData>) => void;
+	/** Back to initial values (theme included), then apply an optional patch. */
+	reset: (patch?: Partial<GlobalStateData>) => void;
 }
+
+const initData: GlobalStateData = {
+	themeMode: 'system',
+	token: null,
+	user: null,
+};
 
 // Global client state (theme + auth). Accessible outside React via
 // getState() — how libs/api reads the token per request and guards check it.
+// Consumers use bare `const { ... } = useGlobal()` — that re-renders on ANY
+// write, so this store must only ever hold low-frequency fields (login/logout/
+// theme). Volatile values (counters, collapsed, polling) go in component state
+// or a dedicated mini-store (see usePageHeader).
 export const useGlobal = create<GlobalState>()(
 	persist(
 		(set) => ({
-			themeMode: 'system',
-			auth: { token: null, user: null, status: 'unauthenticated' },
-			actions: {
-				setThemeMode: (themeMode) => set({ themeMode }),
-				setSession: (token, user) =>
-					set({ auth: { token, user, status: 'authenticated' } }),
-				setAuthStatus: (status) =>
-					set((state) => ({ auth: { ...state.auth, status } })),
-				clearSession: () =>
-					set({
-						auth: {
-							token: null,
-							user: null,
-							status: 'unauthenticated',
-						},
-					}),
-			},
+			...initData,
+			update: (patch) => set(patch),
+			reset: (patch) => set({ ...initData, ...patch }),
 		}),
 		{
 			name: 'easy-vibe-global',
@@ -62,7 +49,7 @@ export const useGlobal = create<GlobalState>()(
 			// about the session (the user refetches from /auth/me on boot).
 			partialize: (state) => ({
 				themeMode: state.themeMode,
-				auth: { token: state.auth.token },
+				token: state.token,
 			}),
 		},
 	),
