@@ -97,7 +97,9 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
 		<td
 			data-slot="table-cell"
 			className={cn(
-				'p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0',
+				// transition-colors animates the ListTable-driven hover/selected
+				// tint (bg-row-active) instead of snapping instantly.
+				'p-2 align-middle whitespace-nowrap transition-colors duration-200 [&:has([role=checkbox])]:pr-0',
 				className,
 			)}
 			{...props}
