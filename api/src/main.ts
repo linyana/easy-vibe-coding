@@ -5,6 +5,7 @@ import { usersController } from './modules/users/controller';
 import { authController } from './modules/auth/controller';
 import { ENV } from './env';
 import { normalizeError } from './libs/error';
+import { ensurePort } from './libs/startup';
 
 export const app = new Elysia({ prefix: '/api' })
 	.use(cors())
@@ -42,6 +43,8 @@ export const app = new Elysia({ prefix: '/api' })
 	.use(authController);
 
 export type App = typeof app;
+
+await ensurePort({ port: Number(ENV.PORT), hostname: ENV.HOST });
 
 app.listen({
 	port: Number(ENV.PORT),
