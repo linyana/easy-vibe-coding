@@ -2,7 +2,6 @@ import { ArrowLeftIcon, InfoIcon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ThemeToggle } from './Theme';
-import { TenantSwitcher } from './TenantSwitcher';
 import { useIsMobile } from '@/hooks';
 import { usePageHeaderStore } from '@/hooks/usePageHeader';
 import { Button } from '@/components/ui/button';
@@ -14,8 +13,11 @@ import {
 } from '@/components/ui/tooltip';
 
 // The app bar: title/back/description via usePageHeader; page actions stay in
-// the page body; pages don't render their own headers.
-export function SiteHeader() {
+// the page body; pages don't render their own headers. `headerRight` is the
+// shell's right-side controls before the theme toggle — the workspace
+// switcher lives here in the workspace shell only (the personal shell has
+// nothing to switch yet).
+export function SiteHeader({ headerRight }: { headerRight?: React.ReactNode }) {
 	const mobile = useIsMobile();
 	const { title, description, back } = usePageHeaderStore((s) => s.content);
 
@@ -61,7 +63,7 @@ export function SiteHeader() {
 					</TooltipProvider>
 				) : null}
 				<div className="ml-auto flex items-center gap-2">
-					<TenantSwitcher />
+					{headerRight}
 					<ThemeToggle />
 				</div>
 			</div>

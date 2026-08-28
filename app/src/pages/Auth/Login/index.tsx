@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from '@/hooks/useForm';
 import { useGlobal } from '@/hooks/useGlobal';
 import { safeRedirect } from '@/libs/utils';
-import { bootstrapCurrentTenant } from '@/libs/tenant';
+import { bootstrapCurrentWorkspace } from '@/libs/workspace';
 import { AuthCard } from '../AuthCard';
 
 export function LoginPage() {
@@ -24,12 +24,15 @@ export function LoginPage() {
 			successMessage: 'Signed in',
 			onSuccess: async ({ token, user }) => {
 				setSession(token, user);
-				// Pick the current tenant (auto-select on one, keep a valid persisted
-				// choice) — land on the Tenants page when there's nothing to pick.
-				const where = await bootstrapCurrentTenant();
+				// Pick the current workspace (auto-select on one, keep a valid
+				// persisted choice) — land on the Workspaces page when there's
+				// nothing to pick.
+				const where = await bootstrapCurrentWorkspace();
 				void navigate({
 					href:
-						where === 'pick' ? '/tenants' : safeRedirect(redirect),
+						where === 'pick'
+							? '/workspaces'
+							: safeRedirect(redirect),
 				});
 			},
 		},

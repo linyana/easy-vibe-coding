@@ -1,4 +1,4 @@
 export * from './Home';
 export * from './Users';
-export * from './Tenants';
+export * from './Workspaces';
 export * from './Auth';

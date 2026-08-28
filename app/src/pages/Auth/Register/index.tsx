@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useForm } from '@/hooks/useForm';
 import { useGlobal } from '@/hooks/useGlobal';
 import { safeRedirect } from '@/libs/utils';
-import { bootstrapCurrentTenant } from '@/libs/tenant';
+import { bootstrapCurrentWorkspace } from '@/libs/workspace';
 import { AuthCard } from '../AuthCard';
 
 export function RegisterPage() {
@@ -24,10 +24,12 @@ export function RegisterPage() {
 			successMessage: 'Account created — you are signed in',
 			onSuccess: async ({ token, user }) => {
 				setSession(token, user);
-				const where = await bootstrapCurrentTenant();
+				const where = await bootstrapCurrentWorkspace();
 				void navigate({
 					href:
-						where === 'pick' ? '/tenants' : safeRedirect(redirect),
+						where === 'pick'
+							? '/workspaces'
+							: safeRedirect(redirect),
 				});
 			},
 		},

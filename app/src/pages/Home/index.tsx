@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import {
 	ArrowRightIcon,
-	Building2Icon,
 	CalendarDaysIcon,
 	UserPlusIcon,
 	UsersIcon,
@@ -10,6 +9,7 @@ import type { ReactNode } from 'react';
 import { API } from '@/libs/api';
 import { useAPIQuery, usePageHeader } from '@/hooks';
 import { useGlobal } from '@/hooks/useGlobal';
+import { Navigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -64,8 +64,14 @@ function StatSkeleton() {
 	);
 }
 
-// The platform admin surface: global account + growth stats.
+// The platform admin surface: global account + growth stats. Regular users
+// never reach this — Home redirects them into their current workspace.
 function AdminDashboard() {
+	usePageHeader({
+		title: 'Dashboard',
+		description: 'Platform admin — global account management and growth.',
+	});
+
 	const stats = useAPIQuery({
 		queryKey: ['users', 'stats'],
 		queryFn: () => API.users.stats.get(),
@@ -122,63 +128,24 @@ function AdminDashboard() {
 	);
 }
 
-// Regular users see only what belongs to them: the tenants they're a member
-// of. Global stats stay behind the admin gate.
-function MemberDashboard() {
-	const tenants = useAPIQuery({
-		queryKey: ['tenants', 'home'],
-		queryFn: () => API.tenants.get({ query: { page: 1, pageSize: 100 } }),
-		toastError: false,
-	});
-
-	const { data, error, refetch } = tenants;
-
-	return (
-		<div className="space-y-6">
-			{error ? (
-				<ErrorState error={error} onRetry={() => void refetch()} />
-			) : !data ? (
-				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					<StatSkeleton />
-				</div>
-			) : (
-				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					<StatCard
-						icon={<Building2Icon className="size-5" />}
-						label="Your tenants"
-						value={data.total}
-						helper="The platforms you belong to — your data lives inside them"
-						footer={
-							<Button
-								asChild
-								variant="ghost"
-								size="sm"
-								className="w-full justify-between rounded-none"
-							>
-								<Link to="/tenants">
-									Manage tenants
-									<ArrowRightIcon className="size-4" />
-								</Link>
-							</Button>
-						}
-					/>
-				</div>
-			)}
-		</div>
-	);
-}
-
 function HomePage() {
 	const isAdmin = useGlobal((s) => s.auth.user?.isAdmin ?? false);
+	const currentWorkspaceId = useGlobal((s) => s.currentWorkspaceId);
 
-	usePageHeader({
-		title: 'Dashboard',
-		description: isAdmin
-			? 'Platform admin — global account management and growth.'
-			: "An AI-first starter. Describe a feature — the AI builds it with the system's components. You review only the feature code.",
-	});
+	// Regular users land inside their current workspace — that home page IS
+	// their dashboard. No selection yet → the picker (which doubles as create).
+	if (!isAdmin) {
+		return currentWorkspaceId ? (
+			<Navigate
+				to="/workspaces/$workspaceSlug"
+				params={{ workspaceSlug: currentWorkspaceId }}
+			/>
+		) : (
+			<Navigate to="/workspaces" />
+		);
+	}
 
-	return isAdmin ? <AdminDashboard /> : <MemberDashboard />;
+	return <AdminDashboard />;
 }
 
 export { HomePage };

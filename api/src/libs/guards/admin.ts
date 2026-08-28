@@ -10,7 +10,7 @@ export interface AdminScopeContext {
 }
 
 // Standalone derive for the platform-admin surface (global user management,
-// all-tenants views). Like tenantScope, auth is verified inline (Elysia
+// all-workspaces views). Like workspaceScope, auth is verified inline (Elysia
 // composes derives ahead of macro resolves) and the admin flag is read from
 // the users row — the DB is the source of truth, never the token. Injects
 // `{ auth: { userId } }`; 401 without a valid token, 403 when the user isn't

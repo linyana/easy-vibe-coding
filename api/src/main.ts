@@ -3,7 +3,7 @@ import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysia/openapi';
 import { usersController } from './modules/users/controller';
 import { authController } from './modules/auth/controller';
-import { tenantsController } from './modules/tenants/controller';
+import { workspacesController } from './modules/workspaces/controller';
 import { ENV } from './env';
 import { normalizeError } from './libs/error';
 
@@ -31,9 +31,9 @@ export const app = new Elysia({ prefix: '/api' })
 							'Authentication — register, sign in, current session (JWT bearer).',
 					},
 					{
-						name: 'Tenants',
+						name: 'Workspaces',
 						description:
-							'Multi-tenancy — tenants, N:M membership, and the tenant guard.',
+							'Multi-tenancy — workspaces (slug-addressed), N:M membership, and the workspace guard.',
 					},
 				],
 			},
@@ -46,7 +46,7 @@ export const app = new Elysia({ prefix: '/api' })
 	})
 	.use(usersController)
 	.use(authController)
-	.use(tenantsController);
+	.use(workspacesController);
 
 export type App = typeof app;
 

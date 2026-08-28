@@ -1,11 +1,14 @@
-import { sql } from 'drizzle-orm';
+import { sql, type BuildExtraConfigColumns } from 'drizzle-orm';
 import {
 	boolean,
 	customType,
+	index,
 	integer,
 	pgTable,
 	primaryKey,
 	text,
+	type PgColumnBuilderBase,
+	type PgTableExtraConfigValue,
 } from 'drizzle-orm/pg-core';
 
 // Wire is RFC 3339 UTC (matches the shared contract's `z.iso.datetime()`); the
@@ -33,7 +36,7 @@ export const users = pgTable('users', {
 	// NOT NULL holds because every creation path (register and the Users page)
 	// hashes an initial password (argon2id, same policy).
 	passwordHash: text('password_hash').notNull(),
-	// Global platform role: gates /users management and admin tenant views.
+	// Global platform role: gates /users management and admin workspace views.
 	// Never set via the API — promotion is a manual DB op (documented).
 	isAdmin: boolean('is_admin').notNull().default(false),
 	createdAt: timestamptz('created_at')
@@ -45,12 +48,15 @@ export const users = pgTable('users', {
 		.$onUpdate(() => new Date().toISOString()),
 });
 
-// Multi-tenancy: `tenants` is the isolation unit (every future business table
-// carries a tenant_id column); `tenant_members` is the N:M relation between a
-// user and the tenants they belong to — the composite PK is the anti-join-dup
-// constraint, cascades keep orphan rows impossible on either side.
-export const tenants = pgTable('tenants', {
+// Multi-tenancy: `workspaces` is the isolation unit; `workspace_members` is
+// the N:M relation between a user and the workspaces they belong to — the
+// composite PK is the anti-join-dup constraint, cascades keep orphan rows
+// impossible on either side. Business tables are workspace-scoped through
+// workspaceScopedTable below. `slug` is the stable public identifier (URLs,
+// API paths); the numeric id stays internal (FK target only).
+export const workspaces = pgTable('workspaces', {
 	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+	slug: text('slug').notNull().unique(),
 	name: text('name').notNull(),
 	createdAt: timestamptz('created_at')
 		.notNull()
@@ -61,12 +67,54 @@ export const tenants = pgTable('tenants', {
 		.$onUpdate(() => new Date().toISOString()),
 });
 
-export const tenantMembers = pgTable(
-	'tenant_members',
+// The workspace_id column every business table carries — defined once so the
+// isolation convention can't drift: notNull + FK cascade (a deleted workspace
+// takes its data with it).
+const workspaceIdColumn = () =>
+	integer('workspace_id')
+		.notNull()
+		.references(() => workspaces.id, { onDelete: 'cascade' });
+
+// Workspace-scoped business tables are built through this factory — identity
+// PK, workspace_id FK and the index every workspace-scoped query needs come
+// for free, so a new table can't forget the isolation column. Extra
+// constraints (uniques, composite keys) go in the extraConfig callback, same
+// shape as pgTable.
+export function workspaceScopedTable<
+	TTableName extends string,
+	TColumns extends Record<string, PgColumnBuilderBase>,
+>(
+	tableName: TTableName,
+	columns: TColumns,
+	extraConfig?: (
+		table: BuildExtraConfigColumns<
+			TTableName,
+			TColumns & {
+				id: PgColumnBuilderBase;
+				workspaceId: PgColumnBuilderBase;
+			},
+			'pg'
+		>,
+	) => PgTableExtraConfigValue[],
+) {
+	return pgTable(
+		tableName,
+		{
+			id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+			workspaceId: workspaceIdColumn(),
+			...columns,
+		},
+		(table) => [
+			index(`${tableName}_workspace_id_idx`).on(table.workspaceId),
+			...(extraConfig?.(table) ?? []),
+		],
+	);
+}
+
+export const workspaceMembers = pgTable(
+	'workspace_members',
 	{
-		tenantId: integer('tenant_id')
-			.notNull()
-			.references(() => tenants.id, { onDelete: 'cascade' }),
+		workspaceId: workspaceIdColumn(),
 		userId: integer('user_id')
 			.notNull()
 			.references(() => users.id, { onDelete: 'cascade' }),
@@ -77,12 +125,12 @@ export const tenantMembers = pgTable(
 			.notNull()
 			.default(sql`now()`),
 	},
-	(t) => [primaryKey({ columns: [t.tenantId, t.userId] })],
+	(t) => [primaryKey({ columns: [t.workspaceId, t.userId] })],
 );
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
-export type Tenant = typeof tenants.$inferSelect;
-export type NewTenant = typeof tenants.$inferInsert;
-export type TenantMember = typeof tenantMembers.$inferSelect;
-export type NewTenantMember = typeof tenantMembers.$inferInsert;
+export type Workspace = typeof workspaces.$inferSelect;
+export type NewWorkspace = typeof workspaces.$inferInsert;
+export type WorkspaceMember = typeof workspaceMembers.$inferSelect;
+export type NewWorkspaceMember = typeof workspaceMembers.$inferInsert;
