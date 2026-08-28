@@ -9,7 +9,8 @@
 		"type-check": "tsc --noEmit",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "bun src/db/migrate.ts",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"db:push": "drizzle-kit push"
 	},
 	"dependencies": {
 		"@elysia/openapi": "^1.4.15",
