@@ -29,16 +29,16 @@
 7. **列表过滤状态在组件内存里**（`useState`，经 `useAPIList`），不进 URL。URL 保持干净；不要给列表路由加 `validateSearch`。
 8. **线上时间戳是 RFC 3339 UTC 字符串**（`z.iso.datetime()` / `timestamptz`），不是 `Date` 对象。一切 instant ↔ 本地日历日转换都收敛在 `app/src/libs/dates`，服务端永不猜时区。
 9. **Postgres 连接池叫 `pool`**，永不叫 `queryClient` —— 那个名字属于 app 侧的 TanStack Query。
-10. **不新建 `core/`**，不重命名 `app/src/pages`。`modules/`（API）和 `pages/`（UI）是两侧各自的概念名。
+10. **不新建 `core/`**（用户模块就叫 `modules/`，admin 模块归 `modules/admin/`——作用域是唯一分组轴，"core" 是模糊概念且与 `libs/` 撞车），不重命名 `app/src/pages`。`modules/`（API）和 `pages/`（UI）是两侧各自的概念名。
 11. **组件间 import 用精确子路径**（`@/components/data`、`@/components/ui/button`），顶层 barrel `@/components` 只给消费者用。`ui/` 无 barrel，直接按文件路径导入。
 
 ## 新增一个 feature 的标准工作流
 
-> 参照范例：`users`（唯一 canonical 模块）。**深度细节、可复制代码、边界条件都在 skills 里**（见文末 Skills 表）——动手前先加载对应 skill，本文档只给骨架。**任何 feature 工作只加载一个 `feature` skill**（渐进式披露）：先读它的 patterns 参考文件，再按 SKILL.md 里的路由表读当前步骤对应的文件（新资源 → scaffold）。
+> 参照范例：`accounts`（唯一 canonical 模块）。**深度细节、可复制代码、边界条件都在 skills 里**（见文末 Skills 表）——动手前先加载对应 skill，本文档只给骨架。**任何 feature 工作只加载一个 `feature` skill**（渐进式披露）：先读它的 patterns 参考文件，再按 SKILL.md 里的路由表读当前步骤对应的文件（新资源 → scaffold）。
 
 ```text
 1. 契约层  packages/shared/src/api/<resource>/<endpoint>/   每端点一文件夹一 index.ts（请求+响应 zod schema）
-2. API 层  api/src/modules/<name>/  controller 只接线（schema 全从 shared 导入）· service 写逻辑（抛 Errors）· main.ts 挂载
+2. API 层  api/src/modules/<name>/（admin 作用域的 feature 用 api/src/modules/admin/<name>/）  controller 只接线（schema 全从 shared 导入）· service 写逻辑（抛 Errors）· main.ts 挂载
 3. 页面类型 app/src/pages/<name>/types/  实体类型 = UseAPIItem<typeof API.x.get>（推导，不手写）· action 词汇 = union
 4. 行为模块 app/src/pages/<name>/<Behavior>/  List/（useAPIList+ListTable）· Create/、Edit/（useForm+Dialog+Form 组合）· Delete/（useAPIMutation+RemoveDialog）
 5. 编排      index.tsx  只管"哪个对话框开着、为谁开"，按 action.kind 分支；Edit/Delete 用 key={...} 重挂载
@@ -65,7 +65,8 @@ packages/shared/src/      契约包（跨边界唯一事实源）
   constants/              两侧共享的应用标识
 
 api/src/
-  modules/<name>/   controller.ts（路由 + 校验接线）· service.ts（逻辑）
+  modules/<name>/   controller.ts（路由 + 校验接线）· service.ts（逻辑）—— 用户级（workspace/会话作用域）
+  modules/admin/<name>/  platform 级模块子命名空间：整块 `admin: true` 守卫（如 accounts、workspaces 的 /admin* 端点）
   libs/<name>/      error/（统一错误管线）· dbError/（PG 错误码判断）
   db/               schema.ts（数据层唯一事实源）· client.ts（pool + drizzle）
   env.ts            集中式 ENV（lint 强制唯一入口）
@@ -89,7 +90,7 @@ app/src/
 ### API 侧（`api/src`）
 
 - **controller**：Elysia instance + `prefix` + `detail.tags`，每端点一行，schema 全来自 shared。
-- **service**：object 字面量 + async 方法；业务错误抛 `Errors.notFound('User not found')` 等（每个抛出点写具体、面向用户的消息）。
+- **service**：object 字面量 + async 方法；业务错误抛 `Errors.notFound('Account not found')` 等（每个抛出点写具体、面向用户的消息）。
 - **错误管线**（`libs/error` + `main.ts` 的 `onError`）：`ApiError` 原样归一化；Elysia `ValidationError` → 422 `VALIDATION` + fields；路由 miss → 404；其余 → 500 `INTERNAL`（堆栈记录，内部细节永不泄露）。**业务代码永不抛带自定义消息的 `INTERNAL`。**
 - **数据库错误**：`isUniqueViolation`（`libs/dbError`）沿 cause 链找 PG 23505，唯一冲突转 `Errors.conflict`。
 - **数据层**（`db/schema.ts`）：单一事实源、无 app import（drizzle-kit 独立加载）；时间戳在列声明层定为 RFC 3339 UTC 字符串（`timestamptz` customType），无 per-query 转换层。
@@ -136,10 +137,24 @@ cd api && bun run db:studio    # 检查 DB
 | `feature`        | 全流程（渐进式披露，一个 skill）：`patterns`（共享约定/边界条件）→ `scaffold`（新资源）→ `list`（读侧列表）→ `form`（create/edit）→ `remove`（删除 + 编排） | 任何建/改 feature 的工作（列表、表单、对话框、CRUD 页）——先读 patterns，再按 SKILL.md 路由表读对应参考文件 |
 | `feature-verify` | 分层验证：check 门禁 → DB → 启动 → curl 驱动（成功/失败路径）→ 坑位                                                                                         | 实现功能后、调试 API、确认修复时                                                                           |
 
+## Workspaces
+
+- **身份**：`slug` 是 workspace 的用户可见唯一标识（unique 必填，URL-safe：小写字母/数字/单连字符）；int 主键只在 DB 内部（FK 完整性、改名安全），任何 API 表面、token claim、前端都以 slug 寻址。slug 冲突 → 409。
+- **归属**：`workspace_members`（workspace_id + account_id + role，unique 对）——创建即 owner 成员（事务），没有「无主 workspace」。role 词汇是 `owner | member`（`memberRoleSchema`，DB 列 `text` + `$type` 收窄）；创建时服务端写 `owner`，之后由 admin 管理。
+- **用户表面**：`/workspaces`（成员身份列表 + 创建）、`/members`（当前 workspace 名册，读 token 的 `workspaceSlug` claim 作作用域，登录态 token 访问 → 403）。workspace 内唯一路由 `/_app/members`。
+- **admin 表面**（`modules/admin/workspaces`，前缀 `/workspaces/admin`，整块 `admin: true`）：平台级列表/统计/编辑/删除 + 成员管理（按 workspace id 寻址：`GET /admin/:id/members` · `POST /admin/:id/members`（按邮箱加人，账号不存在 404、重复 409）· `PATCH /admin/:id/members/:accountId`（改 role）· `DELETE /admin/:id/members/:accountId`）。**不变式**：workspace 必须保持 ≥1 个 owner——降级/移除最后一个 owner → 409（`assertNotLastOwner`）。删除 workspace 级联清成员（FK cascade）。
+
+## Admin（平台管理后台）
+
+- **身份**：`accounts.isAdmin`（boolean，默认 false）是平台级 admin 标记。**引导：第一个注册的账号自动成为 admin**（auth service 的 count 预检，零配置；并发竞态只会多授权，不会少授权）。`accountResponseSchema` 带 `isAdmin` 上 wire——登录/注册/me 都回显，app 侧据此显示 admin 入口。
+- **守卫**：`api/src/libs/guards` 有 `auth` 和 `admin` 两个 macro——`admin: true` 在验 token 之外**每次请求重查 DB 行的 isAdmin**（行是事实源，撤销立即生效，不等 token TTL）。
+- **边界**：admin 不能删除自己、不能撤销自己的 isAdmin（400）——保证平台永远至少有一个 admin。批量删除含自己 → 整批 400（显式拒绝，不是静默跳过）。
+- **表面**：`accounts` 模块在 `modules/admin/accounts`，整块 admin-only（平台级账号 CRUD + `PATCH /:id/password` 重置密码——密码字段永不进通用 PATCH）；`workspaces` 的 admin 端点在 `modules/admin/workspaces`（见 Workspaces 节）。**模块归属规则：作用域决定位置——用户级模块在 `modules/<name>`，平台级 admin 模块在 `modules/admin/<name>`（镜像 app 侧 `pages/` + `pages/Admin/`）。** UI 是 `/admin` 壳（非 pathless，不依赖 workspace 上下文；`beforeLoad` token 守卫 + `useSession` + `isAdmin` 门），**复用普通用户布局**（`LayoutProvider` + 专属 `AdminSidebar` + `SiteHeader`/`usePageHeader`），侧边栏 nav = Overview（统计）/ Accounts / Workspaces + Back to app。**admin 入口在 workspace 选择器**（`providers/workspace` 的 picker 卡片底部，仅 admin 可见）——不在普通用户侧边栏；admin 是平台级、与 workspace 上下文正交。
+
 ## Auth
 
-- **机制**：JWT bearer（jose，HS256，7 天），密码 argon2id（`Bun.password`，零依赖）。token 存 `useGlobal`（persist），`libs/api` 的 `headers` 钩子逐请求注入，`onResponse` 全局拦截 401 → `clearSession`。
-- **服务端守卫**（`api/src/libs/guards`）：纯 jose 原语（`libs/auth`）之上的 Elysia 适配层——`macro('auth')` 把 `.guard({ auth: true })`（或路由级 `{ auth: true }`）变成“先验 bearer token，不过 401”，并把已验证身份注入 handler 为 `{ auth: { userId } }`。token 只含 `sub`（user id）；DB 行是事实源，需要用户形状处（`/me`）才重查。**新模块加一行 `.use(authGuard).guard({ auth: true })` 即受保护。**
-- **API**：`/api/auth/register`（建号即登录）· `/api/auth/login`（大小写不敏感匹配邮箱，错误统一 401 "Invalid email or password" 不泄露邮箱）· `/api/auth/me`（guard 解析 userId → 服务重查当前用户行）。`users` 模块整块在 guard 后。契约在 `packages/shared/src/api/auth/`，密码字段规则复用 users 的 `userFieldSchemas`。
+- **机制**：JWT bearer（jose，HS256，7 天），密码 argon2id（`Bun.password`，零依赖）。token 存 `useGlobal`（persist），`libs/api` 的 `headers` 钩子逐请求注入，`onResponse` 全局拦截 401 → `clearSession`。**workspace 上下文（`useGlobal.workspace`，object `{ slug, name }`）不持久化**——boot 时从 `/auth/me` 的响应回显恢复（服务端真相源），交换 token 后写入内存；刷新靠 me 恢复，不靠 storage。
+- **服务端守卫**（`api/src/libs/guards`）：纯 jose 原语（`libs/auth`）之上的 Elysia 适配层——`macro('auth')` 把 `.guard({ auth: true })`（或路由级 `{ auth: true }`）变成“先验 bearer token，不过 401”，并把已验证身份注入 handler 为 `{ auth: { accountId, workspaceSlug? } }`。token 携带显式 `accountId` claim（`sub` 镜像同一 id），`/auth/switch-workspace` 交换后追加 `workspaceSlug` claim；DB 行是事实源，需要账号形状处（`/me`）才重查。**新模块加一行 `.use(authGuard).guard({ auth: true })` 即受保护；依赖 workspace 作用域的模块从 `auth.workspaceSlug` 读上下文（无 = 登录态 token）。admin 面用 `.guard({ admin: true })`（见 Admin 节）。**
+- **API**：`/api/auth/register`（建号即登录；**第一个注册的账号自动成为 admin**）· `/api/auth/login`（大小写不敏感匹配邮箱，错误统一 401 "Invalid email or password" 不泄露邮箱）· `/api/auth/me`（guard 解析 accountId → 服务重查当前账号行，并回显 workspace object `{ slug, name }`——校验成员身份还在才回显，否则 null）。`/api/auth/switch-workspace`（POST `{ slug }`，非成员 403，签发带 `accountId + workspaceSlug` claim 的新 token）。`accounts` 模块整块在 admin guard 后。契约在 `packages/shared/src/api/auth/`，密码字段规则复用 accounts 的 `accountFieldSchemas`。
 - **路由**：应用壳是 pathless layout `/_app`（`beforeLoad` 同步 token 守卫 + 组件内 `useSession` 校验 me，loading/error/unauthenticated 三分支）；`/login` `/register` 在壳外，读 `redirect` search 参数（登录后回跳，`safeRedirect` 防开放重定向）。
 - **边界**：登出纯客户端（JWT 无状态）。Elysia 先校验 body 再跑 guard（未带 token 但 body 非法 → 422 而非 401）。

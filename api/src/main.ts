@@ -1,7 +1,10 @@
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysia/openapi';
-import { usersController } from './modules/users/controller';
+import { adminAccountsController } from './modules/admin/accounts/controller';
+import { adminWorkspacesController } from './modules/admin/workspaces/controller';
+import { workspacesController } from './modules/workspaces/controller';
+import { membersController } from './modules/members/controller';
 import { authController } from './modules/auth/controller';
 import { ENV } from './env';
 import { normalizeError } from './libs/error';
@@ -21,9 +24,19 @@ export const app = new Elysia({ prefix: '/api' })
 				},
 				tags: [
 					{
-						name: 'Users',
+						name: 'Accounts',
 						description:
-							'User management — the canonical CRUD module.',
+							'Account management — the canonical CRUD module (admin-only).',
+					},
+					{
+						name: 'Workspaces',
+						description:
+							'Workspace containers — membership-scoped list/creation (users) + platform CRUD and member management under /admin (admins).',
+					},
+					{
+						name: 'Members',
+						description:
+							"Workspace roster — the current workspace's accounts.",
 					},
 					{
 						name: 'Auth',
@@ -39,7 +52,10 @@ export const app = new Elysia({ prefix: '/api' })
 		set.status = status;
 		return body;
 	})
-	.use(usersController)
+	.use(adminAccountsController)
+	.use(workspacesController)
+	.use(adminWorkspacesController)
+	.use(membersController)
 	.use(authController);
 
 export type App = typeof app;

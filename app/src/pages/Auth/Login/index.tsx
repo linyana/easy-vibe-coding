@@ -21,8 +21,8 @@ export function LoginPage() {
 			call: (values) => API.auth.login.post(values),
 			queryKey: ['auth'],
 			successMessage: 'Signed in',
-			onSuccess: ({ token, user }) => {
-				update({ token, user });
+			onSuccess: ({ token, account }) => {
+				update({ token, account, workspace: null });
 				void navigate({ href: safeRedirect(redirect) });
 			},
 		},

@@ -1,5 +1,12 @@
 import { sql } from 'drizzle-orm';
-import { customType, integer, pgTable, text } from 'drizzle-orm/pg-core';
+import {
+	boolean,
+	customType,
+	integer,
+	pgTable,
+	text,
+	unique,
+} from 'drizzle-orm/pg-core';
 
 // Wire is RFC 3339 UTC (matches the shared contract's `z.iso.datetime()`); the
 // driver returns session-format strings, so fromDriver normalizes once here —
@@ -19,11 +26,16 @@ const citext = customType<{ data: string; driverData: string }>({
 	toDriver: (value: string) => value,
 });
 
-export const users = pgTable('users', {
+export const accounts = pgTable('accounts', {
 	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
 	name: text('name').notNull(),
 	email: citext('email').notNull().unique(),
-	// NOT NULL holds because every creation path (register and the Users page)
+	// Platform-level admin flag — the adminGuard re-reads it from the DB per
+	// request (the row, not the token, is the source of truth), so revoking
+	// admin takes effect immediately. Bootstrap: the first registered account
+	// is created with it set (auth service); everyone after is a regular user.
+	isAdmin: boolean('is_admin').notNull().default(false),
+	// NOT NULL holds because every creation path (register and the Accounts page)
 	// hashes an initial password (argon2id, same policy).
 	passwordHash: text('password_hash').notNull(),
 	createdAt: timestamptz('created_at')
@@ -35,5 +47,53 @@ export const users = pgTable('users', {
 		.$onUpdate(() => new Date().toISOString()),
 });
 
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
+export type Account = typeof accounts.$inferSelect;
+export type NewAccount = typeof accounts.$inferInsert;
+
+export const workspaces = pgTable('workspaces', {
+	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+	// The user-facing identity — unique, required, URL-safe. The integer PK
+	// stays internal (FK integrity, rename safety); every API surface, token
+	// claim, and the app address a workspace by its slug.
+	slug: text('slug').notNull().unique(),
+	name: text('name').notNull(),
+	createdAt: timestamptz('created_at')
+		.notNull()
+		.default(sql`now()`),
+	updatedAt: timestamptz('updated_at')
+		.notNull()
+		.default(sql`now()`)
+		.$onUpdate(() => new Date().toISOString()),
+});
+
+export const workspaceMembers = pgTable(
+	'workspace_members',
+	{
+		id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+		workspaceId: integer('workspace_id')
+			.notNull()
+			.references(() => workspaces.id, { onDelete: 'cascade' }),
+		accountId: integer('account_id')
+			.notNull()
+			.references(() => accounts.id, { onDelete: 'cascade' }),
+		// Role is server-written; the account that creates a workspace becomes
+		// its owner. Member-role semantics arrive with the members surface.
+		// $type narrows the wire type to the contract's role union (owner/member)
+		// without a DB enum — text stays the storage type.
+		role: text('role')
+			.notNull()
+			.default('owner')
+			.$type<'owner' | 'member'>(),
+		createdAt: timestamptz('created_at')
+			.notNull()
+			.default(sql`now()`),
+	},
+	(table) => ({
+		workspaceAccountUnique: unique().on(table.workspaceId, table.accountId),
+	}),
+);
+
+export type Workspace = typeof workspaces.$inferSelect;
+export type NewWorkspace = typeof workspaces.$inferInsert;
+export type WorkspaceMember = typeof workspaceMembers.$inferSelect;
+export type NewWorkspaceMember = typeof workspaceMembers.$inferInsert;

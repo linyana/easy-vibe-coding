@@ -2,29 +2,50 @@ import { SignJWT, jwtVerify } from 'jose';
 import { ENV } from '../../env';
 import { Errors } from '../error';
 
-// JWT primitives — the token carries only the user id; the DB row is the source of truth.
+// JWT primitives — the token carries the accountId claim (sub mirrors it) and,
+// after a workspace switch, the workspaceSlug claim; the DB row is the source of truth.
 
 const secret = new TextEncoder().encode(ENV.AUTH_SECRET);
 
 export const TOKEN_TTL = '7d';
 
-export function signAuthToken(user: { id: number }): Promise<string> {
-	return new SignJWT({})
+export function signAuthToken({
+	accountId,
+	workspaceSlug,
+}: {
+	accountId: number;
+	workspaceSlug?: string;
+}): Promise<string> {
+	return new SignJWT({
+		accountId,
+		...(workspaceSlug !== undefined ? { workspaceSlug } : {}),
+	})
 		.setProtectedHeader({ alg: 'HS256' })
-		.setSubject(String(user.id))
+		.setSubject(String(accountId))
 		.setIssuedAt()
 		.setExpirationTime(TOKEN_TTL)
 		.sign(secret);
 }
 
-export async function verifyAuthToken(token: string): Promise<number> {
+export async function verifyAuthToken(token: string): Promise<{
+	accountId: number;
+	workspaceSlug?: string;
+}> {
 	try {
 		const { payload } = await jwtVerify(token, secret, {
 			algorithms: ['HS256'],
 		});
-		const id = Number(payload.sub);
-		if (!Number.isInteger(id)) throw new Error('Malformed token subject');
-		return id;
+		// accountId claim on tokens issued after the rename; sub fallback keeps
+		// pre-rename sessions valid until their 7-day TTL expires.
+		const accountId = Number(payload.accountId ?? payload.sub);
+		if (!Number.isInteger(accountId)) {
+			throw new Error('Malformed token subject');
+		}
+		const workspaceSlug =
+			typeof payload.workspaceSlug === 'string'
+				? payload.workspaceSlug
+				: undefined;
+		return { accountId, workspaceSlug };
 	} catch {
 		throw Errors.unauthorized(
 			'Invalid or expired session. Please sign in again.',

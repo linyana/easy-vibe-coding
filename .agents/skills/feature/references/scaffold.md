@@ -61,7 +61,7 @@ export * from './get';
 // 后续步骤在此追加：export * from './list'; ./create; ./edit; ./delete; ./batch-delete
 ```
 
-`packages/shared/src/api/products/get/index.ts`——**每接口一文件夹**的结构保持；detail 没有独有 schema，只是 shared 类型别名（照抄 users 的 get）：
+`packages/shared/src/api/products/get/index.ts`——**每接口一文件夹**的结构保持；detail 没有独有 schema，只是 shared 类型别名（照抄 accounts 的 get）：
 
 ```ts
 import type { ProductIdParams, ProductResponse } from '../shared';
@@ -77,7 +77,7 @@ export type GetProductResponse = ProductResponse;
 
 ## 2. 数据层（db/schema.ts）
 
-在 `api/src/db/schema.ts` 追加一张表——**复制 users 表的结构**（id identity + 两个时间戳列 + 类型导出），字段换成你的资源字段。文件顶部的 `timestamptz` customType 是**唯一**的时间戳列类型（wire 形状 = RFC 3339 UTC 字符串），不引入任何新的日期转换层：
+在 `api/src/db/schema.ts` 追加一张表——**复制 accounts 表的结构**（id identity + 两个时间戳列 + 类型导出），字段换成你的资源字段。文件顶部的 `timestamptz` customType 是**唯一**的时间戳列类型（wire 形状 = RFC 3339 UTC 字符串），不引入任何新的日期转换层：
 
 ```ts
 export const products = pgTable('products', {
@@ -153,7 +153,7 @@ import { productsController } from './modules/products/controller';
 // openapi documentation.tags 数组里追加：
 { name: 'Products', description: 'Product management.' },
 // ...
-.use(usersController)
+.use(accountsController)
 .use(productsController);
 ```
 

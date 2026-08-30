@@ -21,8 +21,8 @@ export function RegisterPage() {
 			call: (values) => API.auth.register.post(values),
 			queryKey: ['auth'],
 			successMessage: 'Account created — you are signed in',
-			onSuccess: ({ token, user }) => {
-				update({ token, user });
+			onSuccess: ({ token, account }) => {
+				update({ token, account, workspace: null });
 				void navigate({ href: safeRedirect(redirect) });
 			},
 		},

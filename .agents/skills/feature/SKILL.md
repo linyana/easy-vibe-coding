@@ -1,11 +1,11 @@
 ---
 name: feature
-description: Builds a full-stack feature in this repo — the users canonical pattern, one pipeline from contract to route. Covers brand-new resource scaffolding (shared contract base, Drizzle table, API module, page skeleton), server-side list pages (search/filter/pagination/selection), create/edit forms, and delete/remove flows (single, batch, type-to-confirm). Use whenever the user asks for a feature that lists, creates, edits, or deletes records — a table, a form, a dialog, a CRUD page (products, orders, …) — or to extend an existing one, even if they don't say "feature". It uses progressive disclosure — read patterns.md first, then only the reference file for the step you are on (scaffold/list/form/remove). Verification lives in the separate feature-verify skill.
+description: Builds a full-stack feature in this repo — the accounts canonical pattern, one pipeline from contract to route. Covers brand-new resource scaffolding (shared contract base, Drizzle table, API module, page skeleton), server-side list pages (search/filter/pagination/selection), create/edit forms, and delete/remove flows (single, batch, type-to-confirm). Use whenever the user asks for a feature that lists, creates, edits, or deletes records — a table, a form, a dialog, a CRUD page (products, orders, …) — or to extend an existing one, even if they don't say "feature". It uses progressive disclosure — read patterns.md first, then only the reference file for the step you are on (scaffold/list/form/remove). Verification lives in the separate feature-verify skill.
 ---
 
 # Feature（全流程：脚手架 → 列表 → 写操作 → 编排）
 
-users 是唯一 canonical 模块，本 skill 是它的完整流水线。**先读 `patterns.md`（共享约定与边界条件），再只读当前这一步对应的参考文件**；做到下一步再读下一个。渐进式披露——不用的文件不读。
+accounts 是唯一 canonical 模块，本 skill 是它的完整流水线。**先读 `patterns.md`（共享约定与边界条件），再只读当前这一步对应的参考文件**；做到下一步再读下一个。渐进式披露——不用的文件不读。
 
 ## 路由表（做什么 → 读哪个文件）
 
@@ -25,7 +25,7 @@ users 是唯一 canonical 模块，本 skill 是它的完整流水线。**先读
 
 | 形式       | 例子            | 用在哪                                                                       |
 | ---------- | --------------- | ---------------------------------------------------------------------------- |
-| `products` | 复数小写        | 表名、`api/src/modules/` 文件夹、路由路径、`packages/shared/src/api/` 文件夹 |
+| `products` | 复数小写        | 表名、`api/src/modules/` 文件夹（admin 作用域的 feature 用 `api/src/modules/admin/`）、路由路径、`packages/shared/src/api/` 文件夹 |
 | `product`  | 单数小写        | schema 命名前缀（`productResponseSchema`）、service 方法内变量               |
 | `Product`  | PascalCase 单数 | 实体类型名                                                                   |
 | `Products` | PascalCase 复数 | controller 导出名、openapi `tags`、页面组件名、`pages/` 文件夹名             |
@@ -35,7 +35,7 @@ users 是唯一 canonical 模块，本 skill 是它的完整流水线。**先读
 ## 什么是结构、什么是资源专属
 
 - **结构**（照抄）：文件清单、流程顺序、共享层职责、边界语义（half-open 日期、无缓存、页码钳制、selection、type-to-confirm）。
-- **资源专属**（为你的资源选，不照抄）：搜索字段、表格列、过滤器、表单字段。users 搜 name+email 是因为用户有 email；Product 没有 email，别给 product 搜 email。
+- **资源专属**（为你的资源选，不照抄）：搜索字段、表格列、过滤器、表单字段。accounts 搜 name+email 是因为账号有 email；Product 没有 email，别给 product 搜 email。
 
 ## 红线速记（完整版见 AGENTS.md）
 
