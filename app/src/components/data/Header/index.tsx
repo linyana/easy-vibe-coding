@@ -3,8 +3,14 @@ import { cn } from '@/libs/utils';
 import { MediaIcon } from '../MediaIcon';
 import { getIcon, iconStyleClasses, type IconObject } from '@/libs/icons';
 
+/** The leading slot — a preset icon (rendered in the MediaIcon box) or a
+ * render function returning a custom element that replaces the box entirely
+ * (e.g. an interactive back button — callers needing clickable icons can't
+ * use the static `IconObject` form). */
+export type HeaderIcon = IconObject | (() => ReactNode);
+
 export interface HeaderProps {
-	icon?: IconObject;
+	icon?: HeaderIcon;
 	/**
 	 * The header title. A plain string renders as a heading — h1 for the
 	 * 'page' variant (a standalone page with no other heading), h2 otherwise
@@ -25,11 +31,14 @@ export interface HeaderProps {
 }
 
 /** The header's content props — the icon/title/description subset dialogs
- * pass straight through to Header. */
-export type HeaderContentProps = Pick<
-	HeaderProps,
-	'icon' | 'title' | 'description'
->;
+ * pass straight through to Header. `icon` stays the static `IconObject`
+ * form here: dialogs also compose it into action buttons (RemoveDialog's
+ * confirm button), where a render function has no meaning. */
+export type HeaderContentProps = {
+	icon?: IconObject;
+	title?: HeaderProps['title'];
+	description?: HeaderProps['description'];
+};
 
 // Per-variant styles keyed by variant — layout classes, title/description
 // typography, and the title element (h1/h2 vs. span for in-button rows).
@@ -69,7 +78,8 @@ export function Header({
 	className,
 	variant = 'default',
 }: HeaderProps) {
-	const Icon = icon ? getIcon(icon.name) : null;
+	const renderIcon = typeof icon === 'function' ? icon : null;
+	const Icon = icon && typeof icon !== 'function' ? getIcon(icon.name) : null;
 	const style = variantStyles[variant];
 	const Title = style.titleElement;
 	const initial =
@@ -85,11 +95,14 @@ export function Header({
 				className,
 			)}
 		>
-			{style.initialTile ? (
+			{renderIcon ? (
+				renderIcon()
+			) : style.initialTile ? (
 				<span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-sm font-medium text-muted-foreground">
 					{initial}
 				</span>
 			) : (
+				typeof icon !== 'function' &&
 				icon &&
 				Icon && (
 					<MediaIcon

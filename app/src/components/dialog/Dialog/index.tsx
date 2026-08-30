@@ -37,7 +37,7 @@ export function Dialog({
 	children,
 	footer,
 	contentClassName,
-	preventAutoFocus,
+	preventAutoFocus = true,
 }: DialogProps) {
 	return (
 		<DialogRoot open={open} onOpenChange={onOpenChange}>

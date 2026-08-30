@@ -1,6 +1,6 @@
 import { useGlobal } from '@/hooks/useGlobal';
 import { WorkspaceSelect } from './Select';
-import { Header } from '@/components';
+import { Card } from '@/components';
 
 // Gate, not a route: an authenticated session without a workspace has no
 // workspace context yet — the picker replaces the whole app until the token
@@ -16,13 +16,9 @@ function WorkspacePicker() {
 	return (
 		<div className="flex min-h-dvh items-center justify-center p-4 sm:p-6">
 			<div className="w-full sm:w-3/5">
-				<Header
-					variant="page"
-					title="Where do you want to enter?"
-					description="Choose where you'd like to get started. You can switch between Workspace and Admin anytime from the top menu."
-					className="pb-4"
-				/>
-				<WorkspaceSelect active />
+				<Card>
+					<WorkspaceSelect active headerVariant="page" />
+				</Card>
 			</div>
 		</div>
 	);

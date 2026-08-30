@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import {
-	ArrowLeftIcon,
+	ChevronLeft,
 	ArrowRightIcon,
-	BriefcaseBusiness,
+	Layers,
 	PlusIcon,
 	UserStar,
 } from 'lucide-react';
@@ -18,6 +18,7 @@ import type { WorkspaceResponse } from '@easy-vibe-coding/shared';
 import type { UseAPIError } from '@/libs/error';
 import { WorkspaceRow } from '../Row';
 import { CreateWorkspaceDialog } from '../Create';
+import type { HeaderProps } from '@/components/data/Header';
 
 // The one workspace-selection flow, shared by the picker gate (embedded in a
 // Card) and the nav dialog above. The query runs only while `active` — the
@@ -26,15 +27,22 @@ import { CreateWorkspaceDialog } from '../Create';
 export function WorkspaceSelect({
 	active,
 	onSwitched,
+	headerVariant,
+	initialView = 'landing',
 }: {
 	active: boolean;
 	/** Fired after the session switched — the dialog closes itself here. */
 	onSwitched?: () => void;
+	headerVariant: HeaderProps['variant'];
+	/** The opening view — the admin choose-card landing (default, the picker
+	 * gate) vs. the workspace list (the admin sidebar's switcher, whose
+	 * context is already known to be Admin). */
+	initialView?: 'landing' | 'list';
 }) {
 	const { workspace, account, update } = useGlobal();
 	const navigate = useNavigate();
 	const [createOpen, setCreateOpen] = useState(false);
-	const [view, setView] = useState<'landing' | 'list'>('landing');
+	const [view, setView] = useState<'landing' | 'list'>(initialView);
 
 	const workspaces = useAPIQuery({
 		queryKey: ['workspaces'],
@@ -58,6 +66,12 @@ export function WorkspaceSelect({
 	if (account?.isAdmin && view === 'landing') {
 		return (
 			<>
+				<Header
+					variant={headerVariant}
+					title="Where do you want to enter?"
+					description="Choose where you'd like to get started. You can switch between Workspace and Admin anytime from the top menu."
+					className="pb-4"
+				/>
 				<div className="flex justify-between gap-8">
 					<Card
 						hoverable
@@ -67,7 +81,7 @@ export function WorkspaceSelect({
 						<div className="relative flex flex-col justify-center gap-6">
 							<ArrowRightIcon className="absolute top-0 right-0 size-5 text-muted-foreground" />
 							<MediaIcon>
-								<BriefcaseBusiness className="size-6" />
+								<Layers className="size-6" />
 							</MediaIcon>
 							<Header
 								title="Enter Workspace"
@@ -89,7 +103,7 @@ export function WorkspaceSelect({
 					>
 						<div className="relative flex flex-col justify-center gap-6">
 							<ArrowRightIcon className="absolute top-0 right-0 size-5 text-muted-foreground" />
-							<MediaIcon>
+							<MediaIcon className="bg-foreground text-background">
 								<UserStar className="size-6" />
 							</MediaIcon>
 							<Header
@@ -108,17 +122,26 @@ export function WorkspaceSelect({
 
 	return (
 		<>
-			{account?.isAdmin && (
-				<Button
-					variant="ghost"
-					size="sm"
-					onClick={() => setView('landing')}
-					className="-ml-2 mb-2"
-				>
-					<ArrowLeftIcon className="size-4" />
-					Back to choice
-				</Button>
-			)}
+			<Header
+				variant={headerVariant}
+				title="Choose workspace"
+				description="Choose the workspace you want to enter from the top menu."
+				className="pb-4"
+				icon={
+					account?.isAdmin
+						? () => (
+								<Button
+									variant="ghost"
+									size="icon-lg"
+									onClick={() => setView('landing')}
+									tooltip="Back to choice"
+								>
+									<ChevronLeft className="size-4" />
+								</Button>
+							)
+						: undefined
+				}
+			/>
 			<div className="space-y-2">
 				<SelectList
 					items={data?.items}

@@ -62,9 +62,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		<Sidebar collapsible="offcanvas" {...props}>
 			<SidebarHeader>
 				<Banner />
-				{/* The workspace switcher — the nav's context entry point. Only
-					renders in the app sidebar: the admin surface is platform-level
-					and deliberately outside any workspace context. */}
+				{/* The workspace switcher — the nav's context entry point. Renders
+					only with an active workspace; the admin shell has its own
+					platform-level switcher (AdminSidebar). */}
 				{workspace && (
 					<>
 						<SidebarSeparator className="scale-y-50" />
@@ -88,11 +88,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 						<Dialog
 							open={switcherOpen}
 							onOpenChange={setSwitcherOpen}
-							title="Where do you want to enter?"
-							description="Choose where you'd like to get started. You can switch between Workspace and Admin anytime from the top menu."
 							contentClassName="sm:w-3/5 sm:max-w-none"
 						>
 							<WorkspaceSelect
+								headerVariant="default"
 								active={switcherOpen}
 								onSwitched={() => setSwitcherOpen(false)}
 							/>
