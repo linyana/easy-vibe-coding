@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRightIcon, PlusIcon } from 'lucide-react';
+import { PlusIcon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
@@ -9,6 +9,7 @@ import { Card, ErrorState } from '@/components';
 import { Button } from '@/components/ui/button';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 import { CreateWorkspaceDialog } from './CreateWorkspaceDialog';
+import { WorkspaceRow } from './WorkspaceRow';
 
 // Gate, not a route: an authenticated session without a workspace has no
 // workspace context yet — the picker replaces the whole app until the token
@@ -71,26 +72,11 @@ function WorkspacePicker() {
 						<ul className="space-y-2">
 							{data.items.map((workspace) => (
 								<li key={workspace.slug}>
-									<Button
-										variant="outline"
-										className="h-auto w-full justify-between px-4 py-3"
+									<WorkspaceRow
+										workspace={workspace}
 										disabled={switchMutation.isPending}
-										onClick={() =>
-											switchMutation.mutate(
-												workspace.slug,
-											)
-										}
-									>
-										<span className="min-w-0 text-left">
-											<span className="block truncate font-medium">
-												{workspace.name}
-											</span>
-											<span className="block truncate text-xs text-muted-foreground">
-												{workspace.slug}
-											</span>
-										</span>
-										<ArrowRightIcon className="size-4 shrink-0 text-muted-foreground" />
-									</Button>
+										onSelect={switchMutation.mutate}
+									/>
 								</li>
 							))}
 						</ul>

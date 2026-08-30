@@ -1,4 +1,5 @@
 import { API } from '@/libs/api';
+import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
 import { usePageHeader } from '@/hooks';
 import { Card, ErrorState } from '@/components';
@@ -16,8 +17,11 @@ const initials = (name: string) =>
 // The workspace's single surface: a read-only roster scoped by the token's
 // workspaceSlug claim (member management is a later step).
 export function MembersPage() {
+	const { workspace } = useGlobal();
 	const { data, error, refetch } = useAPIQuery({
-		queryKey: ['members'],
+		// Scoped by the workspace slug: an in-place switch (the header dialog)
+		// changes the key → a fresh fetch under the new token, no stale roster.
+		queryKey: ['members', workspace?.slug],
 		queryFn: () => API.members.get(),
 		toastError: false,
 	});
