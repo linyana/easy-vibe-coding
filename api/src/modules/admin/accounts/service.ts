@@ -2,16 +2,17 @@ import { and, eq, gte, ilike, inArray, lt, or, sql } from 'drizzle-orm';
 import type {
 	AccountCreate,
 	AccountListQuery,
+	AccountResetPassword,
 	AccountUpdate,
 } from '@easy-vibe-coding/shared';
-import { db } from '../../db/client';
-import { accounts, type Account } from '../../db/schema';
-import { isUniqueViolation } from '../../libs/dbError';
-import { normalizeEmail } from '../../libs/email';
-import { Errors } from '../../libs/error';
-import { escapeLikePattern } from '../../libs/like';
+import { db } from '../../../db/client';
+import { accounts, type Account } from '../../../db/schema';
+import { isUniqueViolation } from '../../../libs/dbError';
+import { normalizeEmail } from '../../../libs/email';
+import { Errors } from '../../../libs/error';
+import { escapeLikePattern } from '../../../libs/like';
 
-export const accountService = {
+export const adminAccountsService = {
 	// Duration windows (7/30 days before now), not calendar units — a duration
 	// needs no timezone, and the server never guesses one.
 	async stats() {
@@ -82,6 +83,7 @@ export const accountService = {
 					name: data.name,
 					email: normalizeEmail(data.email),
 					passwordHash,
+					isAdmin: data.isAdmin ?? false,
 				})
 				.returning();
 			return account!;
@@ -96,10 +98,17 @@ export const accountService = {
 	async update({
 		id,
 		data,
+		actorId,
 	}: {
 		id: number;
 		data: AccountUpdate;
+		actorId: number;
 	}): Promise<Account> {
+		// The last-admin boundary: an admin can revoke admin from others, but
+		// never from themselves — otherwise the platform can become admin-less.
+		if (id === actorId && data.isAdmin === false) {
+			throw Errors.badRequest('You cannot revoke your own admin access');
+		}
 		try {
 			// normalizeEmail on the partial: a no-op when email isn't in the patch.
 			const patch = data.email
@@ -121,7 +130,16 @@ export const accountService = {
 		}
 	},
 
-	async remove(id: number): Promise<{ success: true }> {
+	async remove({
+		id,
+		actorId,
+	}: {
+		id: number;
+		actorId: number;
+	}): Promise<{ success: true }> {
+		if (id === actorId) {
+			throw Errors.badRequest('You cannot delete your own account');
+		}
 		const deleted = await db
 			.delete(accounts)
 			.where(eq(accounts.id, id))
@@ -130,12 +148,44 @@ export const accountService = {
 		return { success: true };
 	},
 
-	async removeMany(ids: number[]): Promise<{ deleted: number }> {
-		// Batch semantics: missing ids are silently skipped (unlike single remove's notFound).
+	async removeMany({
+		ids,
+		actorId,
+	}: {
+		ids: number[];
+		actorId: number;
+	}): Promise<{ deleted: number }> {
+		// Batch semantics: missing ids are silently skipped (unlike single
+		// remove's notFound) — but the actor's own row is an explicit refusal,
+		// not a silent skip (a lower count than selected would be a surprise).
+		if (ids.includes(actorId)) {
+			throw Errors.badRequest('You cannot delete your own account');
+		}
 		const deleted = await db
 			.delete(accounts)
 			.where(inArray(accounts.id, ids))
 			.returning({ id: accounts.id });
 		return { deleted: deleted.length };
+	},
+
+	// Admin-only password reset — a targeted write with its own endpoint, so
+	// the generic PATCH never learns the password field.
+	async resetPassword({
+		id,
+		data,
+	}: {
+		id: number;
+		data: AccountResetPassword;
+	}): Promise<{ success: true }> {
+		const passwordHash = await Bun.password.hash(data.password);
+		const updated = await db
+			.update(accounts)
+			.set({ passwordHash })
+			.where(eq(accounts.id, id))
+			.returning({ id: accounts.id });
+		if (updated.length === 0) {
+			throw Errors.notFound('Account not found');
+		}
+		return { success: true };
 	},
 };

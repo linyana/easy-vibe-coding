@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ArrowRightIcon, PlusIcon } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
@@ -19,7 +20,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 }
 
 function WorkspacePicker() {
-	const { update } = useGlobal();
+	const { account, update } = useGlobal();
 	const [createOpen, setCreateOpen] = useState(false);
 
 	const workspaces = useAPIQuery({
@@ -39,7 +40,7 @@ function WorkspacePicker() {
 
 	return (
 		<div className="flex min-h-dvh items-center justify-center p-4 sm:p-6">
-			<div className="w-full max-w-md">
+			<div className="w-full max-w-md space-y-4">
 				<Card
 					title="Choose a workspace"
 					description="Your session is scoped to one workspace. Pick one to continue, or create a new one."
@@ -95,6 +96,21 @@ function WorkspacePicker() {
 						</ul>
 					)}
 				</Card>
+				{/* The admin entry lives here, not in the app sidebar: admin is
+					platform-level, orthogonal to any workspace context — the
+					picker is where an authenticated session chooses its context. */}
+				{account?.isAdmin && (
+					<Card
+						icon={{ name: 'ShieldCheck' }}
+						title="Admin console"
+						description="Platform management — accounts and workspaces."
+						actions={
+							<Button asChild>
+								<Link to="/admin">Open</Link>
+							</Button>
+						}
+					/>
+				)}
 				<CreateWorkspaceDialog
 					open={createOpen}
 					onOpenChange={setCreateOpen}

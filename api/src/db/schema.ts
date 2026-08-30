@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+	boolean,
 	customType,
 	integer,
 	pgTable,
@@ -29,6 +30,11 @@ export const accounts = pgTable('accounts', {
 	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
 	name: text('name').notNull(),
 	email: citext('email').notNull().unique(),
+	// Platform-level admin flag — the adminGuard re-reads it from the DB per
+	// request (the row, not the token, is the source of truth), so revoking
+	// admin takes effect immediately. Bootstrap: the first registered account
+	// is created with it set (auth service); everyone after is a regular user.
+	isAdmin: boolean('is_admin').notNull().default(false),
 	// NOT NULL holds because every creation path (register and the Accounts page)
 	// hashes an initial password (argon2id, same policy).
 	passwordHash: text('password_hash').notNull(),
@@ -72,7 +78,12 @@ export const workspaceMembers = pgTable(
 			.references(() => accounts.id, { onDelete: 'cascade' }),
 		// Role is server-written; the account that creates a workspace becomes
 		// its owner. Member-role semantics arrive with the members surface.
-		role: text('role').notNull().default('owner'),
+		// $type narrows the wire type to the contract's role union (owner/member)
+		// without a DB enum — text stays the storage type.
+		role: text('role')
+			.notNull()
+			.default('owner')
+			.$type<'owner' | 'member'>(),
 		createdAt: timestamptz('created_at')
 			.notNull()
 			.default(sql`now()`),

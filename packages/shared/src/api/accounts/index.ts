@@ -6,3 +6,4 @@ export * from './get';
 export * from './edit';
 export * from './delete';
 export * from './batch-delete';
+export * from './reset-password';

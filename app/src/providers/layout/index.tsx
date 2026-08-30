@@ -4,9 +4,14 @@ import { SiteHeader } from './Header';
 
 type IPropsType = {
 	children: React.ReactNode;
+	/**
+	 * Sidebar to render — defaults to the app sidebar (workspace surface).
+	 * The admin shell passes its own AdminSidebar (platform surface).
+	 */
+	sidebar?: React.ReactNode;
 };
 
-export const LayoutProvider = ({ children }: IPropsType) => {
+export const LayoutProvider = ({ children, sidebar }: IPropsType) => {
 	return (
 		<SidebarProvider
 			style={
@@ -16,7 +21,7 @@ export const LayoutProvider = ({ children }: IPropsType) => {
 				} as React.CSSProperties
 			}
 		>
-			<AppSidebar variant="inset" />
+			{sidebar ?? <AppSidebar variant="inset" />}
 			<SidebarInset>
 				<SiteHeader />
 				<div className="flex flex-1 flex-col">

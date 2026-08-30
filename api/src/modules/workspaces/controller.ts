@@ -7,6 +7,8 @@ import {
 import { workspaceService } from './service';
 import { authGuard } from '../../libs/guards';
 
+// User-facing workspace surface: the picker's membership list + creation.
+// The platform-level surface (/workspaces/admin*) lives in modules/admin/workspaces.
 export const workspacesController = new Elysia({
 	prefix: '/workspaces',
 	detail: {

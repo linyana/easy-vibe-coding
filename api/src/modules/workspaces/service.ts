@@ -5,6 +5,8 @@ import { workspaces, workspaceMembers } from '../../db/schema';
 import { isUniqueViolation } from '../../libs/dbError';
 import { Errors } from '../../libs/error';
 
+// User-facing workspace service — membership-scoped list + creation. The
+// platform-level operations live in modules/admin/workspaces.
 export const workspaceService = {
 	// The account's workspaces — via membership join, never a global list.
 	// Membership is the only scope; there is no "all workspaces" surface.

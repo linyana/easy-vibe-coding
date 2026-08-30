@@ -17,3 +17,9 @@ export const workspaceRefSchema = z.object({
 	name: z.string(),
 });
 export type WorkspaceRef = z.infer<typeof workspaceRefSchema>;
+
+// Path params for workspace-scoped admin routes (edit / delete / members).
+export const workspaceIdParamsSchema = z.object({
+	id: z.coerce.number().int(),
+});
+export type WorkspaceIdParams = z.infer<typeof workspaceIdParamsSchema>;

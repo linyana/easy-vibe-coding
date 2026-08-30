@@ -25,7 +25,7 @@ accounts 是唯一 canonical 模块，本 skill 是它的完整流水线。**先
 
 | 形式       | 例子            | 用在哪                                                                       |
 | ---------- | --------------- | ---------------------------------------------------------------------------- |
-| `products` | 复数小写        | 表名、`api/src/modules/` 文件夹、路由路径、`packages/shared/src/api/` 文件夹 |
+| `products` | 复数小写        | 表名、`api/src/modules/` 文件夹（admin 作用域的 feature 用 `api/src/modules/admin/`）、路由路径、`packages/shared/src/api/` 文件夹 |
 | `product`  | 单数小写        | schema 命名前缀（`productResponseSchema`）、service 方法内变量               |
 | `Product`  | PascalCase 单数 | 实体类型名                                                                   |
 | `Products` | PascalCase 复数 | controller 导出名、openapi `tags`、页面组件名、`pages/` 文件夹名             |
