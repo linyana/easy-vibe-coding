@@ -9,7 +9,7 @@ A full-stack starter engineered for AI-assisted development ("vibe coding") — 
 ## How it works
 
 1. **You describe the feature.** In plain language. No architecture decisions required.
-2. **The AI implements it end-to-end.** It copies the repo's canonical example (users CRUD: list + search + pagination + create/edit/delete) and adapts it. It does not invent new structure.
+2. **The AI implements it end-to-end.** It copies the repo's canonical example (accounts CRUD: list + search + pagination + create/edit/delete) and adapts it. It does not invent new structure.
 3. **You review only the feature code.** The infrastructure is used, never rewritten. Every line you review is a line the AI wrote for _your_ feature.
 
 ## Why it works
@@ -32,13 +32,13 @@ A full-stack starter engineered for AI-assisted development ("vibe coding") — 
 - Unified error pipeline: `Errors` → single `onError` → `{ code, message, fields }`
 - Wire-truth response schemas (zod, validated by Elysia, types derived by Eden); timestamps are RFC 3339 UTC strings declared once at the DB column level — no per-query conversion layer
 - Centralized ENV (lint-enforced)
-- `users` CRUD (list w/ search + pagination, get, create, patch, delete, batch-delete) — the canonical feature module, verified against a live Postgres
+- `accounts` CRUD (list w/ search + pagination, get, create, patch, delete, batch-delete) — the canonical feature module, verified against a live Postgres
 
 **App template (done)** — React 19 + Vite 8 + shadcn/ui + Tailwind 4 + TanStack Router/Query + zustand
 
 - Shared hooks: `useAPIQuery` (reads) / `useAPIList` (paginated lists) / `useAPIMutation` (writes) / `useForm` (edit-create forms)
 - List filters live in component state (URL stays clean); Eden Treaty client with wire-truth responses (`parseDate: false`)
-- Users page (table + search + pagination + create/edit/delete/batch-delete dialogs) — the canonical feature page
+- Accounts page (table + search + pagination + create/edit/delete/batch-delete dialogs) — the canonical feature page
 
 ## Quick start
 

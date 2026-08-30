@@ -75,7 +75,7 @@ controller 端点（新模块见 scaffold.md，已有模块照此追加）：
 .patch('/:id', ({ params, body }) => productService.update({ id: params.id, data: body }), { params: productIdParamsSchema, body: productUpdateSchema, response: productResponseSchema })
 ```
 
-> **import 维护**：端点多了，controller 顶部从 `@easy-vibe-coding/shared` 的 import 要同步补（users controller 的 import 列表就是全量清单）——新增端点 = 补 import + 一行接线 + 资源 `index.ts` 一行 re-export。
+> **import 维护**：端点多了，controller 顶部从 `@easy-vibe-coding/shared` 的 import 要同步补（accounts controller 的 import 列表就是全量清单）——新增端点 = 补 import + 一行接线 + 资源 `index.ts` 一行 re-export。
 
 service 要点：
 

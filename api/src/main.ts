@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysia/openapi';
-import { usersController } from './modules/users/controller';
+import { accountsController } from './modules/accounts/controller';
 import { authController } from './modules/auth/controller';
 import { ENV } from './env';
 import { normalizeError } from './libs/error';
@@ -21,9 +21,9 @@ export const app = new Elysia({ prefix: '/api' })
 				},
 				tags: [
 					{
-						name: 'Users',
+						name: 'Accounts',
 						description:
-							'User management — the canonical CRUD module.',
+							'Account management — the canonical CRUD module.',
 					},
 					{
 						name: 'Auth',
@@ -39,7 +39,7 @@ export const app = new Elysia({ prefix: '/api' })
 		set.status = status;
 		return body;
 	})
-	.use(usersController)
+	.use(accountsController)
 	.use(authController);
 
 export type App = typeof app;

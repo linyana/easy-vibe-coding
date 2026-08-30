@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { userResponseSchema } from '../../users/shared';
+import { accountResponseSchema } from '../../accounts/shared';
 
 // The password policy — enforced wherever a password is created; login only checks presence.
 export const passwordFieldSchema = z
@@ -9,6 +9,6 @@ export const passwordFieldSchema = z
 
 export const authResponseSchema = z.object({
 	token: z.string(),
-	user: userResponseSchema,
+	account: accountResponseSchema,
 });
 export type AuthResponse = z.infer<typeof authResponseSchema>;

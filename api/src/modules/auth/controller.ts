@@ -3,7 +3,7 @@ import {
 	authLoginSchema,
 	authRegisterSchema,
 	authResponseSchema,
-	userResponseSchema,
+	accountResponseSchema,
 } from '@easy-vibe-coding/shared';
 import { authService } from './service';
 import { authGuard } from '../../libs/guards';
@@ -58,7 +58,7 @@ export const authController = new Elysia({
 			response: authResponseSchema,
 		},
 	)
-	.get('/me', ({ auth }) => authService.me(auth.userId), {
+	.get('/me', ({ auth }) => authService.me(auth.accountId), {
 		auth: true,
-		response: userResponseSchema,
+		response: accountResponseSchema,
 	});

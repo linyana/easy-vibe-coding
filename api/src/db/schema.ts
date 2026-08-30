@@ -19,11 +19,11 @@ const citext = customType<{ data: string; driverData: string }>({
 	toDriver: (value: string) => value,
 });
 
-export const users = pgTable('users', {
+export const accounts = pgTable('accounts', {
 	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
 	name: text('name').notNull(),
 	email: citext('email').notNull().unique(),
-	// NOT NULL holds because every creation path (register and the Users page)
+	// NOT NULL holds because every creation path (register and the Accounts page)
 	// hashes an initial password (argon2id, same policy).
 	passwordHash: text('password_hash').notNull(),
 	createdAt: timestamptz('created_at')
@@ -35,5 +35,5 @@ export const users = pgTable('users', {
 		.$onUpdate(() => new Date().toISOString()),
 });
 
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
+export type Account = typeof accounts.$inferSelect;
+export type NewAccount = typeof accounts.$inferInsert;

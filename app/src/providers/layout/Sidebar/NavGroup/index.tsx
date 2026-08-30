@@ -38,7 +38,7 @@ export function NavGroup({
 									<Link
 										to={item.to}
 										// 首页索引路由精确匹配；其他路由按路径前缀匹配，
-										// 未来加子路由（/users/:id）时父条目仍保持高亮。
+										// 未来加子路由（/accounts/:id）时父条目仍保持高亮。
 										activeOptions={{
 											exact: item.to === '/',
 											includeSearch: false,

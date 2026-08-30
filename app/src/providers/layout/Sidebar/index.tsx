@@ -18,7 +18,7 @@ import {
 	SidebarHeader,
 } from '@/components/ui/sidebar';
 import { NavGroup, type NavItem } from './NavGroup';
-import { NavUser } from './User';
+import { NavAccount } from './Account';
 import { Banner } from './Banner';
 
 // Nav 词汇表。`to` 由生成的 route tree 类型校验（FileRoutesByTo）：nav 只能指向
@@ -26,7 +26,7 @@ import { Banner } from './Banner';
 // 页面建好后补上 `to` 即变真链接——路径写错会在 `bun run check` 直接报错。
 const navMain: NavItem[] = [
 	{ title: 'Dashboard', to: '/', icon: LayoutDashboard },
-	{ title: 'Users', to: '/users', icon: Users },
+	{ title: 'Accounts', to: '/accounts', icon: Users },
 	// 预留（页面还没建）：
 	{ title: 'Lifecycle', icon: ListTodo },
 	{ title: 'Analytics', icon: ChartBar },
@@ -59,7 +59,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<NavGroup className="mt-auto" items={navSecondary} />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser />
+				<NavAccount />
 			</SidebarFooter>
 		</Sidebar>
 	);

@@ -1,3 +1,3 @@
-import type { UserResponse } from '../../users/shared';
+import type { AccountResponse } from '../../accounts/shared';
 
-export type GetMeResponse = UserResponse;
+export type GetMeResponse = AccountResponse;

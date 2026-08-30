@@ -3,22 +3,22 @@ import type {
 	AuthLogin,
 	AuthRegister,
 	AuthResponse,
-	UserResponse,
+	AccountResponse,
 } from '@easy-vibe-coding/shared';
 import { db } from '../../db/client';
-import { users, type User } from '../../db/schema';
+import { accounts, type Account } from '../../db/schema';
 import { signAuthToken } from '../../libs/auth';
 import { isUniqueViolation } from '../../libs/dbError';
 import { normalizeEmail } from '../../libs/email';
 import { Errors } from '../../libs/error';
 
-// Explicitly picked so passwordHash never crosses the wire (matches userResponseSchema).
-const pickUser = (user: User): UserResponse => ({
-	id: user.id,
-	name: user.name,
-	email: user.email,
-	createdAt: user.createdAt,
-	updatedAt: user.updatedAt,
+// Explicitly picked so passwordHash never crosses the wire (matches accountResponseSchema).
+const pickAccount = (account: Account): AccountResponse => ({
+	id: account.id,
+	name: account.name,
+	email: account.email,
+	createdAt: account.createdAt,
+	updatedAt: account.updatedAt,
 });
 
 // citext makes eq case-insensitive (same semantics as the unique constraint);
@@ -27,8 +27,8 @@ export const authService = {
 	async register(data: AuthRegister): Promise<AuthResponse> {
 		const email = normalizeEmail(data.email);
 
-		const existing = await db.query.users.findFirst({
-			where: eq(users.email, email),
+		const existing = await db.query.accounts.findFirst({
+			where: eq(accounts.email, email),
 			columns: { id: true },
 		});
 		if (existing) throw Errors.conflict('This email is already registered');
@@ -38,11 +38,11 @@ export const authService = {
 
 		try {
 			const [row] = await db
-				.insert(users)
+				.insert(accounts)
 				.values({ name: data.name, email, passwordHash })
 				.returning();
-			const user = pickUser(row!);
-			return { token: await signAuthToken(user), user };
+			const account = pickAccount(row!);
+			return { token: await signAuthToken(account), account };
 		} catch (error) {
 			if (isUniqueViolation(error)) {
 				throw Errors.conflict('This email is already registered');
@@ -53,33 +53,36 @@ export const authService = {
 
 	async login(data: AuthLogin): Promise<AuthResponse> {
 		const email = normalizeEmail(data.email);
-		const user = await db.query.users.findFirst({
-			where: eq(users.email, email),
+		const account = await db.query.accounts.findFirst({
+			where: eq(accounts.email, email),
 		});
 
 		// One message for every failure — never reveal whether the email exists.
-		// Users without a password hash fail the same way.
+		// Accounts without a password hash fail the same way.
 		const invalid = () => Errors.unauthorized('Invalid email or password');
 
-		if (!user || !user.passwordHash) throw invalid();
+		if (!account || !account.passwordHash) throw invalid();
 		const matches = await Bun.password.verify(
 			data.password,
-			user.passwordHash,
+			account.passwordHash,
 		);
 		if (!matches) throw invalid();
 
-		const publicUser = pickUser(user);
-		return { token: await signAuthToken(publicUser), user: publicUser };
+		const publicAccount = pickAccount(account);
+		return {
+			token: await signAuthToken(publicAccount),
+			account: publicAccount,
+		};
 	},
 
 	// Guard already verified the token; re-read the row so renames apply immediately.
-	async me(userId: number): Promise<UserResponse> {
-		const user = await db.query.users.findFirst({
-			where: eq(users.id, userId),
+	async me(accountId: number): Promise<AccountResponse> {
+		const account = await db.query.accounts.findFirst({
+			where: eq(accounts.id, accountId),
 		});
-		if (!user) {
+		if (!account) {
 			throw Errors.unauthorized('This account no longer exists');
 		}
-		return pickUser(user);
+		return pickAccount(account);
 	},
 };

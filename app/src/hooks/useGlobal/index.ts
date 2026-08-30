@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { UserResponse } from '@easy-vibe-coding/shared';
+import type { AccountResponse } from '@easy-vibe-coding/shared';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
-// The shared contract's user wire shape — imported here to keep the session
+// The shared contract's account wire shape — imported here to keep the session
 // store free of a type-level cycle with libs/api.
-type SessionUser = UserResponse;
+type SessionAccount = AccountResponse;
 
 /** The store's data fields (what persist may write; update/reset are verbs, not data). */
 interface GlobalStateData {
@@ -14,7 +14,7 @@ interface GlobalStateData {
 	/** JWT bearer token — persisted across reloads (the user refetches from /auth/me on boot). */
 	token: string | null;
 	/** Memory-only: set from login/register/me. */
-	user: SessionUser | null;
+	account: SessionAccount | null;
 }
 
 export interface GlobalState extends GlobalStateData {
@@ -27,7 +27,7 @@ export interface GlobalState extends GlobalStateData {
 const initData: GlobalStateData = {
 	themeMode: 'system',
 	token: null,
-	user: null,
+	account: null,
 };
 
 // Global client state (theme + auth). Accessible outside React via
@@ -45,8 +45,8 @@ export const useGlobal = create<GlobalState>()(
 		}),
 		{
 			name: 'easy-vibe-global',
-			// Persist theme + token only — a persisted stale user would lie
-			// about the session (the user refetches from /auth/me on boot).
+			// Persist theme + token only — a persisted stale account would lie
+			// about the session (me refetches it on boot).
 			partialize: (state) => ({
 				themeMode: state.themeMode,
 				token: state.token,

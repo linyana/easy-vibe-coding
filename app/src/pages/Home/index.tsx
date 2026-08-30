@@ -64,8 +64,8 @@ function StatSkeleton() {
 
 function HomePage() {
 	const stats = useAPIQuery({
-		queryKey: ['users', 'stats'],
-		queryFn: () => API.users.stats.get(),
+		queryKey: ['accounts', 'stats'],
+		queryFn: () => API.accounts.stats.get(),
 	});
 
 	usePageHeader({
@@ -90,7 +90,7 @@ function HomePage() {
 				<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					<StatCard
 						icon={<UsersIcon className="size-5" />}
-						label="Total users"
+						label="Total accounts"
 						value={data.total}
 						helper="All registered accounts"
 						footer={
@@ -100,8 +100,8 @@ function HomePage() {
 								size="sm"
 								className="w-full justify-between rounded-none"
 							>
-								<Link to="/users">
-									Manage users
+								<Link to="/accounts">
+									Manage accounts
 									<ArrowRightIcon className="size-4" />
 								</Link>
 							</Button>

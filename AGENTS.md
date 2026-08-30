@@ -34,7 +34,7 @@
 
 ## 新增一个 feature 的标准工作流
 
-> 参照范例：`users`（唯一 canonical 模块）。**深度细节、可复制代码、边界条件都在 skills 里**（见文末 Skills 表）——动手前先加载对应 skill，本文档只给骨架。**任何 feature 工作只加载一个 `feature` skill**（渐进式披露）：先读它的 patterns 参考文件，再按 SKILL.md 里的路由表读当前步骤对应的文件（新资源 → scaffold）。
+> 参照范例：`accounts`（唯一 canonical 模块）。**深度细节、可复制代码、边界条件都在 skills 里**（见文末 Skills 表）——动手前先加载对应 skill，本文档只给骨架。**任何 feature 工作只加载一个 `feature` skill**（渐进式披露）：先读它的 patterns 参考文件，再按 SKILL.md 里的路由表读当前步骤对应的文件（新资源 → scaffold）。
 
 ```text
 1. 契约层  packages/shared/src/api/<resource>/<endpoint>/   每端点一文件夹一 index.ts（请求+响应 zod schema）
@@ -89,7 +89,7 @@ app/src/
 ### API 侧（`api/src`）
 
 - **controller**：Elysia instance + `prefix` + `detail.tags`，每端点一行，schema 全来自 shared。
-- **service**：object 字面量 + async 方法；业务错误抛 `Errors.notFound('User not found')` 等（每个抛出点写具体、面向用户的消息）。
+- **service**：object 字面量 + async 方法；业务错误抛 `Errors.notFound('Account not found')` 等（每个抛出点写具体、面向用户的消息）。
 - **错误管线**（`libs/error` + `main.ts` 的 `onError`）：`ApiError` 原样归一化；Elysia `ValidationError` → 422 `VALIDATION` + fields；路由 miss → 404；其余 → 500 `INTERNAL`（堆栈记录，内部细节永不泄露）。**业务代码永不抛带自定义消息的 `INTERNAL`。**
 - **数据库错误**：`isUniqueViolation`（`libs/dbError`）沿 cause 链找 PG 23505，唯一冲突转 `Errors.conflict`。
 - **数据层**（`db/schema.ts`）：单一事实源、无 app import（drizzle-kit 独立加载）；时间戳在列声明层定为 RFC 3339 UTC 字符串（`timestamptz` customType），无 per-query 转换层。
@@ -139,7 +139,7 @@ cd api && bun run db:studio    # 检查 DB
 ## Auth
 
 - **机制**：JWT bearer（jose，HS256，7 天），密码 argon2id（`Bun.password`，零依赖）。token 存 `useGlobal`（persist），`libs/api` 的 `headers` 钩子逐请求注入，`onResponse` 全局拦截 401 → `clearSession`。
-- **服务端守卫**（`api/src/libs/guards`）：纯 jose 原语（`libs/auth`）之上的 Elysia 适配层——`macro('auth')` 把 `.guard({ auth: true })`（或路由级 `{ auth: true }`）变成“先验 bearer token，不过 401”，并把已验证身份注入 handler 为 `{ auth: { userId } }`。token 只含 `sub`（user id）；DB 行是事实源，需要用户形状处（`/me`）才重查。**新模块加一行 `.use(authGuard).guard({ auth: true })` 即受保护。**
-- **API**：`/api/auth/register`（建号即登录）· `/api/auth/login`（大小写不敏感匹配邮箱，错误统一 401 "Invalid email or password" 不泄露邮箱）· `/api/auth/me`（guard 解析 userId → 服务重查当前用户行）。`users` 模块整块在 guard 后。契约在 `packages/shared/src/api/auth/`，密码字段规则复用 users 的 `userFieldSchemas`。
+- **服务端守卫**（`api/src/libs/guards`）：纯 jose 原语（`libs/auth`）之上的 Elysia 适配层——`macro('auth')` 把 `.guard({ auth: true })`（或路由级 `{ auth: true }`）变成“先验 bearer token，不过 401”，并把已验证身份注入 handler 为 `{ auth: { accountId } }`。token 携带显式 `accountId` claim（`sub` 镜像同一 id）；DB 行是事实源，需要账号形状处（`/me`）才重查。**新模块加一行 `.use(authGuard).guard({ auth: true })` 即受保护。**
+- **API**：`/api/auth/register`（建号即登录）· `/api/auth/login`（大小写不敏感匹配邮箱，错误统一 401 "Invalid email or password" 不泄露邮箱）· `/api/auth/me`（guard 解析 accountId → 服务重查当前账号行）。`accounts` 模块整块在 guard 后。契约在 `packages/shared/src/api/auth/`，密码字段规则复用 accounts 的 `accountFieldSchemas`。
 - **路由**：应用壳是 pathless layout `/_app`（`beforeLoad` 同步 token 守卫 + 组件内 `useSession` 校验 me，loading/error/unauthenticated 三分支）；`/login` `/register` 在壳外，读 `redirect` search 参数（登录后回跳，`safeRedirect` 防开放重定向）。
 - **边界**：登出纯客户端（JWT 无状态）。Elysia 先校验 body 再跑 guard（未带 token 但 body 非法 → 422 而非 401）。

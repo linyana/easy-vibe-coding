@@ -31,7 +31,7 @@ export const productListQuerySchema = z.object({
 	page: z.coerce.number().int().min(1).catch(1).default(1),
 	pageSize: z.coerce.number().int().min(1).max(100).catch(10).default(10),
 	search: z.string().max(100).optional().catch(undefined),
-	// 需要日期过滤时（照抄 users 的 createdFrom/createdTo 写法）：
+	// 需要日期过滤时（照抄 accounts 的 createdFrom/createdTo 写法）：
 	// createdFrom: z.iso.datetime().optional().catch(undefined),
 	// createdTo: z.iso.datetime().optional().catch(undefined),
 });
@@ -47,7 +47,7 @@ export type ProductListResponse = z.infer<typeof productListResponseSchema>;
 
 规则：
 
-- **搜索字段名统一 `search`**（沿用 users 的先例）。
+- **搜索字段名统一 `search`**（沿用 accounts 的先例）。
 - **日期过滤是 HALF-OPEN `[from, to)`**（语义见 patterns.md）：两个界都是 RFC 3339 UTC 瞬时；客户端负责把本地日转成瞬时（`createdFrom` = 所选本地日的凌晨，`createdTo` = 所选日**之后**那个凌晨——排他上界，服务端 `lt` 比较）。服务端永不猜时区。
 - 在 `packages/shared/src/api/products/index.ts` 追加一行 `export * from './list';`。
 
@@ -65,11 +65,11 @@ controller（在已有模块里追加一行；新模块见 scaffold.md）：
 service 的 `list()`——**count + items 两个查询**，条件用 `and(...)` 拼（每个条件本身可 undefined）：
 
 ```ts
-import { and, gte, ilike, lt, sql } from 'drizzle-orm'; // 本方法用到的操作符;其余见 users service 顶部全量 import
+import { and, gte, ilike, lt, sql } from 'drizzle-orm'; // 本方法用到的操作符;其余见 accounts service 顶部全量 import
 
 async list({ page, pageSize, search, createdFrom, createdTo }: ProductListQuery) {
 	const keyword = search?.trim();
-	// 搜索字段 = 你的资源的文本列（users 搜 name+email；Product 只搜 name）。
+	// 搜索字段 = 你的资源的文本列（accounts 搜 name+email；Product 只搜 name）。
 	// 结构照抄、字段是资源专属——别给没有 email 的资源搜 email。
 	// HALF-OPEN [createdFrom, createdTo): 下界 gte、上界 lt（客户端发的是所选 "to" 日之后那个凌晨）。
 	const where = and(
