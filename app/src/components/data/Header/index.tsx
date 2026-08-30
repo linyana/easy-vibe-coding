@@ -18,6 +18,8 @@ export interface HeaderProps {
 	 * title + text-sm title + text-xs description, truncating. 'default' is
 	 * the page/dialog header with an icon box. */
 	variant?: 'default' | 'profile';
+	/** Optional className to apply to the header. */
+	className?: string;
 }
 
 /** The header's content props — the icon/title/description subset dialogs
@@ -31,6 +33,7 @@ export function Header({
 	icon,
 	title,
 	description,
+	className,
 	variant = 'default',
 }: HeaderProps) {
 	const Icon = icon ? getIcon(icon.name) : null;
@@ -47,6 +50,7 @@ export function Header({
 			className={cn(
 				'flex items-center gap-3',
 				profile && 'min-w-0 flex-1 text-left',
+				className,
 			)}
 		>
 			{profile ? (

@@ -1,5 +1,4 @@
 import { useGlobal } from '@/hooks/useGlobal';
-import { Card } from '@/components';
 import { WorkspaceSelect } from './Select';
 
 // Gate, not a route: an authenticated session without a workspace has no
@@ -15,13 +14,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 function WorkspacePicker() {
 	return (
 		<div className="flex min-h-dvh items-center justify-center p-4 sm:p-6">
-			<div className="w-full max-w-md">
-				<Card
-					title="Choose a workspace"
-					description="Your session is scoped to one workspace. Pick one to continue, or create a new one."
-				>
-					<WorkspaceSelect active />
-				</Card>
+			<div className="w-full sm:w-3/5">
+				<WorkspaceSelect active />
 			</div>
 		</div>
 	);

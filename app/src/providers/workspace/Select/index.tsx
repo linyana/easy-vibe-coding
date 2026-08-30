@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { PlusIcon } from 'lucide-react';
+import { BriefcaseBusiness, PlusIcon, UserStar } from 'lucide-react';
 import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
 import { useAPIMutation } from '@/hooks/useAPIMutation';
 import { Button } from '@/components/ui/button';
-import { Dialog, ErrorState } from '@/components';
+import { Card, Dialog, ErrorState, Header } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 import type { WorkspaceResponse } from '@easy-vibe-coding/shared';
 import type { UseAPIError } from '@/libs/error';
@@ -71,6 +71,44 @@ export function WorkspaceSelect({
 
 	const { data, error, refetch } = workspaces;
 
+	if (account?.isAdmin) {
+		return (
+			<>
+				<Header
+					title="Where do you want to go?"
+					description="Choose where you'd like to get started. You can switch between Workspace and Admin anytime from the top menu.."
+					className="pb-8"
+				/>
+				<div className="flex justify-between gap-8">
+					<Card>
+						<div className="flex flex-col justify-center gap-6">
+							<BriefcaseBusiness className="size-6" />
+							<Header
+								title="Enter Workspace"
+								description="View the latest activities of the project, team members and work area"
+							/>
+							<p className="text-sm text-muted-foreground">
+								3 Workspaces available
+							</p>
+						</div>
+					</Card>
+					<Card>
+						<div className="flex flex-col justify-center gap-6">
+							<UserStar className="size-6" />
+							<Header
+								title="Enter Admin"
+								description="Management platform users, workspace, permission policies and system settings"
+							/>
+							<p className="text-sm text-muted-foreground">
+								Administrator privileges · platform level
+							</p>
+						</div>
+					</Card>
+				</div>
+			</>
+		);
+	}
+
 	return (
 		<>
 			<div className="space-y-2">
@@ -92,11 +130,6 @@ export function WorkspaceSelect({
 					Create workspace
 				</Button>
 			</div>
-			{account?.isAdmin && (
-				<div className="mt-4 border-t pt-4">
-					<AdminConsoleEntry />
-				</div>
-			)}
 			<CreateWorkspaceDialog
 				open={createOpen}
 				onOpenChange={setCreateOpen}
