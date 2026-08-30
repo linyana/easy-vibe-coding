@@ -1,17 +1,23 @@
 import { useState } from 'react';
-import { BriefcaseBusiness, PlusIcon, UserStar } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import {
+	ArrowLeftIcon,
+	ArrowRightIcon,
+	BriefcaseBusiness,
+	PlusIcon,
+	UserStar,
+} from 'lucide-react';
 import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
 import { useAPIMutation } from '@/hooks/useAPIMutation';
 import { Button } from '@/components/ui/button';
-import { Card, Dialog, ErrorState, Header } from '@/components';
+import { Card, Dialog, ErrorState, Header, MediaIcon } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 import type { WorkspaceResponse } from '@easy-vibe-coding/shared';
 import type { UseAPIError } from '@/libs/error';
 import { WorkspaceRow } from '../Row';
 import { CreateWorkspaceDialog } from '../Create';
-import { AdminConsoleEntry } from '../Admin';
 
 // The nav's on-demand counterpart of the picker gate: the same selection flow
 // in a dialog. The flow fetches on open (`active={open}`) — page entry stays quiet.
@@ -28,6 +34,7 @@ export function WorkspaceSelectDialog({
 			onOpenChange={onOpenChange}
 			title="Switch workspace"
 			description="Your session moves to the selected workspace."
+			contentClassName="sm:w-3/5 sm:max-w-none"
 		>
 			<WorkspaceSelect
 				active={open}
@@ -50,7 +57,9 @@ export function WorkspaceSelect({
 	onSwitched?: () => void;
 }) {
 	const { workspace, account, update } = useGlobal();
+	const navigate = useNavigate();
 	const [createOpen, setCreateOpen] = useState(false);
+	const [view, setView] = useState<'landing' | 'list'>('landing');
 
 	const workspaces = useAPIQuery({
 		queryKey: ['workspaces'],
@@ -71,30 +80,49 @@ export function WorkspaceSelect({
 
 	const { data, error, refetch } = workspaces;
 
-	if (account?.isAdmin) {
+	if (account?.isAdmin && view === 'landing') {
 		return (
 			<>
 				<Header
-					title="Where do you want to go?"
-					description="Choose where you'd like to get started. You can switch between Workspace and Admin anytime from the top menu.."
-					className="pb-8"
+					variant="page"
+					title="Where do you want to enter?"
+					description="Choose where you'd like to get started. You can switch between Workspace and Admin anytime from the top menu."
+					className="pb-4"
 				/>
 				<div className="flex justify-between gap-8">
-					<Card>
-						<div className="flex flex-col justify-center gap-6">
-							<BriefcaseBusiness className="size-6" />
+					<Card
+						hoverable
+						onClick={() => setView('list')}
+						className="flex-1"
+					>
+						<div className="relative flex flex-col justify-center gap-6">
+							<ArrowRightIcon className="absolute top-0 right-0 size-5 text-muted-foreground" />
+							<MediaIcon>
+								<BriefcaseBusiness className="size-6" />
+							</MediaIcon>
 							<Header
 								title="Enter Workspace"
 								description="View the latest activities of the project, team members and work area"
 							/>
-							<p className="text-sm text-muted-foreground">
-								3 Workspaces available
-							</p>
+							<div className="flex items-center gap-2">
+								<WorkspaceAvatarStack items={data?.items} />
+								<p className="text-sm text-muted-foreground">
+									{data?.items?.length ?? '…'} Workspaces
+									available
+								</p>
+							</div>
 						</div>
 					</Card>
-					<Card>
-						<div className="flex flex-col justify-center gap-6">
-							<UserStar className="size-6" />
+					<Card
+						hoverable
+						onClick={() => void navigate({ to: '/admin' })}
+						className="flex-1"
+					>
+						<div className="relative flex flex-col justify-center gap-6">
+							<ArrowRightIcon className="absolute top-0 right-0 size-5 text-muted-foreground" />
+							<MediaIcon>
+								<UserStar className="size-6" />
+							</MediaIcon>
 							<Header
 								title="Enter Admin"
 								description="Management platform users, workspace, permission policies and system settings"
@@ -111,6 +139,17 @@ export function WorkspaceSelect({
 
 	return (
 		<>
+			{account?.isAdmin && (
+				<Button
+					variant="ghost"
+					size="sm"
+					onClick={() => setView('landing')}
+					className="-ml-2 mb-2"
+				>
+					<ArrowLeftIcon className="size-4" />
+					Back to choice
+				</Button>
+			)}
 			<div className="space-y-2">
 				<SelectList
 					items={data?.items}
@@ -136,6 +175,31 @@ export function WorkspaceSelect({
 				onCreated={switchMutation.mutate}
 			/>
 		</>
+	);
+}
+
+// The Enter Workspace card's count line — a stack of overlapping initial
+// circles (first letters), collapsing beyond two into a single "+N" circle.
+function WorkspaceAvatarStack({ items }: { items?: WorkspaceResponse[] }) {
+	if (!items?.length) return null;
+	const shown = items.slice(0, 2);
+	const rest = items.length - shown.length;
+	return (
+		<div className="flex -space-x-1.5">
+			{shown.map((workspace) => (
+				<span
+					key={workspace.slug}
+					className="flex size-5 items-center justify-center rounded-full bg-foreground text-[10px] font-medium text-background ring-2 ring-card"
+				>
+					{workspace.name.charAt(0).toUpperCase()}
+				</span>
+			))}
+			{rest > 0 && (
+				<span className="flex size-5 items-center justify-center rounded-full bg-foreground text-[10px] font-medium text-background ring-2 ring-card">
+					+{rest}
+				</span>
+			)}
+		</div>
 	);
 }
 
