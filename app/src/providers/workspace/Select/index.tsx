@@ -12,37 +12,12 @@ import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
 import { useAPIMutation } from '@/hooks/useAPIMutation';
 import { Button } from '@/components/ui/button';
-import { Card, Dialog, ErrorState, Header, MediaIcon } from '@/components';
+import { Card, ErrorState, Header, MediaIcon } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 import type { WorkspaceResponse } from '@easy-vibe-coding/shared';
 import type { UseAPIError } from '@/libs/error';
 import { WorkspaceRow } from '../Row';
 import { CreateWorkspaceDialog } from '../Create';
-
-// The nav's on-demand counterpart of the picker gate: the same selection flow
-// in a dialog. The flow fetches on open (`active={open}`) — page entry stays quiet.
-export function WorkspaceSelectDialog({
-	open,
-	onOpenChange,
-}: {
-	open: boolean;
-	onOpenChange: (open: boolean) => void;
-}) {
-	return (
-		<Dialog
-			open={open}
-			onOpenChange={onOpenChange}
-			title="Switch workspace"
-			description="Your session moves to the selected workspace."
-			contentClassName="sm:w-3/5 sm:max-w-none"
-		>
-			<WorkspaceSelect
-				active={open}
-				onSwitched={() => onOpenChange(false)}
-			/>
-		</Dialog>
-	);
-}
 
 // The one workspace-selection flow, shared by the picker gate (embedded in a
 // Card) and the nav dialog above. The query runs only while `active` — the
@@ -83,12 +58,6 @@ export function WorkspaceSelect({
 	if (account?.isAdmin && view === 'landing') {
 		return (
 			<>
-				<Header
-					variant="page"
-					title="Where do you want to enter?"
-					description="Choose where you'd like to get started. You can switch between Workspace and Admin anytime from the top menu."
-					className="pb-4"
-				/>
 				<div className="flex justify-between gap-8">
 					<Card
 						hoverable

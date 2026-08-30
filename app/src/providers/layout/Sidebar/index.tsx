@@ -27,7 +27,8 @@ import { NavGroup, type NavItem } from './NavGroup';
 import { NavAccount } from './Account';
 import { Banner } from './Banner';
 import { useGlobal } from '@/hooks/useGlobal';
-import { WorkspaceSelectDialog } from '@/providers/workspace/Select';
+import { WorkspaceSelect } from '@/providers/workspace/Select';
+import { Dialog } from '@/components';
 
 // Nav 词汇表。`to` 由生成的 route tree 类型校验（FileRoutesByTo）：nav 只能指向
 // 真实存在的路由。`to` 缺省 = 占位项（页面还没建），渲染为禁用的占位按钮；
@@ -84,10 +85,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						</SidebarMenu>
-						<WorkspaceSelectDialog
+						<Dialog
 							open={switcherOpen}
 							onOpenChange={setSwitcherOpen}
-						/>
+							title="Where do you want to enter?"
+							description="Choose where you'd like to get started. You can switch between Workspace and Admin anytime from the top menu."
+							contentClassName="sm:w-3/5 sm:max-w-none"
+						>
+							<WorkspaceSelect
+								active={switcherOpen}
+								onSwitched={() => setSwitcherOpen(false)}
+							/>
+						</Dialog>
 					</>
 				)}
 			</SidebarHeader>
