@@ -27,7 +27,7 @@ import { NavGroup, type NavItem } from './NavGroup';
 import { NavAccount } from './Account';
 import { Banner } from './Banner';
 import { useGlobal } from '@/hooks/useGlobal';
-import { SwitchWorkspaceDialog } from '@/providers/workspace/SwitchWorkspaceDialog';
+import { WorkspaceSelectDialog } from '@/providers/workspace/Select';
 
 // Nav 词汇表。`to` 由生成的 route tree 类型校验（FileRoutesByTo）：nav 只能指向
 // 真实存在的路由。`to` 缺省 = 占位项（页面还没建），渲染为禁用的占位按钮；
@@ -84,8 +84,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						</SidebarMenu>
-						<SidebarSeparator className="scale-y-50" />
-						<SwitchWorkspaceDialog
+						<WorkspaceSelectDialog
 							open={switcherOpen}
 							onOpenChange={setSwitcherOpen}
 						/>

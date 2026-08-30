@@ -3,8 +3,6 @@ import type { WorkspaceResponse } from '@easy-vibe-coding/shared';
 import { Header } from '@/components/data/Header';
 import { Button } from '@/components/ui/button';
 
-// The one workspace row — shared by the picker gate and the switch dialog, so
-// both surfaces render the same identity (Header profile) and affordance.
 export function WorkspaceRow({
 	workspace,
 	current = false,

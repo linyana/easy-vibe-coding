@@ -1,19 +1,11 @@
-import { useState } from 'react';
-import { PlusIcon } from 'lucide-react';
-import { Link } from '@tanstack/react-router';
-import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
-import { useAPIQuery } from '@/hooks/useAPIQuery';
-import { useAPIMutation } from '@/hooks/useAPIMutation';
-import { Card, ErrorState } from '@/components';
-import { Button } from '@/components/ui/button';
-import { DotsRingLoading } from '@/components/loading/DotsRing';
-import { CreateWorkspaceDialog } from './CreateWorkspaceDialog';
-import { WorkspaceRow } from './WorkspaceRow';
+import { Card } from '@/components';
+import { WorkspaceSelect } from './Select';
 
 // Gate, not a route: an authenticated session without a workspace has no
 // workspace context yet — the picker replaces the whole app until the token
-// is exchanged for a workspace-scoped one.
+// is exchanged for a workspace-scoped one. The switcher stays mounted for
+// the gate's lifetime (active always), so it loads on entry.
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 	const { workspace } = useGlobal();
 	if (workspace == null) return <WorkspacePicker />;
@@ -21,87 +13,15 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 }
 
 function WorkspacePicker() {
-	const { account, update } = useGlobal();
-	const [createOpen, setCreateOpen] = useState(false);
-
-	const workspaces = useAPIQuery({
-		queryKey: ['workspaces'],
-		queryFn: () => API.workspaces.get(),
-		toastError: false,
-	});
-
-	const switchMutation = useAPIMutation({
-		call: (slug: string) => API.auth['switch-workspace'].post({ slug }),
-		queryKey: ['auth'],
-		// Entering a workspace is a context change, not a write — no toast.
-		onSuccess: ({ token, workspace }) => update({ token, workspace }),
-	});
-
-	const { data, error, refetch } = workspaces;
-
 	return (
 		<div className="flex min-h-dvh items-center justify-center p-4 sm:p-6">
-			<div className="w-full max-w-md space-y-4">
+			<div className="w-full max-w-md">
 				<Card
 					title="Choose a workspace"
 					description="Your session is scoped to one workspace. Pick one to continue, or create a new one."
-					actions={
-						<Button
-							variant="outline"
-							onClick={() => setCreateOpen(true)}
-						>
-							<PlusIcon className="size-4" />
-							Create workspace
-						</Button>
-					}
 				>
-					{error ? (
-						<ErrorState
-							error={error}
-							onRetry={() => void refetch()}
-						/>
-					) : !data ? (
-						<div className="flex justify-center py-8">
-							<DotsRingLoading size={32} />
-						</div>
-					) : data.items.length === 0 ? (
-						<p className="py-8 text-center text-sm text-muted-foreground">
-							No workspaces yet — create one to get started.
-						</p>
-					) : (
-						<ul className="space-y-2">
-							{data.items.map((workspace) => (
-								<li key={workspace.slug}>
-									<WorkspaceRow
-										workspace={workspace}
-										disabled={switchMutation.isPending}
-										onSelect={switchMutation.mutate}
-									/>
-								</li>
-							))}
-						</ul>
-					)}
+					<WorkspaceSelect active />
 				</Card>
-				{/* The admin entry lives here, not in the app sidebar: admin is
-					platform-level, orthogonal to any workspace context — the
-					picker is where an authenticated session chooses its context. */}
-				{account?.isAdmin && (
-					<Card
-						icon={{ name: 'ShieldCheck' }}
-						title="Admin console"
-						description="Platform management — accounts and workspaces."
-						actions={
-							<Button asChild>
-								<Link to="/admin">Open</Link>
-							</Button>
-						}
-					/>
-				)}
-				<CreateWorkspaceDialog
-					open={createOpen}
-					onOpenChange={setCreateOpen}
-					onCreated={switchMutation.mutate}
-				/>
 			</div>
 		</div>
 	);
