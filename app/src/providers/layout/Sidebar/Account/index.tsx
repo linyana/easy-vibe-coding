@@ -36,7 +36,7 @@ export function NavAccount() {
 			.toUpperCase() || '?';
 
 	const handleLogout = () => {
-		update({ token: null, account: null });
+		update({ token: null, account: null, workspaceId: null });
 		void navigate({ to: '/login' });
 	};
 

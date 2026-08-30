@@ -20,7 +20,9 @@ export const API = treaty<App>(baseUrl, {
 	// bad-credential 401s find no session to clear.
 	onResponse: (response) => {
 		if (response.status === 401) {
-			useGlobal.getState().update({ token: null, account: null });
+			useGlobal
+				.getState()
+				.update({ token: null, account: null, workspaceId: null });
 		}
 	},
 }).api;

@@ -22,7 +22,7 @@ export function RegisterPage() {
 			queryKey: ['auth'],
 			successMessage: 'Account created — you are signed in',
 			onSuccess: ({ token, account }) => {
-				update({ token, account });
+				update({ token, account, workspaceId: null });
 				void navigate({ href: safeRedirect(redirect) });
 			},
 		},

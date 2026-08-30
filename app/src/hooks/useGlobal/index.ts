@@ -15,6 +15,12 @@ interface GlobalStateData {
 	token: string | null;
 	/** Memory-only: set from login/register/me. */
 	account: SessionAccount | null;
+	/**
+	 * The workspace the session is scoped to (persisted, set by the
+	 * switch-workspace token exchange). null = not in a workspace — the
+	 * WorkspaceProvider gate shows the picker.
+	 */
+	workspaceId: number | null;
 }
 
 export interface GlobalState extends GlobalStateData {
@@ -28,6 +34,7 @@ const initData: GlobalStateData = {
 	themeMode: 'system',
 	token: null,
 	account: null,
+	workspaceId: null,
 };
 
 // Global client state (theme + auth). Accessible outside React via
@@ -45,11 +52,13 @@ export const useGlobal = create<GlobalState>()(
 		}),
 		{
 			name: 'easy-vibe-global',
-			// Persist theme + token only — a persisted stale account would lie
-			// about the session (me refetches it on boot).
+			// Persist theme + token + workspaceId only — a persisted stale account
+			// would lie about the session (me refetches it on boot); workspaceId
+			// is the session scope and must survive reloads.
 			partialize: (state) => ({
 				themeMode: state.themeMode,
 				token: state.token,
+				workspaceId: state.workspaceId,
 			}),
 		},
 	),

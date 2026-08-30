@@ -2,17 +2,26 @@ import { SignJWT, jwtVerify } from 'jose';
 import { ENV } from '../../env';
 import { Errors } from '../error';
 
-// JWT primitives — the token carries the accountId claim (sub mirrors it); the
-// DB row is the source of truth. Step 2+ adds a workspaceId claim on exchange.
+// JWT primitives — the token carries the accountId claim (sub mirrors it) and,
+// after a workspace switch, the workspaceId claim; the DB row is the source of truth.
 
 const secret = new TextEncoder().encode(ENV.AUTH_SECRET);
 
 export const TOKEN_TTL = '7d';
 
-export function signAuthToken(account: { id: number }): Promise<string> {
-	return new SignJWT({ accountId: account.id })
+export function signAuthToken({
+	accountId,
+	workspaceId,
+}: {
+	accountId: number;
+	workspaceId?: number;
+}): Promise<string> {
+	return new SignJWT({
+		accountId,
+		...(workspaceId !== undefined ? { workspaceId } : {}),
+	})
 		.setProtectedHeader({ alg: 'HS256' })
-		.setSubject(String(account.id))
+		.setSubject(String(accountId))
 		.setIssuedAt()
 		.setExpirationTime(TOKEN_TTL)
 		.sign(secret);
@@ -20,6 +29,7 @@ export function signAuthToken(account: { id: number }): Promise<string> {
 
 export async function verifyAuthToken(token: string): Promise<{
 	accountId: number;
+	workspaceId?: number;
 }> {
 	try {
 		const { payload } = await jwtVerify(token, secret, {
@@ -31,7 +41,11 @@ export async function verifyAuthToken(token: string): Promise<{
 		if (!Number.isInteger(accountId)) {
 			throw new Error('Malformed token subject');
 		}
-		return { accountId };
+		const workspaceId =
+			typeof payload.workspaceId === 'number'
+				? payload.workspaceId
+				: undefined;
+		return { accountId, workspaceId };
 	} catch {
 		throw Errors.unauthorized(
 			'Invalid or expired session. Please sign in again.',

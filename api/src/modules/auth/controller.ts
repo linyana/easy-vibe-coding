@@ -4,6 +4,8 @@ import {
 	authRegisterSchema,
 	authResponseSchema,
 	accountResponseSchema,
+	switchWorkspaceResponseSchema,
+	switchWorkspaceSchema,
 } from '@easy-vibe-coding/shared';
 import { authService } from './service';
 import { authGuard } from '../../libs/guards';
@@ -61,4 +63,17 @@ export const authController = new Elysia({
 	.get('/me', ({ auth }) => authService.me(auth.accountId), {
 		auth: true,
 		response: accountResponseSchema,
-	});
+	})
+	.post(
+		'/switch-workspace',
+		({ auth, body }) =>
+			authService.switchWorkspace({
+				accountId: auth.accountId,
+				workspaceId: body.workspaceId,
+			}),
+		{
+			auth: true,
+			body: switchWorkspaceSchema,
+			response: switchWorkspaceResponseSchema,
+		},
+	);

@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-router';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useSession } from '@/hooks/useSession';
-import { LayoutProvider } from '@/providers';
+import { LayoutProvider, WorkspaceProvider } from '@/providers';
 import { ErrorState } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 
@@ -65,8 +65,10 @@ function AppShell() {
 	}
 
 	return (
-		<LayoutProvider>
-			<Outlet />
-		</LayoutProvider>
+		<WorkspaceProvider>
+			<LayoutProvider>
+				<Outlet />
+			</LayoutProvider>
+		</WorkspaceProvider>
 	);
 }
