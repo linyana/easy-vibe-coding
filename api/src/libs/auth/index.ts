@@ -3,7 +3,7 @@ import { ENV } from '../../env';
 import { Errors } from '../error';
 
 // JWT primitives — the token carries the accountId claim (sub mirrors it) and,
-// after a workspace switch, the workspaceId claim; the DB row is the source of truth.
+// after a workspace switch, the workspaceSlug claim; the DB row is the source of truth.
 
 const secret = new TextEncoder().encode(ENV.AUTH_SECRET);
 
@@ -11,14 +11,14 @@ export const TOKEN_TTL = '7d';
 
 export function signAuthToken({
 	accountId,
-	workspaceId,
+	workspaceSlug,
 }: {
 	accountId: number;
-	workspaceId?: number;
+	workspaceSlug?: string;
 }): Promise<string> {
 	return new SignJWT({
 		accountId,
-		...(workspaceId !== undefined ? { workspaceId } : {}),
+		...(workspaceSlug !== undefined ? { workspaceSlug } : {}),
 	})
 		.setProtectedHeader({ alg: 'HS256' })
 		.setSubject(String(accountId))
@@ -29,7 +29,7 @@ export function signAuthToken({
 
 export async function verifyAuthToken(token: string): Promise<{
 	accountId: number;
-	workspaceId?: number;
+	workspaceSlug?: string;
 }> {
 	try {
 		const { payload } = await jwtVerify(token, secret, {
@@ -41,11 +41,11 @@ export async function verifyAuthToken(token: string): Promise<{
 		if (!Number.isInteger(accountId)) {
 			throw new Error('Malformed token subject');
 		}
-		const workspaceId =
-			typeof payload.workspaceId === 'number'
-				? payload.workspaceId
+		const workspaceSlug =
+			typeof payload.workspaceSlug === 'string'
+				? payload.workspaceSlug
 				: undefined;
-		return { accountId, workspaceId };
+		return { accountId, workspaceSlug };
 	} catch {
 		throw Errors.unauthorized(
 			'Invalid or expired session. Please sign in again.',

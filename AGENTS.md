@@ -136,10 +136,16 @@ cd api && bun run db:studio    # 检查 DB
 | `feature`        | 全流程（渐进式披露，一个 skill）：`patterns`（共享约定/边界条件）→ `scaffold`（新资源）→ `list`（读侧列表）→ `form`（create/edit）→ `remove`（删除 + 编排） | 任何建/改 feature 的工作（列表、表单、对话框、CRUD 页）——先读 patterns，再按 SKILL.md 路由表读对应参考文件 |
 | `feature-verify` | 分层验证：check 门禁 → DB → 启动 → curl 驱动（成功/失败路径）→ 坑位                                                                                         | 实现功能后、调试 API、确认修复时                                                                           |
 
+## Workspaces
+
+- **身份**：`slug` 是 workspace 的用户可见唯一标识（unique 必填，URL-safe：小写字母/数字/单连字符）；int 主键只在 DB 内部（FK 完整性、改名安全），任何 API 表面、token claim、前端都以 slug 寻址。slug 冲突 → 409。
+- **归属**：`workspace_members`（workspace_id + account_id + role，unique 对）——创建即 owner 成员（事务），没有「无主 workspace」。role 目前只有 `owner`（服务端写入），成员管理是后续步骤。
+- **表面**：`/workspaces`（成员身份列表 + 创建）、`/members`（当前 workspace 名册，读 token 的 `workspaceSlug` claim 作作用域，登录态 token 访问 → 403）。workspace 内唯一路由 `/_app/members`。
+
 ## Auth
 
-- **机制**：JWT bearer（jose，HS256，7 天），密码 argon2id（`Bun.password`，零依赖）。token 存 `useGlobal`（persist），`libs/api` 的 `headers` 钩子逐请求注入，`onResponse` 全局拦截 401 → `clearSession`。
-- **服务端守卫**（`api/src/libs/guards`）：纯 jose 原语（`libs/auth`）之上的 Elysia 适配层——`macro('auth')` 把 `.guard({ auth: true })`（或路由级 `{ auth: true }`）变成“先验 bearer token，不过 401”，并把已验证身份注入 handler 为 `{ auth: { accountId } }`。token 携带显式 `accountId` claim（`sub` 镜像同一 id）；DB 行是事实源，需要账号形状处（`/me`）才重查。**新模块加一行 `.use(authGuard).guard({ auth: true })` 即受保护。**
-- **API**：`/api/auth/register`（建号即登录）· `/api/auth/login`（大小写不敏感匹配邮箱，错误统一 401 "Invalid email or password" 不泄露邮箱）· `/api/auth/me`（guard 解析 accountId → 服务重查当前账号行）。`accounts` 模块整块在 guard 后。契约在 `packages/shared/src/api/auth/`，密码字段规则复用 accounts 的 `accountFieldSchemas`。
+- **机制**：JWT bearer（jose，HS256，7 天），密码 argon2id（`Bun.password`，零依赖）。token 存 `useGlobal`（persist），`libs/api` 的 `headers` 钩子逐请求注入，`onResponse` 全局拦截 401 → `clearSession`。**workspace 上下文（`useGlobal.workspace`，object `{ slug, name }`）不持久化**——boot 时从 `/auth/me` 的响应回显恢复（服务端真相源），交换 token 后写入内存；刷新靠 me 恢复，不靠 storage。
+- **服务端守卫**（`api/src/libs/guards`）：纯 jose 原语（`libs/auth`）之上的 Elysia 适配层——`macro('auth')` 把 `.guard({ auth: true })`（或路由级 `{ auth: true }`）变成“先验 bearer token，不过 401”，并把已验证身份注入 handler 为 `{ auth: { accountId, workspaceSlug? } }`。token 携带显式 `accountId` claim（`sub` 镜像同一 id），`/auth/switch-workspace` 交换后追加 `workspaceSlug` claim；DB 行是事实源，需要账号形状处（`/me`）才重查。**新模块加一行 `.use(authGuard).guard({ auth: true })` 即受保护；依赖 workspace 作用域的模块从 `auth.workspaceSlug` 读上下文（无 = 登录态 token）。**
+- **API**：`/api/auth/register`（建号即登录）· `/api/auth/login`（大小写不敏感匹配邮箱，错误统一 401 "Invalid email or password" 不泄露邮箱）· `/api/auth/me`（guard 解析 accountId → 服务重查当前账号行，并回显 workspace object `{ slug, name }`——校验成员身份还在才回显，否则 null）。`/api/auth/switch-workspace`（POST `{ slug }`，非成员 403，签发带 `accountId + workspaceSlug` claim 的新 token）。`accounts` 模块整块在 guard 后。契约在 `packages/shared/src/api/auth/`，密码字段规则复用 accounts 的 `accountFieldSchemas`。
 - **路由**：应用壳是 pathless layout `/_app`（`beforeLoad` 同步 token 守卫 + 组件内 `useSession` 校验 me，loading/error/unauthenticated 三分支）；`/login` `/register` 在壳外，读 `redirect` search 参数（登录后回跳，`safeRedirect` 防开放重定向）。
 - **边界**：登出纯客户端（JWT 无状态）。Elysia 先校验 body 再跑 guard（未带 token 但 body 非法 → 422 而非 401）。

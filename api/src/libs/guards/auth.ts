@@ -8,8 +8,8 @@ export const authGuard = new Elysia({ name: 'libs/guards/auth' }).macro(
 		resolve: async ({ headers }) => {
 			const token = extractBearerToken(headers.authorization);
 			if (!token) throw Errors.unauthorized('Missing access token');
-			const { accountId } = await verifyAuthToken(token);
-			return { auth: { accountId } };
+			const { accountId, workspaceSlug } = await verifyAuthToken(token);
+			return { auth: { accountId, workspaceSlug } };
 		},
 	},
 );

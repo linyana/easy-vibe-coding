@@ -4,10 +4,17 @@ import type {
 	AuthRegister,
 	AuthResponse,
 	AccountResponse,
+	MeResponse,
 	SwitchWorkspaceResponse,
+	WorkspaceRef,
 } from '@easy-vibe-coding/shared';
 import { db } from '../../db/client';
-import { accounts, workspaceMembers, type Account } from '../../db/schema';
+import {
+	accounts,
+	workspaceMembers,
+	workspaces,
+	type Account,
+} from '../../db/schema';
 import { signAuthToken } from '../../libs/auth';
 import { isUniqueViolation } from '../../libs/dbError';
 import { normalizeEmail } from '../../libs/email';
@@ -80,14 +87,44 @@ export const authService = {
 	},
 
 	// Guard already verified the token; re-read the row so renames apply immediately.
-	async me(accountId: number): Promise<AccountResponse> {
+	async me(
+		accountId: number,
+		workspaceSlug: string | undefined,
+	): Promise<MeResponse> {
 		const account = await db.query.accounts.findFirst({
 			where: eq(accounts.id, accountId),
 		});
 		if (!account) {
 			throw Errors.unauthorized('This account no longer exists');
 		}
-		return pickAccount(account);
+
+		// The token's workspaceSlug claim is echoed only while membership still
+		// holds — a deleted workspace or removed member drops back to null (the
+		// client re-picks) instead of lingering in a phantom workspace until the
+		// token's TTL expires.
+		let workspace: WorkspaceRef | null = null;
+		if (workspaceSlug !== undefined) {
+			const member = await db
+				.select({
+					slug: workspaces.slug,
+					name: workspaces.name,
+				})
+				.from(workspaceMembers)
+				.innerJoin(
+					workspaces,
+					eq(workspaceMembers.workspaceId, workspaces.id),
+				)
+				.where(
+					and(
+						eq(workspaceMembers.accountId, accountId),
+						eq(workspaces.slug, workspaceSlug),
+					),
+				)
+				.limit(1);
+			if (member[0]) workspace = member[0];
+		}
+
+		return { account: pickAccount(account), workspace };
 	},
 
 	// Exchange for a workspace-scoped token. Membership is the gate: an account
@@ -95,21 +132,34 @@ export const authService = {
 	// the workspace exists is not the question.
 	async switchWorkspace({
 		accountId,
-		workspaceId,
+		slug,
 	}: {
 		accountId: number;
-		workspaceId: number;
+		slug: string;
 	}): Promise<SwitchWorkspaceResponse> {
-		const member = await db.query.workspaceMembers.findFirst({
-			where: and(
-				eq(workspaceMembers.accountId, accountId),
-				eq(workspaceMembers.workspaceId, workspaceId),
-			),
-			columns: { id: true },
-		});
-		if (!member) {
+		const member = await db
+			.select({
+				slug: workspaces.slug,
+				name: workspaces.name,
+			})
+			.from(workspaceMembers)
+			.innerJoin(
+				workspaces,
+				eq(workspaceMembers.workspaceId, workspaces.id),
+			)
+			.where(
+				and(
+					eq(workspaceMembers.accountId, accountId),
+					eq(workspaces.slug, slug),
+				),
+			)
+			.limit(1);
+		if (!member[0]) {
 			throw Errors.forbidden('You are not a member of this workspace');
 		}
-		return { token: await signAuthToken({ accountId, workspaceId }) };
+		return {
+			token: await signAuthToken({ accountId, workspaceSlug: slug }),
+			workspace: member[0],
+		};
 	},
 };

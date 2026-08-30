@@ -22,7 +22,7 @@ export function LoginPage() {
 			queryKey: ['auth'],
 			successMessage: 'Signed in',
 			onSuccess: ({ token, account }) => {
-				update({ token, account, workspaceId: null });
+				update({ token, account, workspace: null });
 				void navigate({ href: safeRedirect(redirect) });
 			},
 		},

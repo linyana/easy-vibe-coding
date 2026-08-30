@@ -46,6 +46,10 @@ export type NewAccount = typeof accounts.$inferInsert;
 
 export const workspaces = pgTable('workspaces', {
 	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+	// The user-facing identity — unique, required, URL-safe. The integer PK
+	// stays internal (FK integrity, rename safety); every API surface, token
+	// claim, and the app address a workspace by its slug.
+	slug: text('slug').notNull().unique(),
 	name: text('name').notNull(),
 	createdAt: timestamptz('created_at')
 		.notNull()

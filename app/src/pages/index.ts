@@ -1,3 +1,2 @@
-export * from './Home';
-export * from './Accounts';
+export * from './Members';
 export * from './Auth';

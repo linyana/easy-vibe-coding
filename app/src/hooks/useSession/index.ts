@@ -27,7 +27,12 @@ export function useSession(): {
 		enabled: Boolean(token) && !account,
 		toastError: false,
 		onSuccess: (me) => {
-			if (token) update({ token, account: me });
+			if (token)
+				update({
+					token,
+					account: me.account,
+					workspace: me.workspace,
+				});
 		},
 	});
 

@@ -12,12 +12,12 @@ export function CreateWorkspaceDialog({
 }: {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	/** Called with the new workspace's id so the picker can enter it right away. */
-	onCreated: (workspaceId: number) => void;
+	/** Called with the new workspace's slug so the picker can enter it right away. */
+	onCreated: (slug: string) => void;
 }) {
 	const form = useForm({
 		schema: workspaceCreateSchema,
-		initialValues: { name: '' },
+		initialValues: { name: '', slug: '' },
 		submit: {
 			call: (values) => API.workspaces.post(values),
 			queryKey: ['workspaces'],
@@ -26,7 +26,7 @@ export function CreateWorkspaceDialog({
 				onOpenChange(false);
 				// Auto-enter: the creator is already its owner, so asking for a
 				// second click on the list would be ceremony.
-				onCreated(workspace.id);
+				onCreated(workspace.slug);
 			},
 		},
 	});
@@ -56,6 +56,14 @@ export function CreateWorkspaceDialog({
 			<Form form={form}>
 				<FormField form={form} name="name" label="Name">
 					<Input placeholder="Workspace name" />
+				</FormField>
+				<FormField
+					form={form}
+					name="slug"
+					label="Slug"
+					tooltip="The unique handle for this workspace — lowercase letters, numbers, and single hyphens."
+				>
+					<Input placeholder="my-workspace" />
 				</FormField>
 			</Form>
 		</Dialog>

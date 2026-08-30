@@ -22,7 +22,7 @@ export const API = treaty<App>(baseUrl, {
 		if (response.status === 401) {
 			useGlobal
 				.getState()
-				.update({ token: null, account: null, workspaceId: null });
+				.update({ token: null, account: null, workspace: null });
 		}
 	},
 }).api;

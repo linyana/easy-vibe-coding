@@ -2,6 +2,8 @@ import { eq } from 'drizzle-orm';
 import type { WorkspaceCreate } from '@easy-vibe-coding/shared';
 import { db } from '../../db/client';
 import { workspaces, workspaceMembers } from '../../db/schema';
+import { isUniqueViolation } from '../../libs/dbError';
+import { Errors } from '../../libs/error';
 
 export const workspaceService = {
 	// The account's workspaces — via membership join, never a global list.
@@ -20,7 +22,8 @@ export const workspaceService = {
 	},
 
 	// Workspace + owner membership commit in one transaction — a workspace
-	// never exists without its creator as a member.
+	// never exists without its creator as a member. The slug is the unique
+	// user-facing identity; a collision is a 409, never an unhandled 500.
 	async create({
 		accountId,
 		data,
@@ -28,18 +31,25 @@ export const workspaceService = {
 		accountId: number;
 		data: WorkspaceCreate;
 	}) {
-		const workspace = await db.transaction(async (tx) => {
-			const [row] = await tx
-				.insert(workspaces)
-				.values({ name: data.name })
-				.returning();
-			await tx.insert(workspaceMembers).values({
-				workspaceId: row!.id,
-				accountId,
-				role: 'owner',
+		try {
+			const workspace = await db.transaction(async (tx) => {
+				const [row] = await tx
+					.insert(workspaces)
+					.values({ name: data.name, slug: data.slug })
+					.returning();
+				await tx.insert(workspaceMembers).values({
+					workspaceId: row!.id,
+					accountId,
+					role: 'owner',
+				});
+				return row!;
 			});
-			return row!;
-		});
-		return workspace;
+			return workspace;
+		} catch (error) {
+			if (isUniqueViolation(error)) {
+				throw Errors.conflict('This workspace slug is already taken');
+			}
+			throw error;
+		}
 	},
 };

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AccountResponse } from '@easy-vibe-coding/shared';
+import type { AccountResponse, WorkspaceRef } from '@easy-vibe-coding/shared';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -16,11 +16,11 @@ interface GlobalStateData {
 	/** Memory-only: set from login/register/me. */
 	account: SessionAccount | null;
 	/**
-	 * The workspace the session is scoped to (persisted, set by the
-	 * switch-workspace token exchange). null = not in a workspace — the
-	 * WorkspaceProvider gate shows the picker.
+	 * The workspace the session is scoped to — memory-only. Seeded from /auth/me
+	 * on boot and from the switch-workspace exchange; never persisted, so the
+	 * server (via the token claim) stays the single source of truth.
 	 */
-	workspaceId: number | null;
+	workspace: WorkspaceRef | null;
 }
 
 export interface GlobalState extends GlobalStateData {
@@ -34,7 +34,7 @@ const initData: GlobalStateData = {
 	themeMode: 'system',
 	token: null,
 	account: null,
-	workspaceId: null,
+	workspace: null,
 };
 
 // Global client state (theme + auth). Accessible outside React via
@@ -52,13 +52,20 @@ export const useGlobal = create<GlobalState>()(
 		}),
 		{
 			name: 'easy-vibe-global',
-			// Persist theme + token + workspaceId only — a persisted stale account
-			// would lie about the session (me refetches it on boot); workspaceId
-			// is the session scope and must survive reloads.
+			// Persist theme + token only — a persisted stale account would lie
+			// about the session (me refetches it on boot). workspace is never
+			// persisted: the server is its source of truth (me echoes it from the
+			// token claim), so a reload can't carry a stale workspace context.
 			partialize: (state) => ({
 				themeMode: state.themeMode,
 				token: state.token,
-				workspaceId: state.workspaceId,
+			}),
+			// Older store versions persisted workspace state under other keys;
+			// force it to null on rehydrate so storage can never seed it.
+			merge: (persisted, current) => ({
+				...current,
+				...(persisted as object),
+				workspace: null,
 			}),
 		},
 	),

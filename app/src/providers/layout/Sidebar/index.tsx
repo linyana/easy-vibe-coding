@@ -5,7 +5,6 @@ import {
 	FileChartLine,
 	Folder,
 	HelpCircle,
-	LayoutDashboard,
 	ListTodo,
 	Search,
 	Settings,
@@ -25,13 +24,11 @@ import { Banner } from './Banner';
 // 真实存在的路由。`to` 缺省 = 占位项（页面还没建），渲染为禁用的占位按钮；
 // 页面建好后补上 `to` 即变真链接——路径写错会在 `bun run check` 直接报错。
 const navMain: NavItem[] = [
-	{ title: 'Dashboard', to: '/', icon: LayoutDashboard },
-	{ title: 'Accounts', to: '/accounts', icon: Users },
+	{ title: 'Members', to: '/members', icon: Users },
 	// 预留（页面还没建）：
 	{ title: 'Lifecycle', icon: ListTodo },
 	{ title: 'Analytics', icon: ChartBar },
 	{ title: 'Projects', icon: Folder },
-	{ title: 'Team', icon: Users },
 ];
 
 const navDocuments: NavItem[] = [

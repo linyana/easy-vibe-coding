@@ -3,7 +3,7 @@ import {
 	authLoginSchema,
 	authRegisterSchema,
 	authResponseSchema,
-	accountResponseSchema,
+	meResponseSchema,
 	switchWorkspaceResponseSchema,
 	switchWorkspaceSchema,
 } from '@easy-vibe-coding/shared';
@@ -60,16 +60,20 @@ export const authController = new Elysia({
 			response: authResponseSchema,
 		},
 	)
-	.get('/me', ({ auth }) => authService.me(auth.accountId), {
-		auth: true,
-		response: accountResponseSchema,
-	})
+	.get(
+		'/me',
+		({ auth }) => authService.me(auth.accountId, auth.workspaceSlug),
+		{
+			auth: true,
+			response: meResponseSchema,
+		},
+	)
 	.post(
 		'/switch-workspace',
 		({ auth, body }) =>
 			authService.switchWorkspace({
 				accountId: auth.accountId,
-				workspaceId: body.workspaceId,
+				slug: body.slug,
 			}),
 		{
 			auth: true,

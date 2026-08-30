@@ -9,12 +9,12 @@ import { Button } from '@/components/ui/button';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 import { CreateWorkspaceDialog } from './CreateWorkspaceDialog';
 
-// Gate, not a route: an authenticated session without a workspaceId has no
+// Gate, not a route: an authenticated session without a workspace has no
 // workspace context yet — the picker replaces the whole app until the token
 // is exchanged for a workspace-scoped one.
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
-	const { workspaceId } = useGlobal();
-	if (workspaceId == null) return <WorkspacePicker />;
+	const { workspace } = useGlobal();
+	if (workspace == null) return <WorkspacePicker />;
 	return <>{children}</>;
 }
 
@@ -29,11 +29,10 @@ function WorkspacePicker() {
 	});
 
 	const switchMutation = useAPIMutation({
-		call: (workspaceId: number) =>
-			API.auth['switch-workspace'].post({ workspaceId }),
+		call: (slug: string) => API.auth['switch-workspace'].post({ slug }),
 		queryKey: ['auth'],
 		// Entering a workspace is a context change, not a write — no toast.
-		onSuccess: ({ token }, workspaceId) => update({ token, workspaceId }),
+		onSuccess: ({ token, workspace }) => update({ token, workspace }),
 	});
 
 	const { data, error, refetch } = workspaces;
@@ -70,19 +69,26 @@ function WorkspacePicker() {
 					) : (
 						<ul className="space-y-2">
 							{data.items.map((workspace) => (
-								<li key={workspace.id}>
+								<li key={workspace.slug}>
 									<Button
 										variant="outline"
 										className="h-auto w-full justify-between px-4 py-3"
 										disabled={switchMutation.isPending}
 										onClick={() =>
-											switchMutation.mutate(workspace.id)
+											switchMutation.mutate(
+												workspace.slug,
+											)
 										}
 									>
-										<span className="font-medium">
-											{workspace.name}
+										<span className="min-w-0 text-left">
+											<span className="block truncate font-medium">
+												{workspace.name}
+											</span>
+											<span className="block truncate text-xs text-muted-foreground">
+												{workspace.slug}
+											</span>
 										</span>
-										<ArrowRightIcon className="size-4 text-muted-foreground" />
+										<ArrowRightIcon className="size-4 shrink-0 text-muted-foreground" />
 									</Button>
 								</li>
 							))}

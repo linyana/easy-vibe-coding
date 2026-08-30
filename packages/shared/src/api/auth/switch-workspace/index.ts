@@ -1,15 +1,20 @@
 import { z } from 'zod';
+import { workspaceFieldSchemas } from '../../workspaces/create';
 
 // Exchange the session for a workspace-scoped token: the response token
-// carries both accountId and workspaceId claims. Membership is verified
-// server-side — the account must be a member of the workspace it asks for.
+// carries accountId + workspaceSlug claims, and the workspace ref the store
+// keeps. Membership is verified server-side by slug.
 export const switchWorkspaceSchema = z.object({
-	workspaceId: z.number().int(),
+	slug: workspaceFieldSchemas.slug,
 });
 export type SwitchWorkspace = z.infer<typeof switchWorkspaceSchema>;
 
 export const switchWorkspaceResponseSchema = z.object({
 	token: z.string(),
+	workspace: z.object({
+		slug: z.string(),
+		name: z.string(),
+	}),
 });
 export type SwitchWorkspaceResponse = z.infer<
 	typeof switchWorkspaceResponseSchema

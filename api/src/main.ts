@@ -3,6 +3,7 @@ import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysia/openapi';
 import { accountsController } from './modules/accounts/controller';
 import { workspacesController } from './modules/workspaces/controller';
+import { membersController } from './modules/members/controller';
 import { authController } from './modules/auth/controller';
 import { ENV } from './env';
 import { normalizeError } from './libs/error';
@@ -32,6 +33,11 @@ export const app = new Elysia({ prefix: '/api' })
 							'Workspace containers — membership-scoped list and creation.',
 					},
 					{
+						name: 'Members',
+						description:
+							"Workspace roster — the current workspace's accounts.",
+					},
+					{
 						name: 'Auth',
 						description:
 							'Authentication — register, sign in, current session (JWT bearer).',
@@ -47,6 +53,7 @@ export const app = new Elysia({ prefix: '/api' })
 	})
 	.use(accountsController)
 	.use(workspacesController)
+	.use(membersController)
 	.use(authController);
 
 export type App = typeof app;
