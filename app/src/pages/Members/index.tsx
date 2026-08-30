@@ -1,23 +1,18 @@
 import { API } from '@/libs/api';
+import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
 import { usePageHeader } from '@/hooks';
-import { Card, ErrorState } from '@/components';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Card, ErrorState, Header } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
-
-const initials = (name: string) =>
-	name
-		.split(' ')
-		.map((part) => part[0])
-		.slice(0, 2)
-		.join('')
-		.toUpperCase() || '?';
 
 // The workspace's single surface: a read-only roster scoped by the token's
 // workspaceSlug claim (member management is a later step).
 export function MembersPage() {
+	const { workspace } = useGlobal();
 	const { data, error, refetch } = useAPIQuery({
-		queryKey: ['members'],
+		// Scoped by the workspace slug: an in-place switch (the header dialog)
+		// changes the key → a fresh fetch under the new token, no stale roster.
+		queryKey: ['members', workspace?.slug],
 		queryFn: () => API.members.get(),
 		toastError: false,
 	});
@@ -47,20 +42,12 @@ export function MembersPage() {
 								key={member.id}
 								className="flex items-center gap-3 py-3"
 							>
-								<Avatar className="size-9 rounded-lg">
-									<AvatarFallback className="rounded-lg text-xs">
-										{initials(member.name)}
-									</AvatarFallback>
-								</Avatar>
-								<div className="min-w-0 flex-1">
-									<p className="truncate font-medium">
-										{member.name}
-									</p>
-									<p className="truncate text-xs text-muted-foreground">
-										{member.email}
-									</p>
-								</div>
-								<span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium capitalize">
+								<Header
+									variant="profile"
+									title={member.name}
+									description={member.email}
+								/>
+								<span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium capitalize">
 									{member.role}
 								</span>
 							</li>

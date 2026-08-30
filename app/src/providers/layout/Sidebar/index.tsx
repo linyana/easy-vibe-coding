@@ -1,6 +1,8 @@
 import * as React from 'react';
+import { useState } from 'react';
 import {
 	ChartBar,
+	ChevronsUpDown,
 	Database,
 	FileChartLine,
 	Folder,
@@ -15,10 +17,18 @@ import {
 	SidebarContent,
 	SidebarFooter,
 	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarSeparator,
 } from '@/components/ui/sidebar';
+import { Header } from '@/components/data/Header';
 import { NavGroup, type NavItem } from './NavGroup';
 import { NavAccount } from './Account';
 import { Banner } from './Banner';
+import { useGlobal } from '@/hooks/useGlobal';
+import { WorkspaceSelect } from '@/providers/workspace/Select';
+import { Dialog } from '@/components';
 
 // Nav 词汇表。`to` 由生成的 route tree 类型校验（FileRoutesByTo）：nav 只能指向
 // 真实存在的路由。`to` 缺省 = 占位项（页面还没建），渲染为禁用的占位按钮；
@@ -45,10 +55,49 @@ const navSecondary: NavItem[] = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	const { workspace } = useGlobal();
+	const [switcherOpen, setSwitcherOpen] = useState(false);
+
 	return (
 		<Sidebar collapsible="offcanvas" {...props}>
 			<SidebarHeader>
 				<Banner />
+				{/* The workspace switcher — the nav's context entry point. Renders
+					only with an active workspace; the admin shell has its own
+					platform-level switcher (AdminSidebar). */}
+				{workspace && (
+					<>
+						<SidebarSeparator className="scale-y-50" />
+						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									size="lg"
+									tooltip="Switch workspace"
+									onClick={() => setSwitcherOpen(true)}
+									className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+								>
+									<Header
+										variant="profile"
+										title={workspace.name}
+										description={workspace.slug}
+									/>
+									<ChevronsUpDown className="ml-auto size-4" />
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						</SidebarMenu>
+						<Dialog
+							open={switcherOpen}
+							onOpenChange={setSwitcherOpen}
+							contentClassName="sm:w-3/5 sm:max-w-none"
+						>
+							<WorkspaceSelect
+								headerVariant="default"
+								active={switcherOpen}
+								onSwitched={() => setSwitcherOpen(false)}
+							/>
+						</Dialog>
+					</>
+				)}
 			</SidebarHeader>
 			<SidebarContent>
 				<NavGroup items={navMain} />
@@ -56,6 +105,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<NavGroup className="mt-auto" items={navSecondary} />
 			</SidebarContent>
 			<SidebarFooter>
+				<SidebarSeparator className="scale-y-50" />
 				<NavAccount />
 			</SidebarFooter>
 		</Sidebar>
