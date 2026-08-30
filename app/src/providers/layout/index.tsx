@@ -17,7 +17,7 @@ export const LayoutProvider = ({ children, sidebar }: IPropsType) => {
 			style={
 				{
 					'--sidebar-width': 'calc(var(--spacing) * 72)',
-					'--header-height': 'calc(var(--spacing) * 14)',
+					'--header-height': 'calc(var(--spacing) * 15)',
 				} as React.CSSProperties
 			}
 		>

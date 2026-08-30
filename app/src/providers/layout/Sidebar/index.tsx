@@ -20,6 +20,7 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Header } from '@/components/data/Header';
 import { NavGroup, type NavItem } from './NavGroup';
@@ -65,6 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					and deliberately outside any workspace context. */}
 				{workspace && (
 					<>
+						<SidebarSeparator className="scale-y-50" />
 						<SidebarMenu>
 							<SidebarMenuItem>
 								<SidebarMenuButton
@@ -82,6 +84,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						</SidebarMenu>
+						<SidebarSeparator className="scale-y-50" />
 						<SwitchWorkspaceDialog
 							open={switcherOpen}
 							onOpenChange={setSwitcherOpen}
@@ -95,6 +98,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<NavGroup className="mt-auto" items={navSecondary} />
 			</SidebarContent>
 			<SidebarFooter>
+				<SidebarSeparator className="scale-y-50" />
 				<NavAccount />
 			</SidebarFooter>
 		</Sidebar>
