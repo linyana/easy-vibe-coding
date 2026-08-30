@@ -1,5 +1,11 @@
 import { sql } from 'drizzle-orm';
-import { customType, integer, pgTable, text } from 'drizzle-orm/pg-core';
+import {
+	customType,
+	integer,
+	pgTable,
+	text,
+	unique,
+} from 'drizzle-orm/pg-core';
 
 // Wire is RFC 3339 UTC (matches the shared contract's `z.iso.datetime()`); the
 // driver returns session-format strings, so fromDriver normalizes once here —
@@ -37,3 +43,42 @@ export const accounts = pgTable('accounts', {
 
 export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
+
+export const workspaces = pgTable('workspaces', {
+	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+	name: text('name').notNull(),
+	createdAt: timestamptz('created_at')
+		.notNull()
+		.default(sql`now()`),
+	updatedAt: timestamptz('updated_at')
+		.notNull()
+		.default(sql`now()`)
+		.$onUpdate(() => new Date().toISOString()),
+});
+
+export const workspaceMembers = pgTable(
+	'workspace_members',
+	{
+		id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+		workspaceId: integer('workspace_id')
+			.notNull()
+			.references(() => workspaces.id, { onDelete: 'cascade' }),
+		accountId: integer('account_id')
+			.notNull()
+			.references(() => accounts.id, { onDelete: 'cascade' }),
+		// Role is server-written; the account that creates a workspace becomes
+		// its owner. Member-role semantics arrive with the members surface.
+		role: text('role').notNull().default('owner'),
+		createdAt: timestamptz('created_at')
+			.notNull()
+			.default(sql`now()`),
+	},
+	(table) => ({
+		workspaceAccountUnique: unique().on(table.workspaceId, table.accountId),
+	}),
+);
+
+export type Workspace = typeof workspaces.$inferSelect;
+export type NewWorkspace = typeof workspaces.$inferInsert;
+export type WorkspaceMember = typeof workspaceMembers.$inferSelect;
+export type NewWorkspaceMember = typeof workspaceMembers.$inferInsert;

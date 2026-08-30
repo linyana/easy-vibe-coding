@@ -2,6 +2,7 @@ import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysia/openapi';
 import { accountsController } from './modules/accounts/controller';
+import { workspacesController } from './modules/workspaces/controller';
 import { authController } from './modules/auth/controller';
 import { ENV } from './env';
 import { normalizeError } from './libs/error';
@@ -26,6 +27,11 @@ export const app = new Elysia({ prefix: '/api' })
 							'Account management — the canonical CRUD module.',
 					},
 					{
+						name: 'Workspaces',
+						description:
+							'Workspace containers — membership-scoped list and creation.',
+					},
+					{
 						name: 'Auth',
 						description:
 							'Authentication — register, sign in, current session (JWT bearer).',
@@ -40,6 +46,7 @@ export const app = new Elysia({ prefix: '/api' })
 		return body;
 	})
 	.use(accountsController)
+	.use(workspacesController)
 	.use(authController);
 
 export type App = typeof app;
