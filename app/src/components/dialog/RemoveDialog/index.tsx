@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog } from '@/components/dialog/Dialog';
-import type { HeaderContentProps } from '@/components/data/Header';
+import type { TitleBlockContentProps } from '@/components/data/TitleBlock';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -12,7 +12,7 @@ export interface RemoveMutation {
 	mutate: () => void;
 }
 
-export interface RemoveDialogProps extends HeaderContentProps {
+export interface RemoveDialogProps extends TitleBlockContentProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	/**

@@ -17,6 +17,7 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppMembersRouteImport } from './routes/_app/members'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAccountsRouteImport } from './routes/admin/accounts'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminWorkspaceRouteImport } from './routes/admin/workspace'
 import { Route as AdminWorkspacesRouteImport } from './routes/admin/workspaces'
 import { Route as AdminWorkspaceIndexRouteImport } from './routes/admin/workspace/index'
@@ -61,6 +62,11 @@ const AdminAccountsRoute = AdminAccountsRouteImport.update({
   path: '/accounts',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminWorkspaceRoute = AdminWorkspaceRouteImport.update({
   id: '/workspace',
   path: '/workspace',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/members': typeof AppMembersRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/workspace': typeof AdminWorkspaceRouteWithChildren
   '/admin/workspaces': typeof AdminWorkspacesRoute
   '/admin/': typeof AdminIndexRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/members': typeof AppMembersRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/workspaces': typeof AdminWorkspacesRoute
   '/': typeof AppIndexRoute
   '/admin': typeof AdminIndexRoute
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/_app/members': typeof AppMembersRoute
   '/admin/accounts': typeof AdminAccountsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/workspace': typeof AdminWorkspaceRouteWithChildren
   '/admin/workspaces': typeof AdminWorkspacesRoute
   '/_app/': typeof AppIndexRoute
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/members'
     | '/admin/accounts'
+    | '/admin/settings'
     | '/admin/workspace'
     | '/admin/workspaces'
     | '/admin/'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/members'
     | '/admin/accounts'
+    | '/admin/settings'
     | '/admin/workspaces'
     | '/'
     | '/admin'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/_app/members'
     | '/admin/accounts'
+    | '/admin/settings'
     | '/admin/workspace'
     | '/admin/workspaces'
     | '/_app/'
@@ -227,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAccountsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/workspace': {
       id: '/admin/workspace'
       path: '/workspace'
@@ -286,6 +305,7 @@ const AdminWorkspaceRouteWithChildren = AdminWorkspaceRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminWorkspaceRoute: typeof AdminWorkspaceRouteWithChildren
   AdminWorkspacesRoute: typeof AdminWorkspacesRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -293,6 +313,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminWorkspaceRoute: AdminWorkspaceRouteWithChildren,
   AdminWorkspacesRoute: AdminWorkspacesRoute,
   AdminIndexRoute: AdminIndexRoute,

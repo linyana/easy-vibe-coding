@@ -5,13 +5,13 @@ import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
 import { useAPIMutation } from '@/hooks/useAPIMutation';
 import { Button } from '@/components/ui/button';
-import { ErrorState, Header, SearchInput } from '@/components';
+import { ErrorState, TitleBlock, SearchInput } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 import type { WorkspaceResponse } from '@easy-vibe-coding/shared';
 import type { UseAPIError } from '@/libs/error';
 import { WorkspaceRow } from '../Row';
 import { CreateWorkspaceDialog } from '../Create';
-import type { HeaderProps } from '@/components/data/Header';
+import type { TitleBlockProps } from '@/components/data/TitleBlock';
 
 // The one workspace-selection flow, shared by the picker gate (embedded in a
 // Card) and the app sidebar's nav dialog. The query runs only while `active`
@@ -26,7 +26,7 @@ export function WorkspaceSelect({
 	active: boolean;
 	/** Fired after the session switched — the dialog closes itself here. */
 	onSwitched?: () => void;
-	headerVariant: HeaderProps['variant'];
+	headerVariant: TitleBlockProps['variant'];
 }) {
 	const { workspace, update } = useGlobal();
 	const [createOpen, setCreateOpen] = useState(false);
@@ -63,7 +63,7 @@ export function WorkspaceSelect({
 
 	return (
 		<>
-			<Header
+			<TitleBlock
 				variant={headerVariant}
 				title="Choose workspace"
 				description="Choose the workspace you want to enter from the top menu."

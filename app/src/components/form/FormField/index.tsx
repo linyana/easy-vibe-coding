@@ -18,10 +18,14 @@ import {
 //
 // Control convention: a single element accepting `value` (may be undefined —
 // normalize internally) and `onChange` (a change event OR a raw value).
+// Radix Switch/Checkbox are the exception: they take `checked` +
+// `onCheckedChange` — pass `valuePropName="checked"` /
+// `changePropName="onCheckedChange"` to rebind (antd-style).
 // `aria-invalid` is injected too while the field shows an error — shadcn
 // controls style it as the destructive border/ring, so error styling needs
 // no per-control code (and doubles as the a11y signal). Don't pass
-// value/onChange on the child itself — they are injected here.
+// value/onChange (or checked/onCheckedChange) on the child itself — they are
+// injected here.
 
 export interface FormControl<T> {
 	values: T;
@@ -45,6 +49,10 @@ const extractValue = (payload: unknown) =>
 		? (payload as { target: { value: string } }).target.value
 		: payload;
 
+export type BoundControlProps =
+	| { value?: unknown; onChange?: unknown }
+	| { checked?: unknown; onCheckedChange?: unknown };
+
 interface FormFieldBaseProps<T, Name extends keyof T & string> {
 	name: Name;
 	/** Force/override the validation message — takes precedence over the form-derived error. */
@@ -52,11 +60,12 @@ interface FormFieldBaseProps<T, Name extends keyof T & string> {
 	label?: string;
 	tooltip?: ReactNode;
 	description?: string;
-	children: ReactElement<{
-		value?: unknown;
-		onChange?: unknown;
-		'aria-invalid'?: boolean;
-	}>;
+	/** The prop the control receives its value through — 'value' by default,
+	 * 'checked' for Radix Switch/Checkbox. */
+	valuePropName?: 'value' | 'checked';
+	/** The prop the control reports changes through — 'onChange' by default. */
+	changePropName?: 'onChange' | 'onCheckedChange';
+	children: ReactElement<BoundControlProps & { 'aria-invalid'?: boolean }>;
 }
 
 type FormFieldProps<T, Name extends keyof T & string> =
@@ -76,12 +85,14 @@ export function FormField<T, Name extends keyof T & string>(
 	const control = props.form ? props.form.control : props.control;
 	const fieldError = error ?? (props.form && props.form.errors?.[name]);
 	const value = control.values[name];
+	const valuePropName = props.valuePropName ?? 'value';
+	const changePropName = props.changePropName ?? 'onChange';
 	const bound = cloneElement(children, {
-		value,
+		[valuePropName]: value,
 		'aria-invalid': fieldError ? true : undefined,
 		// Double cast: a computed key against generic Partial<T> is beyond TS's
 		// verification — Name extends keyof T makes it sound.
-		onChange: (payload: unknown) =>
+		[changePropName]: (payload: unknown) =>
 			control.set({
 				[name]: extractValue(payload),
 			} as unknown as Partial<T>),

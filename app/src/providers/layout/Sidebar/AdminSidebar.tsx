@@ -5,6 +5,7 @@ import {
 	Building2Icon,
 	ChevronsUpDown,
 	LayoutDashboardIcon,
+	SettingsIcon,
 	ShieldCheckIcon,
 	UsersIcon,
 } from 'lucide-react';
@@ -21,7 +22,7 @@ import {
 import { NavGroup, type NavItem } from './NavGroup';
 import { NavAccount } from './Account';
 import { Banner } from './Banner';
-import { Header } from '@/components/data/Header';
+import { TitleBlock } from '@/components/data/TitleBlock';
 import { Link, useLocation } from '@tanstack/react-router';
 import { useGlobal } from '@/hooks/useGlobal';
 import { AdminWorkspaceSwitcher } from './AdminWorkspaceSwitcher';
@@ -34,6 +35,7 @@ const navMain: NavItem[] = [
 	{ title: 'Overview', to: '/admin', icon: LayoutDashboardIcon },
 	{ title: 'Accounts', to: '/admin/accounts', icon: UsersIcon },
 	{ title: 'Workspaces', to: '/admin/workspaces', icon: Building2Icon },
+	{ title: 'Settings', to: '/admin/settings', icon: SettingsIcon },
 ];
 
 // The entered workspace's sections — Permission is a planned sibling of Member
@@ -83,7 +85,7 @@ export function AdminSidebar({
 										onClick={() => setSwitcherOpen(true)}
 										className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 									>
-										<Header
+										<TitleBlock
 											variant="profile"
 											title={
 												workspace?.name ?? 'Workspace'

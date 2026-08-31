@@ -1,4 +1,4 @@
 export { Card } from './Card';
 export { ErrorState } from './ErrorState';
-export { Header } from './Header';
+export { TitleBlock } from './TitleBlock';
 export { MediaIcon } from './MediaIcon';

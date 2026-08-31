@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import type { HeaderContentProps } from '@/components/data/Header';
+import type { TitleBlockContentProps } from '@/components/data/TitleBlock';
 
 interface AuthCardProps extends Pick<
-	HeaderContentProps,
+	TitleBlockContentProps,
 	'title' | 'description'
 > {
 	footer?: ReactNode;

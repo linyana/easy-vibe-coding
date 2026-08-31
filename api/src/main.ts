@@ -3,6 +3,7 @@ import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysia/openapi';
 import { adminAccountsController } from './modules/admin/accounts/controller';
 import { adminMembersController } from './modules/admin/members/controller';
+import { adminSettingsController } from './modules/admin/settings/controller';
 import { adminWorkspacesController } from './modules/admin/workspaces/controller';
 import { workspacesController } from './modules/workspaces/controller';
 import { membersController } from './modules/members/controller';
@@ -44,6 +45,11 @@ export const app = new Elysia({ prefix: '/api' })
 						description:
 							'Authentication — register, sign in, current session (JWT bearer).',
 					},
+					{
+						name: 'Settings',
+						description:
+							'Platform-level settings — one get/set pair per settings module (admin-only).',
+					},
 				],
 			},
 		}),
@@ -54,6 +60,7 @@ export const app = new Elysia({ prefix: '/api' })
 		return body;
 	})
 	.use(adminAccountsController)
+	.use(adminSettingsController)
 	.use(workspacesController)
 	.use(adminWorkspacesController)
 	.use(adminMembersController)

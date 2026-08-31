@@ -15,6 +15,13 @@
       "when": 1788155486852,
       "tag": "0001_stale_ricochet",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788158186438,
+      "tag": "0002_glossy_marvel_zombies",
+      "breakpoints": true
     }
   ]
 }

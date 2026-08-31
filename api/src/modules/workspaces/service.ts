@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm';
 import type { WorkspaceCreate } from '@easy-vibe-coding/shared';
 import { db } from '../../db/client';
 import { workspaces, workspaceMembers } from '../../db/schema';
+import { adminSettingsService } from '../admin/settings/service';
 import { isUniqueViolation } from '../../libs/dbError';
 import { Errors } from '../../libs/error';
 
@@ -40,6 +41,16 @@ export const workspaceService = {
 		accountId: number;
 		data: WorkspaceCreate;
 	}) {
+		// The platform settings switch gates self-serve creation — the same
+		// value the admin settings page shows is the one enforced here
+		// (same read path, no wrapper: the GET endpoint and this guard both
+		// call getSettings and read the config field they care about).
+		const { config } = await adminSettingsService.get('platform');
+		if (!config.allowWorkspaceCreation) {
+			throw Errors.forbidden(
+				'Workspace creation is disabled by the platform admin',
+			);
+		}
 		try {
 			const workspace = await db.transaction(async (tx) => {
 				const [row] = await tx

@@ -3,6 +3,7 @@ import {
 	boolean,
 	customType,
 	integer,
+	jsonb,
 	pgTable,
 	text,
 	unique,
@@ -99,6 +100,23 @@ export const workspaceMembers = pgTable(
 		workspaceAccountUnique: unique().on(table.workspaceId, table.accountId),
 	}),
 );
+
+// Platform-level settings — one row per settings module (the module name is
+// the key), so adding a module is one insert, never a schema change. The value
+// is schemaless JSON: reads merge stored values over the shared defaults
+// (modules/admin/settings/service.ts), so field evolution needs no migration.
+export const platformSettings = pgTable('platform_settings', {
+	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+	key: text('key').notNull().unique(),
+	value: jsonb('value').notNull(),
+	createdAt: timestamptz('created_at')
+		.notNull()
+		.default(sql`now()`),
+	updatedAt: timestamptz('updated_at')
+		.notNull()
+		.default(sql`now()`)
+		.$onUpdate(() => new Date().toISOString()),
+});
 
 export type Workspace = typeof workspaces.$inferSelect;
 export type NewWorkspace = typeof workspaces.$inferInsert;

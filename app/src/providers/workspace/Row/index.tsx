@@ -1,6 +1,6 @@
 import { ArrowRightIcon, CheckIcon } from 'lucide-react';
 import type { WorkspaceResponse } from '@easy-vibe-coding/shared';
-import { Header } from '@/components/data/Header';
+import { TitleBlock } from '@/components/data/TitleBlock';
 import { Button } from '@/components/ui/button';
 
 export function WorkspaceRow({
@@ -22,7 +22,7 @@ export function WorkspaceRow({
 			disabled={disabled}
 			onClick={() => onSelect(workspace.slug)}
 		>
-			<Header
+			<TitleBlock
 				variant="profile"
 				title={workspace.name}
 				description={workspace.slug}

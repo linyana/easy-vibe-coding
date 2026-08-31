@@ -6,10 +6,13 @@ import {
 	CardFooter,
 	CardHeader,
 } from '@/components/ui/card';
-import { Header, type HeaderContentProps } from '@/components/data/Header';
+import {
+	TitleBlock,
+	type TitleBlockContentProps,
+} from '@/components/data/TitleBlock';
 import { cn } from '@/libs/utils';
 
-export interface CardProps extends HeaderContentProps {
+export interface CardProps extends TitleBlockContentProps {
 	children?: ReactNode;
 	/** Right-aligned header actions — rendered top-right beside the header
 	 * block. Typical value: `<Actions items={...} />`. */
@@ -45,7 +48,7 @@ export function Card({
 		>
 			{hasHeader && (
 				<CardHeader>
-					<Header
+					<TitleBlock
 						icon={icon}
 						title={title}
 						description={description}

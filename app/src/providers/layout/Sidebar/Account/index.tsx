@@ -1,6 +1,6 @@
 import { MoreVertical, LogOut } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
-import { Header } from '@/components/data/Header';
+import { TitleBlock } from '@/components/data/TitleBlock';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -41,7 +41,7 @@ export function NavAccount() {
 							size="lg"
 							className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 						>
-							<Header
+							<TitleBlock
 								variant="profile"
 								title={displayName}
 								description={displayEmail}
@@ -57,7 +57,7 @@ export function NavAccount() {
 					>
 						<DropdownMenuLabel className="p-0 font-normal">
 							<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-								<Header
+								<TitleBlock
 									variant="profile"
 									title={displayName}
 									description={displayEmail}

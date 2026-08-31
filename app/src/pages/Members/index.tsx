@@ -2,7 +2,7 @@ import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
 import { usePageHeader } from '@/hooks';
-import { Card, ErrorState, Header } from '@/components';
+import { Card, ErrorState, TitleBlock } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 
 // The workspace's single surface: a read-only roster scoped by the token's
@@ -43,7 +43,7 @@ export function MembersPage() {
 								key={member.id}
 								className="flex items-center gap-3 py-3"
 							>
-								<Header
+								<TitleBlock
 									variant="profile"
 									title={member.name}
 									description={member.email}

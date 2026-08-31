@@ -22,7 +22,7 @@ import {
 	SidebarMenuItem,
 	SidebarSeparator,
 } from '@/components/ui/sidebar';
-import { Header } from '@/components/data/Header';
+import { TitleBlock } from '@/components/data/TitleBlock';
 import { NavGroup, type NavItem } from './NavGroup';
 import { NavAccount } from './Account';
 import { Banner } from './Banner';
@@ -75,7 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 									onClick={() => setSwitcherOpen(true)}
 									className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 								>
-									<Header
+									<TitleBlock
 										variant="profile"
 										title={workspace.name}
 										description={workspace.slug}

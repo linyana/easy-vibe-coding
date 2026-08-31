@@ -22,6 +22,9 @@ export interface FormApi<TValues extends object> {
 	values: TValues;
 	set: (patch: Partial<TValues>) => void;
 	reset: (next?: TValues) => void;
+	/** True when values differ from the dirty baseline (the seeded snapshot
+	 * or the last server re-read) — the settings save bar shows on this. */
+	isDirty: boolean;
 	control: FormControl<TValues>;
 	/** Displayed only for touched fields — untouched ones stay quiet (the `*` markers + submit tooltip carry the pristine state). */
 	errors: Partial<Record<keyof TValues, string>>;
@@ -62,7 +65,10 @@ export function useForm<
 	const id = useId();
 
 	// Stable snapshot: reset() restores the hook's original values even if the
-	// caller re-passes a fresh literal each render.
+	// caller re-passes a fresh literal each render; reset(next) adopts `next`
+	// as BOTH the new values and the new dirty baseline (the settings page
+	// seeds the form from a fetched config this way, and adopts the server's
+	// re-read config as the baseline after each save).
 	const initialRef = useRef(initialValues);
 	const [values, setValues] = useState<TValues>(initialValues);
 	const [errors, setErrors] = useState<Partial<Record<TField, string>>>({});
@@ -116,6 +122,9 @@ export function useForm<
 	);
 
 	const reset = useCallback((next?: TValues) => {
+		// With an argument this is "seed a new baseline" (server snapshot),
+		// not "restore birth values" — the next edit compares against it.
+		if (next !== undefined) initialRef.current = next;
 		setValues(next ?? initialRef.current);
 		setErrors({});
 		setFormError(undefined);
@@ -238,6 +247,7 @@ export function useForm<
 		values,
 		set,
 		reset,
+		isDirty,
 		control,
 		errors: visibleErrors,
 		isRequired,

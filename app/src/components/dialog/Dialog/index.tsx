@@ -5,10 +5,13 @@ import {
 	DialogFooter,
 	DialogTitle,
 } from '@/components/ui/dialog';
-import { Header, type HeaderContentProps } from '@/components/data/Header';
+import {
+	TitleBlock,
+	type TitleBlockContentProps,
+} from '@/components/data/TitleBlock';
 import { cn } from '@/libs/utils';
 
-export interface DialogProps extends HeaderContentProps {
+export interface DialogProps extends TitleBlockContentProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	children: ReactNode;
@@ -55,7 +58,11 @@ export function Dialog({
 					<DialogTitle className="sr-only">{title}</DialogTitle>
 				)}
 
-				<Header icon={icon} title={title} description={description} />
+				<TitleBlock
+					icon={icon}
+					title={title}
+					description={description}
+				/>
 
 				{children}
 
