@@ -76,22 +76,24 @@ export function AdminSidebar({
 						</SidebarMenu>
 						<div className="border border-gray-500/10 rounded-lg">
 							<SidebarMenu>
-							<SidebarMenuItem>
-								<SidebarMenuButton
-									size="lg"
-									tooltip="Switch workspace"
-									onClick={() => setSwitcherOpen(true)}
-									className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-								>
-									<Header
-										variant="profile"
-										title={workspace?.name ?? 'Workspace'}
-										description={workspace?.slug}
-									/>
-									<ChevronsUpDown className="ml-auto size-4" />
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-						</SidebarMenu>
+								<SidebarMenuItem>
+									<SidebarMenuButton
+										size="lg"
+										tooltip="Switch workspace"
+										onClick={() => setSwitcherOpen(true)}
+										className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+									>
+										<Header
+											variant="profile"
+											title={
+												workspace?.name ?? 'Workspace'
+											}
+											description={workspace?.slug}
+										/>
+										<ChevronsUpDown className="ml-auto size-4" />
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							</SidebarMenu>
 						</div>
 					</SidebarHeader>
 					<SidebarContent>

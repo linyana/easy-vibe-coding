@@ -37,10 +37,14 @@ export function NavGroup({
 								<SidebarMenuButton asChild tooltip={item.title}>
 									<Link
 										to={item.to}
-										// 首页索引路由精确匹配；其他路由按路径前缀匹配，
+										// 索引页（/、/admin）精确匹配：/admin 的兄弟页
+										// （Accounts/Workspaces）是并列页不是子页，前缀匹配
+										// 会让 Overview 一直高亮；其余条目按路径前缀匹配，
 										// 未来加子路由（/accounts/:id）时父条目仍保持高亮。
 										activeOptions={{
-											exact: item.to === '/',
+											exact:
+												item.to === '/' ||
+												item.to === '/admin',
 											includeSearch: false,
 										}}
 										// Link 自带 aria-current="page"；data-active
