@@ -187,7 +187,9 @@ export const adminAccountsService = {
 	},
 
 	// Admin-only password reset — a targeted write with its own endpoint, so
-	// the generic PATCH never learns the password field.
+	// the generic PATCH never learns the password field. The tokenVersion bump
+	// revokes every outstanding session for this account immediately (the auth
+	// guard compares the claim against the row per request).
 	async resetPassword({
 		id,
 		data,
@@ -198,7 +200,10 @@ export const adminAccountsService = {
 		const passwordHash = await Bun.password.hash(data.password);
 		const updated = await db
 			.update(accounts)
-			.set({ passwordHash })
+			.set({
+				passwordHash,
+				tokenVersion: sql`${accounts.tokenVersion} + 1`,
+			})
 			.where(eq(accounts.id, id))
 			.returning({ id: accounts.id });
 		if (updated.length === 0) {

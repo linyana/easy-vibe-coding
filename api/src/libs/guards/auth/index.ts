@@ -21,16 +21,32 @@ const resolveAdmin = async (context: { auth: AuthShape }) => {
 	if (!account?.isAdmin) throw Errors.forbidden('Admin access required');
 };
 
-// The token-verification tier: `auth: true` verifies the bearer token and
-// injects `{ auth: { accountId, workspaceSlug? } }`; `admin: true` composes it
-// with the per-request isAdmin re-check. Workspace-scoped surfaces build on
-// this with the `workspace`/`role` macros from the sibling modules.
+// The token-verification tier: `auth: true` verifies the bearer token, then
+// re-reads the account row — existence (a deleted account's tokens die on
+// every surface, not just /me) and the tokenVersion counter (tokens signed
+// before a password reset/change are revoked immediately). It injects
+// `{ auth: { accountId, workspaceSlug? } }`. `admin: true` composes it with
+// the per-request isAdmin re-check. Workspace-scoped surfaces build on this
+// with the `workspace`/`role` macros from the sibling modules.
 export const authGuard = new Elysia({ name: 'libs/guards/auth' })
 	.macro('auth', {
 		resolve: async ({ headers }) => {
 			const token = extractBearerToken(headers.authorization);
 			if (!token) throw Errors.unauthorized('Missing access token');
-			const { accountId, workspaceSlug } = await verifyAuthToken(token);
+			const { accountId, workspaceSlug, tokenVersion } =
+				await verifyAuthToken(token);
+			const account = await db.query.accounts.findFirst({
+				where: eq(accounts.id, accountId),
+				columns: { tokenVersion: true },
+			});
+			if (!account) {
+				throw Errors.unauthorized('This account no longer exists');
+			}
+			if (account.tokenVersion !== tokenVersion) {
+				throw Errors.unauthorized(
+					'This session has been revoked. Please sign in again.',
+				);
+			}
 			return { auth: { accountId, workspaceSlug } };
 		},
 	})

@@ -66,7 +66,10 @@ export const authService = {
 				.returning();
 			const account = pickAccount(row!);
 			return {
-				token: await signAuthToken({ accountId: account.id }),
+				token: await signAuthToken({
+					accountId: account.id,
+					tokenVersion: row!.tokenVersion,
+				}),
 				account,
 			};
 		} catch (error) {
@@ -96,7 +99,10 @@ export const authService = {
 
 		const publicAccount = pickAccount(account);
 		return {
-			token: await signAuthToken({ accountId: publicAccount.id }),
+			token: await signAuthToken({
+				accountId: publicAccount.id,
+				tokenVersion: account.tokenVersion,
+			}),
 			account: publicAccount,
 		};
 	},
@@ -190,18 +196,21 @@ export const authService = {
 		}
 		// Soft-delete gate (same rule as the role guard): a closed workspace
 		// rejects non-admin members; admins keep the override (their own switch
-		// endpoint and surfaces stay open).
-		if (member[0].disabled) {
-			const account = await db.query.accounts.findFirst({
-				where: eq(accounts.id, accountId),
-				columns: { isAdmin: true },
-			});
-			if (!account?.isAdmin) {
-				throw Errors.forbidden('This workspace has been disabled');
-			}
+		// endpoint and surfaces stay open). tokenVersion rides on the fresh
+		// token so a reset password still revokes this new session.
+		const account = await db.query.accounts.findFirst({
+			where: eq(accounts.id, accountId),
+			columns: { isAdmin: true, tokenVersion: true },
+		});
+		if (member[0].disabled && !account?.isAdmin) {
+			throw Errors.forbidden('This workspace has been disabled');
 		}
 		return {
-			token: await signAuthToken({ accountId, workspaceSlug: slug }),
+			token: await signAuthToken({
+				accountId,
+				workspaceSlug: slug,
+				tokenVersion: account?.tokenVersion ?? 0,
+			}),
 			workspace: member[0],
 		};
 	},

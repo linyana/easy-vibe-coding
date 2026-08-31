@@ -38,6 +38,10 @@ export const accounts = pgTable('accounts', {
 	// NOT NULL holds because every creation path (register and the Accounts page)
 	// hashes an initial password (argon2id, same policy).
 	passwordHash: text('password_hash').notNull(),
+	// Session-revocation counter: bumped on password reset/change, embedded as
+	// a claim in every issued token, and compared per request by the auth guard
+	// — a token signed before the bump is rejected immediately (no TTL wait).
+	tokenVersion: integer('token_version').notNull().default(0),
 	createdAt: timestamptz('created_at')
 		.notNull()
 		.default(sql`now()`),

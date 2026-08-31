@@ -4,7 +4,7 @@ import type {
 	WorkspaceUpdate,
 } from '@easy-vibe-coding/shared';
 import { db } from '../../../db/client';
-import { workspaces } from '../../../db/schema';
+import { accounts, workspaces } from '../../../db/schema';
 import { isUniqueViolation } from '../../../libs/dbError';
 import { Errors } from '../../../libs/error';
 import { signAuthToken } from '../../../libs/auth';
@@ -111,8 +111,16 @@ export const adminWorkspaceService = {
 			columns: { id: true, slug: true, name: true },
 		});
 		if (!workspace) throw Errors.notFound('Workspace not found');
+		const account = await db.query.accounts.findFirst({
+			where: eq(accounts.id, accountId),
+			columns: { tokenVersion: true },
+		});
 		return {
-			token: await signAuthToken({ accountId, workspaceSlug: slug }),
+			token: await signAuthToken({
+				accountId,
+				workspaceSlug: slug,
+				tokenVersion: account?.tokenVersion ?? 0,
+			}),
 			workspace,
 		};
 	},

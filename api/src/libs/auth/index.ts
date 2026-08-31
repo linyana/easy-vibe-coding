@@ -2,8 +2,10 @@ import { SignJWT, jwtVerify } from 'jose';
 import { ENV } from '../../env';
 import { Errors } from '../error';
 
-// JWT primitives — the token carries the accountId claim (sub mirrors it) and,
-// after a workspace switch, the workspaceSlug claim; the DB row is the source of truth.
+// JWT primitives — the token carries the accountId claim (sub mirrors it), a
+// workspaceSlug claim after a workspace switch, and the tokenVersion claim (the
+// session-revocation counter). The DB row is the source of truth: the auth guard
+// re-reads tokenVersion per request and rejects any token signed before a bump.
 
 const secret = new TextEncoder().encode(ENV.AUTH_SECRET);
 
@@ -12,12 +14,15 @@ export const TOKEN_TTL = '7d';
 export function signAuthToken({
 	accountId,
 	workspaceSlug,
+	tokenVersion,
 }: {
 	accountId: number;
 	workspaceSlug?: string;
+	tokenVersion: number;
 }): Promise<string> {
 	return new SignJWT({
 		accountId,
+		tokenVersion,
 		...(workspaceSlug !== undefined ? { workspaceSlug } : {}),
 	})
 		.setProtectedHeader({ alg: 'HS256' })
@@ -30,6 +35,7 @@ export function signAuthToken({
 export async function verifyAuthToken(token: string): Promise<{
 	accountId: number;
 	workspaceSlug?: string;
+	tokenVersion: number;
 }> {
 	try {
 		const { payload } = await jwtVerify(token, secret, {
@@ -45,7 +51,10 @@ export async function verifyAuthToken(token: string): Promise<{
 			typeof payload.workspaceSlug === 'string'
 				? payload.workspaceSlug
 				: undefined;
-		return { accountId, workspaceSlug };
+		// ?? 0: tokens signed before this feature carry no claim and stay valid
+		// while the row version is still 0 — the bump is what revokes them.
+		const tokenVersion = Number(payload.tokenVersion ?? 0);
+		return { accountId, workspaceSlug, tokenVersion };
 	} catch {
 		throw Errors.unauthorized(
 			'Invalid or expired session. Please sign in again.',
