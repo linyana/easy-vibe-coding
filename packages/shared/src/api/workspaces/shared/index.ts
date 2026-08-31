@@ -9,10 +9,12 @@ export const workspaceResponseSchema = z.object({
 });
 export type WorkspaceResponse = z.infer<typeof workspaceResponseSchema>;
 
-// The session-facing identity of a workspace: slug is how the app refers to
-// it, name is what it displays. Everything the store keeps about the current
-// workspace fits in this ref.
+// The session-facing identity of a workspace: id is how server-scoped admin
+// operations address it (admin members endpoint), slug is how the app refers
+// to it, name is what it displays. Everything the store keeps about the
+// current workspace fits in this ref.
 export const workspaceRefSchema = z.object({
+	id: z.number(),
 	slug: z.string(),
 	name: z.string(),
 });

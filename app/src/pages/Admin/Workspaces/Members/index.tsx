@@ -35,7 +35,10 @@ export function MembersDialog({
 
 	const members = useAPIQuery({
 		queryKey: ['workspaces', 'admin', 'members', workspace.id],
-		queryFn: () => API.workspaces.admin({ id: workspace.id }).members.get(),
+		queryFn: () =>
+			API.workspaces.admin({ id: workspace.id }).members.get({
+				query: { page: 1, pageSize: 100 },
+			}),
 		enabled: open,
 		toastError: false,
 	});

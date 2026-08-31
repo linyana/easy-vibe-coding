@@ -22,3 +22,15 @@ export const workspaceMemberParamsSchema = z.object({
 	accountId: z.coerce.number().int(),
 });
 export type WorkspaceMemberParams = z.infer<typeof workspaceMemberParamsSchema>;
+
+// GET /workspaces/admin/:id/members — the admin roster, paginated + searchable
+// (the platform list pattern). The response reuses memberListResponseSchema
+// ({ items, total }); search hits the member's name and email.
+export const workspaceMemberListQuerySchema = z.object({
+	page: z.coerce.number().int().min(1).catch(1).default(1),
+	pageSize: z.coerce.number().int().min(1).max(100).catch(10).default(10),
+	search: z.string().max(100).optional().catch(undefined),
+});
+export type WorkspaceMemberListQuery = z.infer<
+	typeof workspaceMemberListQuerySchema
+>;

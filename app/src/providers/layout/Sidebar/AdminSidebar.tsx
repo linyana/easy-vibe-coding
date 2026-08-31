@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
 import {
+	ArrowLeftIcon,
 	Building2Icon,
 	ChevronsUpDown,
 	LayoutDashboardIcon,
+	ShieldCheckIcon,
 	UsersIcon,
 } from 'lucide-react';
 import {
@@ -21,72 +22,110 @@ import { NavGroup, type NavItem } from './NavGroup';
 import { NavAccount } from './Account';
 import { Banner } from './Banner';
 import { Header } from '@/components/data/Header';
-import { WorkspaceSelect } from '@/providers/workspace/Select';
-import { Dialog } from '@/components';
+import { Link, useLocation } from '@tanstack/react-router';
+import { useGlobal } from '@/hooks/useGlobal';
+import { AdminWorkspaceSwitcher } from './AdminWorkspaceSwitcher';
 
 // The admin surface's nav — platform-level, mirrors the app sidebar chrome
 // (Banner / NavGroup / account footer). `to` values are route-tree checked.
+// There is no in-UI admin↔app switcher: the admin surface is reached by URL
+// (/admin) and the regular app by URL (`/`).
 const navMain: NavItem[] = [
 	{ title: 'Overview', to: '/admin', icon: LayoutDashboardIcon },
 	{ title: 'Accounts', to: '/admin/accounts', icon: UsersIcon },
 	{ title: 'Workspaces', to: '/admin/workspaces', icon: Building2Icon },
 ];
 
+// The entered workspace's sections — Permission is a planned sibling of Member
+// (placeholder until the route exists).
+const navWorkspace: NavItem[] = [
+	{ title: 'Member', to: '/admin/workspace/member', icon: UsersIcon },
+	{ title: 'Permission', icon: ShieldCheckIcon },
+];
+
+// The sidebar switches modes by path (mirroring the reference admin): global
+// platform nav vs the entered workspace's sections.
+const isWorkspacePath = (pathname: string) =>
+	pathname === '/admin/workspace' || pathname.startsWith('/admin/workspace/');
+
 export function AdminSidebar({
 	...props
 }: React.ComponentProps<typeof Sidebar>) {
-	const navigate = useNavigate();
+	const { workspace } = useGlobal();
+	const location = useLocation();
 	const [switcherOpen, setSwitcherOpen] = useState(false);
+	const workspaceMode = isWorkspacePath(location.pathname);
 
 	return (
 		<Sidebar collapsible="offcanvas" {...props}>
-			<SidebarHeader>
-				<Banner />
-				{/* The context switcher — the platform-level counterpart of the
-					app sidebar's workspace switcher. Admin is never
-					workspace-scoped, so the current context is always "Admin";
-					the dialog skips the admin landing (initialView="list") and
-					picking a workspace is the way back into the app. */}
-				<SidebarSeparator className="scale-y-50" />
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton
-							size="lg"
-							tooltip="Switch context"
-							onClick={() => setSwitcherOpen(true)}
-							className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-						>
+			{workspaceMode ? (
+				// Workspace mode — the entered workspace's sections only. The
+				// header leads back to the platform list (the entry gate); the
+				// workspace card opens the quick hop switcher.
+				<>
+					<SidebarHeader>
+						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton asChild>
+									<Link to="/admin/workspaces">
+										<ArrowLeftIcon className="size-4" />
+										<span>Back to admin</span>
+									</Link>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						</SidebarMenu>
+						<SidebarSeparator className="scale-y-50" />
+						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									size="lg"
+									tooltip="Switch workspace"
+									onClick={() => setSwitcherOpen(true)}
+									className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+								>
+									<Header
+										variant="profile"
+										title={workspace?.name ?? 'Workspace'}
+										description={workspace?.slug}
+									/>
+									<ChevronsUpDown className="ml-auto size-4" />
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						</SidebarMenu>
+					</SidebarHeader>
+					<SidebarContent>
+						<NavGroup items={navWorkspace} />
+					</SidebarContent>
+				</>
+			) : (
+				// Global mode — the platform surface. The context row is
+				// static (no switcher): admin is never workspace-scoped by
+				// default; workspaces are entered from the platform list.
+				<>
+					<SidebarHeader>
+						<Banner />
+						<SidebarSeparator className="scale-y-50" />
+						<div className="flex h-12 items-center px-2 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-2">
 							<Header
 								variant="profile"
 								title="Admin"
 								description="Platform level"
 							/>
-							<ChevronsUpDown className="ml-auto size-4" />
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
-				<Dialog
-					open={switcherOpen}
-					onOpenChange={setSwitcherOpen}
-					contentClassName="sm:w-3/5 sm:max-w-none"
-				>
-					<WorkspaceSelect
-						headerVariant="default"
-						active={switcherOpen}
-						initialView="list"
-						onSwitched={() => {
-							setSwitcherOpen(false);
-							void navigate({ to: '/' });
-						}}
-					/>
-				</Dialog>
-			</SidebarHeader>
-			<SidebarContent>
-				<NavGroup label="Admin" items={navMain} />
-			</SidebarContent>
+						</div>
+					</SidebarHeader>
+					<SidebarContent>
+						<NavGroup label="Admin" items={navMain} />
+					</SidebarContent>
+				</>
+			)}
 			<SidebarFooter>
+				<SidebarSeparator className="scale-y-50" />
 				<NavAccount />
 			</SidebarFooter>
+			<AdminWorkspaceSwitcher
+				open={switcherOpen}
+				onOpenChange={setSwitcherOpen}
+			/>
 		</Sidebar>
 	);
 }

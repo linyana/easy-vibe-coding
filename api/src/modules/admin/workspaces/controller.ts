@@ -1,10 +1,13 @@
 import { Elysia } from 'elysia';
 import {
 	successResponseSchema,
+	switchAdminWorkspaceSchema,
+	switchAdminWorkspaceResponseSchema,
 	workspaceAdminListQuerySchema,
 	workspaceIdParamsSchema,
 	workspaceListResponseSchema,
 	workspaceMemberAddSchema,
+	workspaceMemberListQuerySchema,
 	workspaceMemberParamsSchema,
 	workspaceMemberRoleUpdateSchema,
 	workspaceResponseSchema,
@@ -33,6 +36,18 @@ export const adminWorkspacesController = new Elysia({
 	.get('/stats', () => adminWorkspaceService.stats(), {
 		response: workspaceStatsResponseSchema,
 	})
+	.post(
+		'/switch',
+		({ auth, body }) =>
+			adminWorkspaceService.switchWorkspace({
+				accountId: auth.accountId,
+				slug: body.slug,
+			}),
+		{
+			body: switchAdminWorkspaceSchema,
+			response: switchAdminWorkspaceResponseSchema,
+		},
+	)
 	.patch(
 		'/:id',
 		({ params, body }) =>
@@ -49,9 +64,11 @@ export const adminWorkspacesController = new Elysia({
 	})
 	.get(
 		'/:id/members',
-		({ params }) => adminWorkspaceService.listMembers(params.id),
+		({ params, query }) =>
+			adminWorkspaceService.listMembers(params.id, query),
 		{
 			params: workspaceIdParamsSchema,
+			query: workspaceMemberListQuerySchema,
 			response: memberListResponseSchema,
 		},
 	)

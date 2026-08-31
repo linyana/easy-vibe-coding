@@ -2,6 +2,7 @@ import { and, eq, ilike, or, sql } from 'drizzle-orm';
 import type {
 	WorkspaceAdminListQuery,
 	WorkspaceMemberAdd,
+	WorkspaceMemberListQuery,
 	WorkspaceMemberRoleUpdate,
 	WorkspaceUpdate,
 } from '@easy-vibe-coding/shared';
@@ -10,6 +11,7 @@ import { accounts, workspaces, workspaceMembers } from '../../../db/schema';
 import { isUniqueViolation } from '../../../libs/dbError';
 import { normalizeEmail } from '../../../libs/email';
 import { Errors } from '../../../libs/error';
+import { signAuthToken } from '../../../libs/auth';
 import { escapeLikePattern } from '../../../libs/like';
 
 // Platform-level workspace service — the admin counterpart of the
@@ -83,9 +85,55 @@ export const adminWorkspaceService = {
 		return { success: true };
 	},
 
+	// Enter ANY workspace from the platform list — the admin counterpart of
+	// /auth/switch-workspace (whose gate is membership). The token gets the
+	// same workspaceSlug claim, so after entering the session is
+	// workspace-scoped exactly like a member's.
+	async switchWorkspace({
+		accountId,
+		slug,
+	}: {
+		accountId: number;
+		slug: string;
+	}) {
+		const workspace = await db.query.workspaces.findFirst({
+			where: eq(workspaces.slug, slug),
+			columns: { id: true, slug: true, name: true },
+		});
+		if (!workspace) throw Errors.notFound('Workspace not found');
+		return {
+			token: await signAuthToken({ accountId, workspaceSlug: slug }),
+			workspace,
+		};
+	},
+
 	// Roster by workspace id (the member module's roster is scoped by the
-	// token's workspaceSlug claim; this is the admin's by-id view).
-	async listMembers(workspaceId: number) {
+	// token's workspaceSlug claim; this is the admin's by-id view). Paginated +
+	// searchable like the other platform lists; search hits name and email.
+	async listMembers(
+		workspaceId: number,
+		{ page, pageSize, search }: WorkspaceMemberListQuery,
+	) {
+		const keyword = search?.trim();
+		const where = and(
+			eq(workspaceMembers.workspaceId, workspaceId),
+			keyword
+				? or(
+						ilike(accounts.name, `%${escapeLikePattern(keyword)}%`),
+						ilike(
+							accounts.email,
+							`%${escapeLikePattern(keyword)}%`,
+						),
+					)
+				: undefined,
+		);
+
+		const [row] = await db
+			.select({ count: sql<number>`count(*)::int` })
+			.from(workspaceMembers)
+			.innerJoin(accounts, eq(workspaceMembers.accountId, accounts.id))
+			.where(where);
+		const count = row?.count ?? 0;
 		const items = await db
 			.select({
 				id: accounts.id,
@@ -96,9 +144,11 @@ export const adminWorkspaceService = {
 			})
 			.from(workspaceMembers)
 			.innerJoin(accounts, eq(workspaceMembers.accountId, accounts.id))
-			.where(eq(workspaceMembers.workspaceId, workspaceId))
-			.orderBy(accounts.id);
-		return { items, total: items.length };
+			.where(where)
+			.orderBy(accounts.id)
+			.limit(pageSize)
+			.offset((page - 1) * pageSize);
+		return { items, total: count };
 	},
 
 	// Add a member by email — the account row is looked up (citext makes the

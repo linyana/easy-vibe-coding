@@ -113,30 +113,42 @@ export const authService = {
 			throw Errors.unauthorized('This account no longer exists');
 		}
 
-		// The token's workspaceSlug claim is echoed only while membership still
-		// holds — a deleted workspace or removed member drops back to null (the
-		// client re-picks) instead of lingering in a phantom workspace until the
-		// token's TTL expires.
+		// The token's workspaceSlug claim is echoed only while the workspace
+		// still exists and (for regular accounts) membership still holds — a
+		// deleted workspace or removed member drops back to null (the client
+		// re-picks) instead of lingering in a phantom workspace until the
+		// token's TTL expires. Admins echo ANY workspace: the platform switch
+		// lets them enter workspaces they don't belong to, so membership can't
+		// be the gate for them.
 		let workspace: WorkspaceRef | null = null;
 		if (workspaceSlug !== undefined) {
-			const member = await db
-				.select({
-					slug: workspaces.slug,
-					name: workspaces.name,
-				})
-				.from(workspaceMembers)
-				.innerJoin(
-					workspaces,
-					eq(workspaceMembers.workspaceId, workspaces.id),
-				)
-				.where(
-					and(
-						eq(workspaceMembers.accountId, accountId),
-						eq(workspaces.slug, workspaceSlug),
-					),
-				)
-				.limit(1);
-			if (member[0]) workspace = member[0];
+			if (account.isAdmin) {
+				const row = await db.query.workspaces.findFirst({
+					where: eq(workspaces.slug, workspaceSlug),
+					columns: { id: true, slug: true, name: true },
+				});
+				if (row) workspace = row;
+			} else {
+				const member = await db
+					.select({
+						id: workspaces.id,
+						slug: workspaces.slug,
+						name: workspaces.name,
+					})
+					.from(workspaceMembers)
+					.innerJoin(
+						workspaces,
+						eq(workspaceMembers.workspaceId, workspaces.id),
+					)
+					.where(
+						and(
+							eq(workspaceMembers.accountId, accountId),
+							eq(workspaces.slug, workspaceSlug),
+						),
+					)
+					.limit(1);
+				if (member[0]) workspace = member[0];
+			}
 		}
 
 		return { account: pickAccount(account), workspace };
@@ -154,6 +166,7 @@ export const authService = {
 	}): Promise<SwitchWorkspaceResponse> {
 		const member = await db
 			.select({
+				id: workspaces.id,
 				slug: workspaces.slug,
 				name: workspaces.name,
 			})

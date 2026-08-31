@@ -1,18 +1,11 @@
 import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import {
-	ChevronLeft,
-	ArrowRightIcon,
-	Layers,
-	PlusIcon,
-	UserStar,
-} from 'lucide-react';
+import { PlusIcon } from 'lucide-react';
 import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
 import { useAPIMutation } from '@/hooks/useAPIMutation';
 import { Button } from '@/components/ui/button';
-import { Card, ErrorState, Header, MediaIcon } from '@/components';
+import { ErrorState, Header, SearchInput } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 import type { WorkspaceResponse } from '@easy-vibe-coding/shared';
 import type { UseAPIError } from '@/libs/error';
@@ -21,28 +14,23 @@ import { CreateWorkspaceDialog } from '../Create';
 import type { HeaderProps } from '@/components/data/Header';
 
 // The one workspace-selection flow, shared by the picker gate (embedded in a
-// Card) and the nav dialog above. The query runs only while `active` — the
-// dialog fetches on open, never on page entry; the gate passes true since it
-// only mounts without a workspace.
+// Card) and the app sidebar's nav dialog. The query runs only while `active`
+// — the dialog fetches on open, never on page entry; the gate passes true
+// since it only mounts without a workspace. The admin surface is reached by
+// URL (/admin), never from here — this picker only ever chooses workspaces.
 export function WorkspaceSelect({
 	active,
 	onSwitched,
 	headerVariant,
-	initialView = 'landing',
 }: {
 	active: boolean;
 	/** Fired after the session switched — the dialog closes itself here. */
 	onSwitched?: () => void;
 	headerVariant: HeaderProps['variant'];
-	/** The opening view — the admin choose-card landing (default, the picker
-	 * gate) vs. the workspace list (the admin sidebar's switcher, whose
-	 * context is already known to be Admin). */
-	initialView?: 'landing' | 'list';
 }) {
-	const { workspace, account, update } = useGlobal();
-	const navigate = useNavigate();
+	const { workspace, update } = useGlobal();
 	const [createOpen, setCreateOpen] = useState(false);
-	const [view, setView] = useState<'landing' | 'list'>(initialView);
+	const [search, setSearch] = useState<string | undefined>();
 
 	const workspaces = useAPIQuery({
 		queryKey: ['workspaces'],
@@ -63,62 +51,15 @@ export function WorkspaceSelect({
 
 	const { data, error, refetch } = workspaces;
 
-	if (account?.isAdmin && view === 'landing') {
-		return (
-			<>
-				<Header
-					variant={headerVariant}
-					title="Where do you want to enter?"
-					description="Choose where you'd like to get started. You can switch between Workspace and Admin anytime from the top menu."
-					className="pb-4"
-				/>
-				<div className="flex justify-between gap-8">
-					<Card
-						hoverable
-						onClick={() => setView('list')}
-						className="flex-1"
-					>
-						<div className="relative flex flex-col justify-center gap-6">
-							<ArrowRightIcon className="absolute top-0 right-0 size-5 text-muted-foreground" />
-							<MediaIcon>
-								<Layers className="size-6" />
-							</MediaIcon>
-							<Header
-								title="Enter Workspace"
-								description="View the latest activities of the project, team members and work area"
-							/>
-							<div className="flex items-center gap-2">
-								<WorkspaceAvatarStack items={data?.items} />
-								<p className="text-sm text-muted-foreground">
-									{data?.items?.length ?? '…'} Workspaces
-									available
-								</p>
-							</div>
-						</div>
-					</Card>
-					<Card
-						hoverable
-						onClick={() => void navigate({ to: '/admin' })}
-						className="flex-1"
-					>
-						<div className="relative flex flex-col justify-center gap-6">
-							<ArrowRightIcon className="absolute top-0 right-0 size-5 text-muted-foreground" />
-							<MediaIcon className="bg-foreground text-background">
-								<UserStar className="size-6" />
-							</MediaIcon>
-							<Header
-								title="Enter Admin"
-								description="Management platform users, workspace, permission policies and system settings"
-							/>
-							<p className="text-sm text-muted-foreground">
-								Administrator privileges · platform level
-							</p>
-						</div>
-					</Card>
-				</div>
-			</>
-		);
-	}
+	// Client-side filter: the membership-scoped list is unpaginated and small,
+	// so no server round-trip — the search narrows the already-fetched roster.
+	const keyword = search?.trim().toLowerCase();
+	const filtered = (data?.items ?? []).filter(
+		(item) =>
+			!keyword ||
+			item.name.toLowerCase().includes(keyword) ||
+			item.slug.toLowerCase().includes(keyword),
+	);
 
 	return (
 		<>
@@ -127,24 +68,18 @@ export function WorkspaceSelect({
 				title="Choose workspace"
 				description="Choose the workspace you want to enter from the top menu."
 				className="pb-4"
-				icon={
-					account?.isAdmin
-						? () => (
-								<Button
-									variant="ghost"
-									size="icon-lg"
-									onClick={() => setView('landing')}
-									tooltip="Back to choice"
-								>
-									<ChevronLeft className="size-4" />
-								</Button>
-							)
-						: undefined
-				}
 			/>
 			<div className="space-y-2">
+				{data && data.items.length > 0 && (
+					<SearchInput
+						value={search}
+						onChange={setSearch}
+						placeholder="Search by name or slug…"
+					/>
+				)}
 				<SelectList
-					items={data?.items}
+					items={filtered}
+					search={search}
 					error={error}
 					currentSlug={workspace?.slug}
 					disabled={switchMutation.isPending}
@@ -170,34 +105,10 @@ export function WorkspaceSelect({
 	);
 }
 
-// The Enter Workspace card's count line — a stack of overlapping initial
-// circles (first letters), collapsing beyond two into a single "+N" circle.
-function WorkspaceAvatarStack({ items }: { items?: WorkspaceResponse[] }) {
-	if (!items?.length) return null;
-	const shown = items.slice(0, 2);
-	const rest = items.length - shown.length;
-	return (
-		<div className="flex -space-x-1.5">
-			{shown.map((workspace) => (
-				<span
-					key={workspace.slug}
-					className="flex size-5 items-center justify-center rounded-full bg-foreground text-[10px] font-medium text-background ring-2 ring-card"
-				>
-					{workspace.name.charAt(0).toUpperCase()}
-				</span>
-			))}
-			{rest > 0 && (
-				<span className="flex size-5 items-center justify-center rounded-full bg-foreground text-[10px] font-medium text-background ring-2 ring-card">
-					+{rest}
-				</span>
-			)}
-		</div>
-	);
-}
-
-// The list body both surfaces render — loading / error / empty / rows all live here.
+// The list body — loading / error / empty / rows all live here.
 function SelectList({
 	items,
+	search,
 	error,
 	currentSlug,
 	disabled,
@@ -205,6 +116,9 @@ function SelectList({
 	onRetry,
 }: {
 	items: WorkspaceResponse[] | undefined;
+	/** The active search keyword — an empty filtered list with one reads as "no
+	 * matches" instead of "no workspaces yet". */
+	search?: string;
 	error: UseAPIError | null;
 	/** The session's current workspace slug — that row renders marked and non-interactive. */
 	currentSlug?: string | null;
@@ -223,7 +137,9 @@ function SelectList({
 	if (items.length === 0) {
 		return (
 			<p className="py-8 text-center text-sm text-muted-foreground">
-				No workspaces yet — create one to get started.
+				{search
+					? 'No workspaces match your search.'
+					: 'No workspaces yet — create one to get started.'}
 			</p>
 		);
 	}

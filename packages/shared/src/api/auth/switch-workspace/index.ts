@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { workspaceFieldSchemas } from '../../workspaces/create';
+import { workspaceRefSchema } from '../../workspaces/shared';
 
 // Exchange the session for a workspace-scoped token: the response token
 // carries accountId + workspaceSlug claims, and the workspace ref the store
@@ -11,10 +12,7 @@ export type SwitchWorkspace = z.infer<typeof switchWorkspaceSchema>;
 
 export const switchWorkspaceResponseSchema = z.object({
 	token: z.string(),
-	workspace: z.object({
-		slug: z.string(),
-		name: z.string(),
-	}),
+	workspace: workspaceRefSchema,
 });
 export type SwitchWorkspaceResponse = z.infer<
 	typeof switchWorkspaceResponseSchema

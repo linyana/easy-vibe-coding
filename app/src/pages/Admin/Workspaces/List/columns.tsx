@@ -51,29 +51,11 @@ export function createColumns({
 				<Actions
 					items={[
 						{
-							label: 'Members',
-							icon: { name: 'Users' },
+							label: 'Enter',
+							icon: { name: 'LogIn' },
 							onClick: () =>
 								onAction({
-									kind: 'members',
-									workspace: row.original,
-								}),
-						},
-						{
-							label: 'Edit',
-							icon: { name: 'Pencil' },
-							onClick: () =>
-								onAction({
-									kind: 'edit',
-									workspace: row.original,
-								}),
-						},
-						{
-							label: 'Delete',
-							icon: { name: 'Trash2', style: 'destructive' },
-							onClick: () =>
-								onAction({
-									kind: 'delete',
+									kind: 'enter',
 									workspace: row.original,
 								}),
 						},

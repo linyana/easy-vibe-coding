@@ -68,6 +68,9 @@ interface ListTableProps<TData extends RowData> {
 	};
 	columns: ColumnDef<typeof features, TData, unknown>[];
 	emptyMessage?: string;
+	/** Whole-row click — e.g. a list where selecting a row is the primary
+	 * action (the admin workspaces list enters a workspace on row click). */
+	onRowClick?: (row: TData) => void;
 	selection?: {
 		actions: (selected: TData[]) => RowAction[];
 	};
@@ -81,6 +84,7 @@ export function ListTable<TData extends RowData>({
 	list,
 	columns,
 	emptyMessage = 'No results',
+	onRowClick,
 	selection,
 }: ListTableProps<TData>) {
 	const {
@@ -308,6 +312,19 @@ export function ListTable<TData extends RowData>({
 												}
 												onMouseLeave={() =>
 													setHoveredRowId(null)
+												}
+												onClick={
+													onRowClick
+														? () =>
+																onRowClick(
+																	row.original,
+																)
+														: undefined
+												}
+												className={
+													onRowClick
+														? 'cursor-pointer'
+														: undefined
 												}
 											>
 												{row

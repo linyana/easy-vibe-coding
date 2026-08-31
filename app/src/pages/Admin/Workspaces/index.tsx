@@ -1,19 +1,45 @@
 import { useCallback, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import type { AdminWorkspacesAction } from './types';
 import { WorkspaceList } from './List';
 import { CreateWorkspaceDialog } from './Create';
 import { EditWorkspaceDialog } from './Edit';
 import { DeleteWorkspaceDialog } from './Delete';
 import { MembersDialog } from './Members';
+import { API } from '@/libs/api';
+import { useGlobal } from '@/hooks/useGlobal';
+import { useAPIMutation } from '@/hooks/useAPIMutation';
 
 export const AdminWorkspaces = () => {
 	const [action, setAction] = useState<AdminWorkspacesAction | null>(null);
 	const [open, setOpen] = useState(false);
+	const { update } = useGlobal();
+	const navigate = useNavigate();
 
-	const handleAction = useCallback((action: AdminWorkspacesAction) => {
-		setAction(action);
-		setOpen(true);
-	}, []);
+	// Enter = exchange for a workspace-scoped token (admin switch, any
+	// workspace) then land on the workspace surface. Not a dialog: the row
+	// action navigates straight there.
+	const enterMutation = useAPIMutation({
+		call: (slug: string) => API.workspaces.admin.switch.post({ slug }),
+		queryKey: ['auth'],
+		// Entering a workspace is a context change, not a write — no toast.
+		onSuccess: ({ token, workspace }) => {
+			update({ token, workspace });
+			void navigate({ to: '/admin/workspace/member' });
+		},
+	});
+
+	const handleAction = useCallback(
+		(action: AdminWorkspacesAction) => {
+			if (action.kind === 'enter') {
+				enterMutation.mutate(action.workspace.slug);
+				return;
+			}
+			setAction(action);
+			setOpen(true);
+		},
+		[enterMutation],
+	);
 
 	const handleOpenChange = useCallback((open: boolean) => setOpen(open), []);
 

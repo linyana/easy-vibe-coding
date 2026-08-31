@@ -31,6 +31,9 @@ export function Actions({ items }: { items: RowAction[] }) {
 					size="icon"
 					aria-label={accessibleLabel}
 					title={accessibleLabel}
+					// The trigger lives inside a possibly clickable row (ListTable
+					// onRowClick) — its click must not bubble into a row action.
+					onClick={(event) => event.stopPropagation()}
 				>
 					<MoreHorizontalIcon className="size-4" />
 				</Button>

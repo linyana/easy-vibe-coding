@@ -6,4 +6,5 @@ export type AdminWorkspacesAction =
 	| { kind: 'create' }
 	| { kind: 'edit'; workspace: Workspace }
 	| { kind: 'members'; workspace: Workspace }
-	| { kind: 'delete'; workspace: Workspace };
+	| { kind: 'delete'; workspace: Workspace }
+	| { kind: 'enter'; workspace: Workspace };
