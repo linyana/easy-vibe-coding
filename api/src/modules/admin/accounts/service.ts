@@ -98,17 +98,10 @@ export const adminAccountsService = {
 	async update({
 		id,
 		data,
-		actorId,
 	}: {
 		id: number;
 		data: AccountUpdate;
-		actorId: number;
 	}): Promise<Account> {
-		// The last-admin boundary: an admin can revoke admin from others, but
-		// never from themselves — otherwise the platform can become admin-less.
-		if (id === actorId && data.isAdmin === false) {
-			throw Errors.badRequest('You cannot revoke your own admin access');
-		}
 		try {
 			// normalizeEmail on the partial: a no-op when email isn't in the patch.
 			const patch = data.email
@@ -128,6 +121,31 @@ export const adminAccountsService = {
 			}
 			throw error;
 		}
+	},
+
+	// Grant/revoke platform admin — the only write path for the flag (the
+	// generic PATCH never carries isAdmin), so the change is always deliberate.
+	async setAdmin({
+		id,
+		isAdmin,
+		actorId,
+	}: {
+		id: number;
+		isAdmin: boolean;
+		actorId: number;
+	}): Promise<Account> {
+		// The last-admin boundary: an admin can revoke admin from others, but
+		// never from themselves — otherwise the platform can become admin-less.
+		if (id === actorId && !isAdmin) {
+			throw Errors.badRequest('You cannot revoke your own admin access');
+		}
+		const [account] = await db
+			.update(accounts)
+			.set({ isAdmin })
+			.where(eq(accounts.id, id))
+			.returning();
+		if (!account) throw Errors.notFound('Account not found');
+		return account;
 	},
 
 	async remove({

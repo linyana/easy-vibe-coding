@@ -72,6 +72,22 @@ export function createColumns({
 								}),
 						},
 						{
+							label: row.original.isAdmin
+								? 'Revoke admin'
+								: 'Make admin',
+							icon: row.original.isAdmin
+								? {
+										name: 'ShieldOff',
+										style: 'destructive',
+									}
+								: { name: 'ShieldCheck' },
+							onClick: () =>
+								onAction({
+									kind: 'toggleAdmin',
+									account: row.original,
+								}),
+						},
+						{
 							label: 'Delete',
 							icon: { name: 'Trash2', style: 'destructive' },
 							onClick: () =>

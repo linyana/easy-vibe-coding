@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
 import {
+	accountAdminSchema,
 	accountBatchDeleteSchema,
 	accountBatchDeleteResponseSchema,
 	accountCreateSchema,
@@ -43,12 +44,8 @@ export const adminAccountsController = new Elysia({
 	})
 	.patch(
 		'/:id',
-		({ params, body, auth }) =>
-			adminAccountsService.update({
-				id: params.id,
-				data: body,
-				actorId: auth.accountId,
-			}),
+		({ params, body }) =>
+			adminAccountsService.update({ id: params.id, data: body }),
 		{
 			params: accountIdParamsSchema,
 			body: accountUpdateSchema,
@@ -89,5 +86,21 @@ export const adminAccountsController = new Elysia({
 			params: accountIdParamsSchema,
 			body: accountResetPasswordSchema,
 			response: successResponseSchema,
+		},
+	)
+	// Grant/revoke admin — a targeted write (like password): the flag never
+	// flows through the generic PATCH, so an edit can't flip it by accident.
+	.patch(
+		'/:id/admin',
+		({ params, body, auth }) =>
+			adminAccountsService.setAdmin({
+				id: params.id,
+				isAdmin: body.isAdmin,
+				actorId: auth.accountId,
+			}),
+		{
+			params: accountIdParamsSchema,
+			body: accountAdminSchema,
+			response: accountResponseSchema,
 		},
 	);

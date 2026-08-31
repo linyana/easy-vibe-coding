@@ -3,7 +3,6 @@ import { accountFieldSchemas } from '@easy-vibe-coding/shared';
 import { API } from '@/libs/api';
 import { Dialog, Form, FormField, FormSubmitButton } from '@/components';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { useForm } from '@/hooks/useForm';
 import type { Account } from '../types';
@@ -24,7 +23,6 @@ export function EditAccountDialog({
 		initialValues: {
 			name: account.name,
 			email: account.email,
-			isAdmin: account.isAdmin,
 		},
 		submit: {
 			call: (values) => API.accounts({ id: account.id }).patch(values),
@@ -68,14 +66,6 @@ export function EditAccountDialog({
 					tooltip="Used for login. Must be unique."
 				>
 					<Input placeholder="Email" autoComplete="email" />
-				</FormField>
-				<FormField
-					form={form}
-					name="isAdmin"
-					label="Admin"
-					tooltip="Platform admins can manage accounts and workspaces. You cannot revoke your own admin access."
-				>
-					<Checkbox />
 				</FormField>
 			</Form>
 		</Dialog>
