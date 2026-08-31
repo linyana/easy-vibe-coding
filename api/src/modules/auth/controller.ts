@@ -62,7 +62,7 @@ export const authController = new Elysia({
 	)
 	.get(
 		'/me',
-		({ auth }) => authService.me(auth.accountId, auth.workspaceSlug),
+		({ auth }) => authService.me(auth.accountId, auth.workspaceId),
 		{
 			auth: true,
 			response: meResponseSchema,

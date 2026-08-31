@@ -6,12 +6,13 @@ import { Card, ErrorState, Header } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 
 // The workspace's single surface: a read-only roster scoped by the token's
-// workspaceSlug claim (member management is a later step).
+// workspaceId claim (member management is a later step).
 export function MembersPage() {
 	const { workspace } = useGlobal();
 	const { data, error, refetch } = useAPIQuery({
-		// Scoped by the workspace slug: an in-place switch (the header dialog)
-		// changes the key → a fresh fetch under the new token, no stale roster.
+		// Scoped by the workspace slug (the cache key): an in-place switch (the
+		// header dialog) changes the key → a fresh fetch under the new token,
+		// no stale roster.
 		queryKey: ['members', workspace?.slug],
 		queryFn: () => API.members.get(),
 		toastError: false,

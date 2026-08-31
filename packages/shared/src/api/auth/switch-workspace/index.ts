@@ -3,7 +3,7 @@ import { workspaceFieldSchemas } from '../../workspaces/create';
 import { workspaceRefSchema } from '../../workspaces/shared';
 
 // Exchange the session for a workspace-scoped token: the response token
-// carries accountId + workspaceSlug claims, and the workspace ref the store
+// carries accountId + workspaceId claims, and the workspace ref the store
 // keeps. Membership is verified server-side by slug.
 export const switchWorkspaceSchema = z.object({
 	slug: workspaceFieldSchemas.slug,

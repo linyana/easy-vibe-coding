@@ -97,7 +97,7 @@ export const adminWorkspaceService = {
 
 	// Enter ANY workspace from the platform list — the admin counterpart of
 	// /auth/switch-workspace (whose gate is membership). The token gets the
-	// same workspaceSlug claim, so after entering the session is
+	// same workspaceId claim, so after entering the session is
 	// workspace-scoped exactly like a member's.
 	async switchWorkspace({
 		accountId,
@@ -118,7 +118,7 @@ export const adminWorkspaceService = {
 		return {
 			token: await signAuthToken({
 				accountId,
-				workspaceSlug: slug,
+				workspaceId: workspace.id,
 				tokenVersion: account?.tokenVersion ?? 0,
 			}),
 			workspace,

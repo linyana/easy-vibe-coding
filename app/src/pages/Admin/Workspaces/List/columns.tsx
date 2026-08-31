@@ -2,7 +2,6 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { LogIn } from 'lucide-react';
 import { features } from '@/components';
 import { formatDateTime } from '@/libs/dates';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import type { AdminWorkspacesAction, Workspace } from '../types';

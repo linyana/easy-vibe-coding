@@ -16,18 +16,19 @@ export type WorkspaceContext = {
 };
 
 // The shared workspace-scoped surface guard: requires a workspace-scoped
-// session (the token's workspaceSlug claim), re-verifies the workspace still
-// exists (the claim can outlive a deleted workspace), and injects
+// session (the token's workspaceId claim — the int PK, so a slug rename never
+// orphans in-flight sessions), re-verifies the workspace still exists (the
+// claim can outlive a deleted workspace), and injects
 // `workspace { id, slug, name, disabled }` into the context.
 // Authorization-free by design — compose `role` (sibling module) or `admin`
 // (auth module) for access.
 const resolveWorkspace = async (context: { auth: AuthShape }) => {
 	const { auth } = context;
-	if (auth.workspaceSlug === undefined) {
+	if (auth.workspaceId === undefined) {
 		throw Errors.forbidden('This session is not scoped to a workspace');
 	}
 	const workspace = await db.query.workspaces.findFirst({
-		where: eq(workspaces.slug, auth.workspaceSlug),
+		where: eq(workspaces.id, auth.workspaceId),
 		columns: { id: true, slug: true, name: true, disabled: true },
 	});
 	if (!workspace) {

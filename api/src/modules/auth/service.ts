@@ -110,7 +110,7 @@ export const authService = {
 	// Guard already verified the token; re-read the row so renames apply immediately.
 	async me(
 		accountId: number,
-		workspaceSlug: string | undefined,
+		workspaceId: number | undefined,
 	): Promise<MeResponse> {
 		const account = await db.query.accounts.findFirst({
 			where: eq(accounts.id, accountId),
@@ -119,7 +119,7 @@ export const authService = {
 			throw Errors.unauthorized('This account no longer exists');
 		}
 
-		// The token's workspaceSlug claim is echoed only while the workspace
+		// The token's workspaceId claim is echoed only while the workspace
 		// still exists, (for regular accounts) membership still holds, and the
 		// workspace is not soft-deleted — a deleted or disabled workspace or a
 		// removed member drops back to null (the client re-picks) instead of
@@ -128,10 +128,10 @@ export const authService = {
 		// workspaces they don't belong to, so membership can't be the gate for
 		// them, and a disabled workspace is theirs to inspect and re-enable.
 		let workspace: WorkspaceRef | null = null;
-		if (workspaceSlug !== undefined) {
+		if (workspaceId !== undefined) {
 			if (account.isAdmin) {
 				const row = await db.query.workspaces.findFirst({
-					where: eq(workspaces.slug, workspaceSlug),
+					where: eq(workspaces.id, workspaceId),
 					columns: { id: true, slug: true, name: true },
 				});
 				if (row) workspace = row;
@@ -150,7 +150,7 @@ export const authService = {
 					.where(
 						and(
 							eq(workspaceMembers.accountId, accountId),
-							eq(workspaces.slug, workspaceSlug),
+							eq(workspaceMembers.workspaceId, workspaceId),
 							eq(workspaces.disabled, false),
 						),
 					)
@@ -208,7 +208,7 @@ export const authService = {
 		return {
 			token: await signAuthToken({
 				accountId,
-				workspaceSlug: slug,
+				workspaceId: member[0].id,
 				tokenVersion: account?.tokenVersion ?? 0,
 			}),
 			workspace: member[0],

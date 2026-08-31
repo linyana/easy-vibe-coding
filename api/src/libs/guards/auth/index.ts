@@ -6,7 +6,7 @@ import { db } from '../../../db/client';
 import { accounts } from '../../../db/schema';
 
 // The authenticated session the `auth` macro injects.
-export type AuthShape = { accountId: number; workspaceSlug?: string };
+export type AuthShape = { accountId: number; workspaceId?: number };
 
 // Platform admin gate: re-checks accounts.isAdmin against the DB row per
 // request — the row is the source of truth, so revoking takes effect
@@ -25,7 +25,7 @@ const resolveAdmin = async (context: { auth: AuthShape }) => {
 // re-reads the account row — existence (a deleted account's tokens die on
 // every surface, not just /me) and the tokenVersion counter (tokens signed
 // before a password reset/change are revoked immediately). It injects
-// `{ auth: { accountId, workspaceSlug? } }`. `admin: true` composes it with
+// `{ auth: { accountId, workspaceId? } }`. `admin: true` composes it with
 // the per-request isAdmin re-check. Workspace-scoped surfaces build on this
 // with the `workspace`/`role` macros from the sibling modules.
 export const authGuard = new Elysia({ name: 'libs/guards/auth' })
@@ -33,7 +33,7 @@ export const authGuard = new Elysia({ name: 'libs/guards/auth' })
 		resolve: async ({ headers }) => {
 			const token = extractBearerToken(headers.authorization);
 			if (!token) throw Errors.unauthorized('Missing access token');
-			const { accountId, workspaceSlug, tokenVersion } =
+			const { accountId, workspaceId, tokenVersion } =
 				await verifyAuthToken(token);
 			const account = await db.query.accounts.findFirst({
 				where: eq(accounts.id, accountId),
@@ -47,7 +47,7 @@ export const authGuard = new Elysia({ name: 'libs/guards/auth' })
 					'This session has been revoked. Please sign in again.',
 				);
 			}
-			return { auth: { accountId, workspaceSlug } };
+			return { auth: { accountId, workspaceId } };
 		},
 	})
 	.macro('admin', {

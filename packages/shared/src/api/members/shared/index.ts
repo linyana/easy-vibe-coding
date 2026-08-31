@@ -6,7 +6,7 @@ export const memberRoleSchema = z.enum(['owner', 'member']);
 export type MemberRole = z.infer<typeof memberRoleSchema>;
 
 // A workspace member = the account row joined with its membership role. The
-// workspace context comes from the token's workspaceSlug claim — never a param.
+// workspace context comes from the token's workspaceId claim — never a param.
 export const memberResponseSchema = z.object({
 	id: z.number(),
 	name: z.string(),
