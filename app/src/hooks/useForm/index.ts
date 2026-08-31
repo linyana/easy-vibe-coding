@@ -4,6 +4,7 @@ import type { EdenCall } from '@/libs/api';
 import { deepEqual } from '@/libs/utils';
 import type { FormControl } from '@/components';
 import { useAPIMutation } from '@/hooks/useAPIMutation';
+import { toast } from 'sonner';
 
 interface UseFormSubmitConfig<TValues, TData> {
 	call: (values: TValues) => EdenCall<TData>;
@@ -222,6 +223,7 @@ export function useForm<
 					nextSet.add(key as TField);
 				return nextSet;
 			});
+			toast.error(error.message);
 		},
 		onSuccess: (data: TData) => {
 			reset();

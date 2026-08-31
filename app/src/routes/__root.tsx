@@ -11,7 +11,7 @@ function RootComponent() {
 	return (
 		<>
 			<Outlet />
-			<Toaster />
+			<Toaster richColors />
 		</>
 	);
 }
