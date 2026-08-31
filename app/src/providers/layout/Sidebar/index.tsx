@@ -66,8 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					only with an active workspace; the admin shell has its own
 					platform-level switcher (AdminSidebar). */}
 				{workspace && (
-					<>
-						<SidebarSeparator className="scale-y-50" />
+					<div className="border rounded-lg">
 						<SidebarMenu>
 							<SidebarMenuItem>
 								<SidebarMenuButton
@@ -96,7 +95,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 								onSwitched={() => setSwitcherOpen(false)}
 							/>
 						</Dialog>
-					</>
+					</div>
 				)}
 			</SidebarHeader>
 			<SidebarContent>

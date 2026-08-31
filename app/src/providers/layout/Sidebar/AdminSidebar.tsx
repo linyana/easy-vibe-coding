@@ -74,8 +74,8 @@ export function AdminSidebar({
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						</SidebarMenu>
-						<SidebarSeparator className="scale-y-50" />
-						<SidebarMenu>
+						<div className="border rounded-lg">
+							<SidebarMenu>
 							<SidebarMenuItem>
 								<SidebarMenuButton
 									size="lg"
@@ -92,6 +92,7 @@ export function AdminSidebar({
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						</SidebarMenu>
+						</div>
 					</SidebarHeader>
 					<SidebarContent>
 						<NavGroup items={navWorkspace} />
@@ -104,14 +105,6 @@ export function AdminSidebar({
 				<>
 					<SidebarHeader>
 						<Banner />
-						<SidebarSeparator className="scale-y-50" />
-						<div className="flex h-12 items-center px-2 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-2">
-							<Header
-								variant="profile"
-								title="Admin"
-								description="Platform level"
-							/>
-						</div>
 					</SidebarHeader>
 					<SidebarContent>
 						<NavGroup label="Admin" items={navMain} />
