@@ -1,10 +1,10 @@
 import type { API, UseAPIItem } from '@/libs/api';
 import type { MemberRole } from '@easy-vibe-coding/shared';
 
-// Members live under the parameterized admin route (`admin({ id })`) — reach
-// the list fn type via ReturnType instead of a call expression (unparseable
-// inside a generic).
-type MembersGet = ReturnType<typeof API.workspaces.admin>['members']['get'];
+// Members live under the admin route without a workspace id — the workspace
+// comes from the session (adminWorkspace guard resolves the token's slug
+// claim), not the URL.
+type MembersGet = typeof API.workspaces.admin.members.get;
 
 export type Member = UseAPIItem<MembersGet>;
 

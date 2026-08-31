@@ -16,15 +16,20 @@ import { createColumns } from './columns';
 
 export function WorkspaceList({
 	onAction,
+	togglePending,
 }: {
 	onAction: (action: AdminWorkspacesAction) => void;
+	togglePending: boolean;
 }) {
 	const list = useAPIList({
 		queryKey: ['workspaces', 'admin'],
 		call: API.workspaces.admin.get,
 	});
 
-	const columns = useMemo(() => createColumns({ onAction }), [onAction]);
+	const columns = useMemo(
+		() => createColumns({ onAction, togglePending }),
+		[onAction, togglePending],
+	);
 
 	usePageHeader({ title: 'Workspaces' });
 

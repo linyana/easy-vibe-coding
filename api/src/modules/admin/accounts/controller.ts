@@ -25,7 +25,7 @@ export const adminAccountsController = new Elysia({
 	// The whole module is the platform-level account management surface —
 	// admins only. (Register/login live in the auth module; the accounts
 	// module is the admin CRUD.)
-	.guard({ role: ['admin'] })
+	.guard({ admin: true })
 	.get('/', ({ query }) => adminAccountsService.list(query), {
 		query: accountListQuerySchema,
 		response: accountListResponseSchema,

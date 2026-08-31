@@ -5,6 +5,6 @@ export type Workspace = UseAPIItem<typeof API.workspaces.admin.get>;
 export type AdminWorkspacesAction =
 	| { kind: 'create' }
 	| { kind: 'edit'; workspace: Workspace }
-	| { kind: 'members'; workspace: Workspace }
 	| { kind: 'delete'; workspace: Workspace }
-	| { kind: 'enter'; workspace: Workspace };
+	| { kind: 'enter'; workspace: Workspace }
+	| { kind: 'toggle'; workspace: Workspace; enable: boolean };

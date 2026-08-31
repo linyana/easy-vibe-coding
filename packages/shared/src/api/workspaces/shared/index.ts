@@ -4,6 +4,9 @@ export const workspaceResponseSchema = z.object({
 	id: z.number(),
 	slug: z.string(),
 	name: z.string(),
+	// Soft-delete flag — an admin can close a workspace; it behaves as deleted
+	// for non-admin members until re-enabled (the row and memberships stay).
+	disabled: z.boolean(),
 	createdAt: z.iso.datetime(),
 	updatedAt: z.iso.datetime(),
 });

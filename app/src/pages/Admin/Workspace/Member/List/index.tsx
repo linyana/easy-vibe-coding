@@ -15,9 +15,10 @@ import {
 import { createColumns } from './columns';
 
 // The member roster — the feature surface for the entered workspace: search +
-// pagination via the admin members endpoint (by workspace id — the admin may
-// not be a member). Writes (add/remove/role) flow through onAction; the
-// workspace context is guaranteed by the fail-closed shell.
+// pagination via the admin members endpoint (the workspace is resolved from
+// the session, so an admin who isn't a member can still manage it). Writes
+// (add/remove/role) flow through onAction; the workspace context is
+// guaranteed by the fail-closed shell.
 export function MemberList({
 	onAction,
 }: {
@@ -29,7 +30,7 @@ export function MemberList({
 		// Keyed by id: switching workspace from the sidebar swaps the context
 		// → a fresh fetch under the new workspace.
 		queryKey: ['workspaces', 'admin', 'members', workspace?.id],
-		call: API.workspaces.admin({ id: workspace!.id }).members.get,
+		call: API.workspaces.admin.members.get,
 	});
 
 	const columns = useMemo(() => createColumns({ onAction }), [onAction]);

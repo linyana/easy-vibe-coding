@@ -57,6 +57,9 @@ export const workspaces = pgTable('workspaces', {
 	// claim, and the app address a workspace by its slug.
 	slug: text('slug').notNull().unique(),
 	name: text('name').notNull(),
+	// Soft-delete flag (admin toggle): the row and memberships stay, but the
+	// workspace behaves as deleted for non-admin members until re-enabled.
+	disabled: boolean('disabled').notNull().default(false),
 	createdAt: timestamptz('created_at')
 		.notNull()
 		.default(sql`now()`),

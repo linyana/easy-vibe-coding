@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { WorkspaceCreate } from '@easy-vibe-coding/shared';
 import { db } from '../../db/client';
 import { workspaces, workspaceMembers } from '../../db/schema';
@@ -10,6 +10,8 @@ import { Errors } from '../../libs/error';
 export const workspaceService = {
 	// The account's workspaces — via membership join, never a global list.
 	// Membership is the only scope; there is no "all workspaces" surface.
+	// Soft-deleted workspaces are hidden here too (they behave as deleted for
+	// members; the admin platform list is their only surface).
 	async list(accountId: number) {
 		const rows = await db
 			.select({ workspace: workspaces })
@@ -18,7 +20,12 @@ export const workspaceService = {
 				workspaces,
 				eq(workspaceMembers.workspaceId, workspaces.id),
 			)
-			.where(eq(workspaceMembers.accountId, accountId))
+			.where(
+				and(
+					eq(workspaceMembers.accountId, accountId),
+					eq(workspaces.disabled, false),
+				),
+			)
 			.orderBy(workspaces.id);
 		return { items: rows.map((row) => row.workspace), total: rows.length };
 	},

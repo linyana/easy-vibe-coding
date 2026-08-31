@@ -5,5 +5,7 @@ export * from './list';
 export * from './stats';
 export * from './edit';
 export * from './delete';
+export * from './disable';
+export * from './enable';
 export * from './members';
 export * from './switch';

@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { toast } from 'sonner';
 import type { AdminWorkspacesAction } from './types';
 import { WorkspaceList } from './List';
 import { CreateWorkspaceDialog } from './Create';
 import { EditWorkspaceDialog } from './Edit';
 import { DeleteWorkspaceDialog } from './Delete';
-import { MembersDialog } from './Members';
 import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIMutation } from '@/hooks/useAPIMutation';
@@ -29,23 +29,47 @@ export const AdminWorkspaces = () => {
 		},
 	});
 
+	// Disable/enable (soft delete) — same non-dialog shape as enter: the
+	// switch flips, the list refetches, and the gates on the API side enforce
+	// the new state.
+	const toggleMutation = useAPIMutation({
+		call: ({ id, enable }: { id: number; enable: boolean }) =>
+			enable
+				? API.workspaces.admin({ id }).enable.post()
+				: API.workspaces.admin({ id }).disable.post(),
+		queryKey: ['workspaces', 'admin'],
+		// Directional feedback — which way the flag flipped is the signal.
+		onSuccess: (_, { enable }) =>
+			toast.success(enable ? 'Workspace enabled' : 'Workspace disabled'),
+	});
+
 	const handleAction = useCallback(
 		(action: AdminWorkspacesAction) => {
 			if (action.kind === 'enter') {
 				enterMutation.mutate(action.workspace.slug);
 				return;
 			}
+			if (action.kind === 'toggle') {
+				toggleMutation.mutate({
+					id: action.workspace.id,
+					enable: action.enable,
+				});
+				return;
+			}
 			setAction(action);
 			setOpen(true);
 		},
-		[enterMutation],
+		[enterMutation, toggleMutation],
 	);
 
 	const handleOpenChange = useCallback((open: boolean) => setOpen(open), []);
 
 	return (
 		<>
-			<WorkspaceList onAction={handleAction} />
+			<WorkspaceList
+				onAction={handleAction}
+				togglePending={toggleMutation.isPending}
+			/>
 			{action?.kind === 'create' && (
 				<CreateWorkspaceDialog
 					open={open}
@@ -56,14 +80,6 @@ export const AdminWorkspaces = () => {
 				// key remounts per row — initialValues are a snapshot, so the
 				// form re-seeds from the new row (no sync effect).
 				<EditWorkspaceDialog
-					key={action.workspace.id}
-					workspace={action.workspace}
-					open={open}
-					onOpenChange={handleOpenChange}
-				/>
-			)}
-			{action?.kind === 'members' && (
-				<MembersDialog
 					key={action.workspace.id}
 					workspace={action.workspace}
 					open={open}

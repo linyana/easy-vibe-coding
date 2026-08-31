@@ -16,16 +16,21 @@ export type WorkspaceMemberRoleUpdate = z.infer<
 	typeof workspaceMemberRoleUpdateSchema
 >;
 
-// Path params for member endpoints: the workspace id + the member's account id.
-export const workspaceMemberParamsSchema = z.object({
-	id: z.coerce.number().int(),
+// Path params for member endpoints: only the member's account id — the
+// workspace is NOT in the URL. It comes from the session: the adminWorkspace
+// guard resolves the token's workspaceSlug claim into auth.workspaceId, so
+// these routes can only address the workspace the admin entered.
+export const workspaceMemberAccountParamsSchema = z.object({
 	accountId: z.coerce.number().int(),
 });
-export type WorkspaceMemberParams = z.infer<typeof workspaceMemberParamsSchema>;
+export type WorkspaceMemberAccountParams = z.infer<
+	typeof workspaceMemberAccountParamsSchema
+>;
 
-// GET /workspaces/admin/:id/members — the admin roster, paginated + searchable
-// (the platform list pattern). The response reuses memberListResponseSchema
-// ({ items, total }); search hits the member's name and email.
+// GET /workspaces/admin/members — the admin roster of the entered workspace,
+// paginated + searchable (the platform list pattern). The response reuses
+// memberListResponseSchema ({ items, total }); search hits the member's name
+// and email.
 export const workspaceMemberListQuerySchema = z.object({
 	page: z.coerce.number().int().min(1).catch(1).default(1),
 	pageSize: z.coerce.number().int().min(1).max(100).catch(10).default(10),

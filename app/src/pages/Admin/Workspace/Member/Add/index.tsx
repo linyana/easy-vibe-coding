@@ -22,10 +22,7 @@ export function AddMemberDialog({
 		schema: workspaceMemberAddSchema,
 		initialValues: { email: '' },
 		submit: {
-			call: (values) =>
-				API.workspaces
-					.admin({ id: workspace!.id })
-					.members.post(values),
+			call: (values) => API.workspaces.admin.members.post(values),
 			queryKey: ['workspaces', 'admin', 'members', workspace?.id],
 			successMessage: 'Member added',
 			onSuccess: () => onOpenChange(false),

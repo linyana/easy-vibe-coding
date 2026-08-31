@@ -85,6 +85,19 @@ export const adminWorkspaceService = {
 		return { success: true };
 	},
 
+	// Soft-delete flip (idempotent): the row and memberships stay, but the
+	// workspace behaves as deleted for non-admin members until re-enabled —
+	// enforced at the role guard, switch, me, and member-list gates.
+	async setDisabled({ id, disabled }: { id: number; disabled: boolean }) {
+		const [workspace] = await db
+			.update(workspaces)
+			.set({ disabled })
+			.where(eq(workspaces.id, id))
+			.returning();
+		if (!workspace) throw Errors.notFound('Workspace not found');
+		return workspace;
+	},
+
 	// Enter ANY workspace from the platform list — the admin counterpart of
 	// /auth/switch-workspace (whose gate is membership). The token gets the
 	// same workspaceSlug claim, so after entering the session is

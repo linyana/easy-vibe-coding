@@ -3,10 +3,10 @@ import { db } from '../../db/client';
 import { accounts, workspaceMembers } from '../../db/schema';
 
 export const memberService = {
-	// Roster of the token's workspace — the controller's role guard
-	// (`role: ['owner', 'member']`) resolved slug → workspaceId and re-checked
-	// membership, so this service only filters by id; there is no "members of
-	// another workspace" surface.
+	// Roster of the token's workspace — the controller's `workspace` guard
+	// resolved slug → the workspace and the `role` guard re-checked membership,
+	// so this service only filters by id; there is no "members of another
+	// workspace" surface.
 	async list(workspaceId: number) {
 		const items = await db
 			.select({

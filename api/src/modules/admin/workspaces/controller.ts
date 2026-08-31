@@ -6,9 +6,9 @@ import {
 	workspaceAdminListQuerySchema,
 	workspaceIdParamsSchema,
 	workspaceListResponseSchema,
+	workspaceMemberAccountParamsSchema,
 	workspaceMemberAddSchema,
 	workspaceMemberListQuerySchema,
-	workspaceMemberParamsSchema,
 	workspaceMemberRoleUpdateSchema,
 	workspaceResponseSchema,
 	workspaceStatsResponseSchema,
@@ -21,6 +21,14 @@ import { authGuard } from '../../../libs/guards';
 // The platform-level workspace surface — every route under /workspaces/admin*
 // is role-guarded (['admin']). The user-facing list/create lives in
 // modules/workspaces.
+//
+// Two tiers:
+// - Platform routes (list/stats/switch/edit/delete/disable/enable) address a
+//   workspace by id/slug in the URL — they are not session-scoped.
+// - The member surface (management of the entered workspace) is gated by
+//   `adminWorkspace`: the workspace comes from the session's token slug claim
+//   (auth.workspaceId), never from a URL id — an admin can only manage the
+//   workspace they entered.
 export const adminWorkspacesController = new Elysia({
 	prefix: '/workspaces/admin',
 	detail: {
@@ -28,7 +36,7 @@ export const adminWorkspacesController = new Elysia({
 	},
 })
 	.use(authGuard)
-	.guard({ role: ['admin'] })
+	.guard({ admin: true })
 	.get('/', ({ query }) => adminWorkspaceService.list(query), {
 		query: workspaceAdminListQuerySchema,
 		response: workspaceListResponseSchema,
@@ -62,52 +70,79 @@ export const adminWorkspacesController = new Elysia({
 		params: workspaceIdParamsSchema,
 		response: successResponseSchema,
 	})
-	.get(
-		'/:id/members',
-		({ params, query }) =>
-			adminWorkspaceService.listMembers(params.id, query),
+	.post(
+		'/:id/disable',
+		({ params }) =>
+			adminWorkspaceService.setDisabled({
+				id: params.id,
+				disabled: true,
+			}),
 		{
 			params: workspaceIdParamsSchema,
+			response: workspaceResponseSchema,
+		},
+	)
+	.post(
+		'/:id/enable',
+		({ params }) =>
+			adminWorkspaceService.setDisabled({
+				id: params.id,
+				disabled: false,
+			}),
+		{
+			params: workspaceIdParamsSchema,
+			response: workspaceResponseSchema,
+		},
+	)
+	// Workspace-scoped member surface — the shared `workspace` guard resolves
+	// the session's workspace and injects it; the module-wide `admin: true`
+	// guard above still gates admin access. Handlers read `({ workspace })`,
+	// never a URL id.
+	.guard({ workspace: true })
+	.get(
+		'/members',
+		({ workspace, query }) =>
+			adminWorkspaceService.listMembers(workspace.id, query),
+		{
 			query: workspaceMemberListQuerySchema,
 			response: memberListResponseSchema,
 		},
 	)
 	.post(
-		'/:id/members',
-		({ params, body }) =>
+		'/members',
+		({ workspace, body }) =>
 			adminWorkspaceService.addMember({
-				workspaceId: params.id,
+				workspaceId: workspace.id,
 				data: body,
 			}),
 		{
-			params: workspaceIdParamsSchema,
 			body: workspaceMemberAddSchema,
 			response: successResponseSchema,
 		},
 	)
 	.patch(
-		'/:id/members/:accountId',
-		({ params, body }) =>
+		'/members/:accountId',
+		({ workspace, params, body }) =>
 			adminWorkspaceService.updateMemberRole({
-				workspaceId: params.id,
+				workspaceId: workspace.id,
 				accountId: params.accountId,
 				data: body,
 			}),
 		{
-			params: workspaceMemberParamsSchema,
+			params: workspaceMemberAccountParamsSchema,
 			body: workspaceMemberRoleUpdateSchema,
 			response: successResponseSchema,
 		},
 	)
 	.delete(
-		'/:id/members/:accountId',
-		({ params }) =>
+		'/members/:accountId',
+		({ workspace, params }) =>
 			adminWorkspaceService.removeMember({
-				workspaceId: params.id,
+				workspaceId: workspace.id,
 				accountId: params.accountId,
 			}),
 		{
-			params: workspaceMemberParamsSchema,
+			params: workspaceMemberAccountParamsSchema,
 			response: successResponseSchema,
 		},
 	);

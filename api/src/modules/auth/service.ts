@@ -114,12 +114,13 @@ export const authService = {
 		}
 
 		// The token's workspaceSlug claim is echoed only while the workspace
-		// still exists and (for regular accounts) membership still holds — a
-		// deleted workspace or removed member drops back to null (the client
-		// re-picks) instead of lingering in a phantom workspace until the
-		// token's TTL expires. Admins echo ANY workspace: the platform switch
-		// lets them enter workspaces they don't belong to, so membership can't
-		// be the gate for them.
+		// still exists, (for regular accounts) membership still holds, and the
+		// workspace is not soft-deleted — a deleted or disabled workspace or a
+		// removed member drops back to null (the client re-picks) instead of
+		// lingering in a phantom workspace until the token's TTL expires.
+		// Admins echo ANY workspace: the platform switch lets them enter
+		// workspaces they don't belong to, so membership can't be the gate for
+		// them, and a disabled workspace is theirs to inspect and re-enable.
 		let workspace: WorkspaceRef | null = null;
 		if (workspaceSlug !== undefined) {
 			if (account.isAdmin) {
@@ -144,6 +145,7 @@ export const authService = {
 						and(
 							eq(workspaceMembers.accountId, accountId),
 							eq(workspaces.slug, workspaceSlug),
+							eq(workspaces.disabled, false),
 						),
 					)
 					.limit(1);
@@ -169,6 +171,7 @@ export const authService = {
 				id: workspaces.id,
 				slug: workspaces.slug,
 				name: workspaces.name,
+				disabled: workspaces.disabled,
 			})
 			.from(workspaceMembers)
 			.innerJoin(
@@ -184,6 +187,18 @@ export const authService = {
 			.limit(1);
 		if (!member[0]) {
 			throw Errors.forbidden('You are not a member of this workspace');
+		}
+		// Soft-delete gate (same rule as the role guard): a closed workspace
+		// rejects non-admin members; admins keep the override (their own switch
+		// endpoint and surfaces stay open).
+		if (member[0].disabled) {
+			const account = await db.query.accounts.findFirst({
+				where: eq(accounts.id, accountId),
+				columns: { isAdmin: true },
+			});
+			if (!account?.isAdmin) {
+				throw Errors.forbidden('This workspace has been disabled');
+			}
 		}
 		return {
 			token: await signAuthToken({ accountId, workspaceSlug: slug }),
