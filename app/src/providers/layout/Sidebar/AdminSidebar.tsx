@@ -74,7 +74,7 @@ export function AdminSidebar({
 								</SidebarMenuButton>
 							</SidebarMenuItem>
 						</SidebarMenu>
-						<div className="border rounded-lg">
+						<div className="border border-gray-500/10 rounded-lg">
 							<SidebarMenu>
 							<SidebarMenuItem>
 								<SidebarMenuButton

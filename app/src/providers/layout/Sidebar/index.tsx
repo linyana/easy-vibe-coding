@@ -66,7 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					only with an active workspace; the admin shell has its own
 					platform-level switcher (AdminSidebar). */}
 				{workspace && (
-					<div className="border rounded-lg">
+					<div className="border border-gray-500/10 rounded-lg">
 						<SidebarMenu>
 							<SidebarMenuItem>
 								<SidebarMenuButton
