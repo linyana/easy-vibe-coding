@@ -9,6 +9,7 @@ import {
 	Outlet,
 	createFileRoute,
 	redirect,
+	useLocation,
 } from '@tanstack/react-router';
 import { ShieldCheckIcon, ArrowLeftIcon } from 'lucide-react';
 import { useGlobal } from '@/hooks/useGlobal';
@@ -16,9 +17,16 @@ import { useSession } from '@/hooks/useSession';
 import { ErrorState } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 import { LayoutProvider } from '@/providers';
-import { AdminSidebar } from '@/providers/layout/Sidebar/AdminSidebar';
+import { AdminSidebar } from '@/providers/layout/Sidebar/Admin';
+import { AdminWorkspaceSidebar } from '@/providers/layout/Sidebar/AdminWorkspace';
 import { Button } from '@/components/ui/button';
 import { Link } from '@tanstack/react-router';
+
+// The admin surface has two navs: the platform pages (global nav) and the
+// entered-workspace pages (/admin/workspace/*, workspace nav). The shell
+// picks the sidebar by path — the surfaces themselves never switch modes.
+const isWorkspacePath = (pathname: string) =>
+	pathname === '/admin/workspace' || pathname.startsWith('/admin/workspace/');
 
 export const Route = createFileRoute('/admin')({
 	beforeLoad: ({ location }) => {
@@ -37,6 +45,7 @@ export const Route = createFileRoute('/admin')({
 function AdminShell() {
 	const { status, error, refetch } = useSession();
 	const { account } = useGlobal();
+	const location = useLocation();
 
 	if (status === 'unauthenticated') {
 		return (
@@ -92,8 +101,14 @@ function AdminShell() {
 		);
 	}
 
+	const sidebar = isWorkspacePath(location.pathname) ? (
+		<AdminWorkspaceSidebar variant="inset" />
+	) : (
+		<AdminSidebar variant="inset" />
+	);
+
 	return (
-		<LayoutProvider sidebar={<AdminSidebar variant="inset" />}>
+		<LayoutProvider sidebar={sidebar}>
 			<Outlet />
 		</LayoutProvider>
 	);
