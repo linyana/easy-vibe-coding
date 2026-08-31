@@ -10,7 +10,7 @@ export const membersController = new Elysia({
 	},
 })
 	.use(authGuard)
-	.get('/', ({ auth }) => memberService.list(auth.workspaceSlug), {
-		auth: true,
+	.get('/', ({ auth }) => memberService.list(auth.workspaceId!), {
+		role: ['owner', 'member'],
 		response: memberListResponseSchema,
 	});

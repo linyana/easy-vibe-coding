@@ -16,7 +16,8 @@ import { adminWorkspaceService } from './service';
 import { authGuard } from '../../../libs/guards';
 
 // The platform-level workspace surface — every route under /workspaces/admin*
-// is admin-guarded. The user-facing list/create lives in modules/workspaces.
+// is role-guarded (['admin']). The user-facing list/create lives in
+// modules/workspaces.
 export const adminWorkspacesController = new Elysia({
 	prefix: '/workspaces/admin',
 	detail: {
@@ -24,7 +25,7 @@ export const adminWorkspacesController = new Elysia({
 	},
 })
 	.use(authGuard)
-	.guard({ admin: true })
+	.guard({ role: ['admin'] })
 	.get('/', ({ query }) => adminWorkspaceService.list(query), {
 		query: workspaceAdminListQuerySchema,
 		response: workspaceListResponseSchema,

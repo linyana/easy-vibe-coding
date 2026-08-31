@@ -66,7 +66,7 @@ packages/shared/src/      契约包（跨边界唯一事实源）
 
 api/src/
   modules/<name>/   controller.ts（路由 + 校验接线）· service.ts（逻辑）—— 用户级（workspace/会话作用域）
-  modules/admin/<name>/  platform 级模块子命名空间：整块 `admin: true` 守卫（如 accounts、workspaces 的 /admin* 端点）
+  modules/admin/<name>/  platform 级模块子命名空间：整块 `role: ['admin']` 守卫（如 accounts、workspaces 的 /admin* 端点）
   libs/<name>/      error/（统一错误管线）· dbError/（PG 错误码判断）
   db/               schema.ts（数据层唯一事实源）· client.ts（pool + drizzle）
   env.ts            集中式 ENV（lint 强制唯一入口）
@@ -141,20 +141,20 @@ cd api && bun run db:studio    # 检查 DB
 
 - **身份**：`slug` 是 workspace 的用户可见唯一标识（unique 必填，URL-safe：小写字母/数字/单连字符）；int 主键只在 DB 内部（FK 完整性、改名安全），任何 API 表面、token claim、前端都以 slug 寻址。slug 冲突 → 409。
 - **归属**：`workspace_members`（workspace_id + account_id + role，unique 对）——创建即 owner 成员（事务），没有「无主 workspace」。role 词汇是 `owner | member`（`memberRoleSchema`，DB 列 `text` + `$type` 收窄）；创建时服务端写 `owner`，之后由 admin 管理。
-- **用户表面**：`/workspaces`（成员身份列表 + 创建）、`/members`（当前 workspace 名册，读 token 的 `workspaceSlug` claim 作作用域，登录态 token 访问 → 403）。workspace 内唯一路由 `/_app/members`。
-- **admin 表面**（`modules/admin/workspaces`，前缀 `/workspaces/admin`，整块 `admin: true`）：平台级列表/统计/编辑/删除 + 成员管理（按 workspace id 寻址：`GET /admin/:id/members` · `POST /admin/:id/members`（按邮箱加人，账号不存在 404、重复 409）· `PATCH /admin/:id/members/:accountId`（改 role）· `DELETE /admin/:id/members/:accountId`）。**不变式**：workspace 必须保持 ≥1 个 owner——降级/移除最后一个 owner → 409（`assertNotLastOwner`）。删除 workspace 级联清成员（FK cascade）。
+- **用户表面**：`/workspaces`（成员身份列表 + 创建）、`/members`（当前 workspace 名册，`role: ['owner', 'member']` 守卫解析 slug→workspaceId；登录态 token → 403，成员已被移除 → 403）。workspace 内唯一路由 `/_app/members`。
+- **admin 表面**（`modules/admin/workspaces`，前缀 `/workspaces/admin`，整块 `role: ['admin']`）：平台级列表/统计/编辑/删除 + 成员管理（按 workspace id 寻址：`GET /admin/:id/members` · `POST /admin/:id/members`（按邮箱加人，账号不存在 404、重复 409）· `PATCH /admin/:id/members/:accountId`（改 role）· `DELETE /admin/:id/members/:accountId`）。**不变式**：workspace 必须保持 ≥1 个 owner——降级/移除最后一个 owner → 409（`assertNotLastOwner`）。删除 workspace 级联清成员（FK cascade）。
 
 ## Admin（平台管理后台）
 
 - **身份**：`accounts.isAdmin`（boolean，默认 false）是平台级 admin 标记。**引导：第一个注册的账号自动成为 admin**（auth service 的 count 预检，零配置；并发竞态只会多授权，不会少授权）。`accountResponseSchema` 带 `isAdmin` 上 wire——登录/注册/me 都回显，app 侧据此显示 admin 入口。
-- **守卫**：`api/src/libs/guards` 有 `auth` 和 `admin` 两个 macro——`admin: true` 在验 token 之外**每次请求重查 DB 行的 isAdmin**（行是事实源，撤销立即生效，不等 token TTL）。
+- **守卫**：`api/src/libs/guards` 有 `auth` 和 `role` 两个 macro——`role: ['admin']` 在验 token 之外**每次请求重查 DB 行的 isAdmin**（行是事实源，撤销立即生效，不等 token TTL）。
 - **边界**：admin 不能删除自己、不能撤销自己的 isAdmin（400）——保证平台永远至少有一个 admin。批量删除含自己 → 整批 400（显式拒绝，不是静默跳过）。
 - **表面**：`accounts` 模块在 `modules/admin/accounts`，整块 admin-only（平台级账号 CRUD + `PATCH /:id/password` 重置密码——密码字段永不进通用 PATCH）；`workspaces` 的 admin 端点在 `modules/admin/workspaces`（见 Workspaces 节）。**模块归属规则：作用域决定位置——用户级模块在 `modules/<name>`，平台级 admin 模块在 `modules/admin/<name>`（镜像 app 侧 `pages/` + `pages/Admin/`）。** UI 是 `/admin` 壳（非 pathless，不依赖 workspace 上下文；`beforeLoad` token 守卫 + `useSession` + `isAdmin` 门），**复用普通用户布局**（`LayoutProvider` + 专属 `AdminSidebar` + `SiteHeader`/`usePageHeader`），侧边栏 nav = Overview（统计）/ Accounts / Workspaces + Back to app。**admin 入口在 workspace 选择器**（`providers/workspace` 的 picker 卡片底部，仅 admin 可见）——不在普通用户侧边栏；admin 是平台级、与 workspace 上下文正交。
 
 ## Auth
 
 - **机制**：JWT bearer（jose，HS256，7 天），密码 argon2id（`Bun.password`，零依赖）。token 存 `useGlobal`（persist），`libs/api` 的 `headers` 钩子逐请求注入，`onResponse` 全局拦截 401 → `clearSession`。**workspace 上下文（`useGlobal.workspace`，object `{ slug, name }`）不持久化**——boot 时从 `/auth/me` 的响应回显恢复（服务端真相源），交换 token 后写入内存；刷新靠 me 恢复，不靠 storage。
-- **服务端守卫**（`api/src/libs/guards`）：纯 jose 原语（`libs/auth`）之上的 Elysia 适配层——`macro('auth')` 把 `.guard({ auth: true })`（或路由级 `{ auth: true }`）变成“先验 bearer token，不过 401”，并把已验证身份注入 handler 为 `{ auth: { accountId, workspaceSlug? } }`。token 携带显式 `accountId` claim（`sub` 镜像同一 id），`/auth/switch-workspace` 交换后追加 `workspaceSlug` claim；DB 行是事实源，需要账号形状处（`/me`）才重查。**新模块加一行 `.use(authGuard).guard({ auth: true })` 即受保护；依赖 workspace 作用域的模块从 `auth.workspaceSlug` 读上下文（无 = 登录态 token）。admin 面用 `.guard({ admin: true })`（见 Admin 节）。**
-- **API**：`/api/auth/register`（建号即登录；**第一个注册的账号自动成为 admin**）· `/api/auth/login`（大小写不敏感匹配邮箱，错误统一 401 "Invalid email or password" 不泄露邮箱）· `/api/auth/me`（guard 解析 accountId → 服务重查当前账号行，并回显 workspace object `{ slug, name }`——校验成员身份还在才回显，否则 null）。`/api/auth/switch-workspace`（POST `{ slug }`，非成员 403，签发带 `accountId + workspaceSlug` claim 的新 token）。`accounts` 模块整块在 admin guard 后。契约在 `packages/shared/src/api/auth/`，密码字段规则复用 accounts 的 `accountFieldSchemas`。
+- **服务端守卫**（`api/src/libs/guards`）：纯 jose 原语（`libs/auth`）之上的 Elysia 适配层，两档同一实例 `.use(authGuard)`——`role` 声明 `auth: true` 组合复用验 token 逻辑，不复写。`auth: true`（或 `.guard({ auth: true })`）验 bearer token（不过 401），注入 `{ auth: { accountId, workspaceSlug? } }`；`role: [...]` 是函数式 macro，option 值即允许角色列表——'admin' = 平台 isAdmin 标志（**每次请求重查 DB 行**，撤销立即生效，不等 token TTL），'owner'/'member' = workspace 成员角色（要求 workspace 作用域，一次成员 join 解析 `workspaceId` 并重查成员身份；行是事实源，被移出 workspace / workspace 被删 → 403；**精确匹配：列表里有什么角色才放行什么——owner 不满足 `['member']`，"任意成员"写成 `['owner', 'member']`**）。`role` 列表含 workspace 角色时注入 `auth.workspaceId`（类型上 `number | undefined`，运行时必有——调用点 `!` 是守卫的契约）。token 携带显式 `accountId` claim（`sub` 镜像同一 id），`/auth/switch-workspace` 交换后追加 `workspaceSlug` claim；DB 行是事实源，需要账号形状处（`/me`）才重查。**新模块加一行 `.use(authGuard)` 即接入；workspace 作用域的 feature 用 `{ role: ['owner', 'member'] }`（任意成员）或 `['owner']` 等精确列表，service 直接收 `auth.workspaceId`——不自己判 slug、不自己 join slug→id。admin 面用 `.guard({ role: ['admin'] })`（见 Admin 节）。**
+- **API**：`/api/auth/register`（建号即登录；**第一个注册的账号自动成为 admin**）· `/api/auth/login`（大小写不敏感匹配邮箱，错误统一 401 "Invalid email or password" 不泄露邮箱）· `/api/auth/me`（guard 解析 accountId → 服务重查当前账号行，并回显 workspace object `{ slug, name }`——校验成员身份还在才回显，否则 null）。`/api/auth/switch-workspace`（POST `{ slug }`，非成员 403，签发带 `accountId + workspaceSlug` claim 的新 token）。`accounts` 模块整块在 `role: ['admin']` 守卫后。契约在 `packages/shared/src/api/auth/`，密码字段规则复用 accounts 的 `accountFieldSchemas`。
 - **路由**：应用壳是 pathless layout `/_app`（`beforeLoad` 同步 token 守卫 + 组件内 `useSession` 校验 me，loading/error/unauthenticated 三分支）；`/login` `/register` 在壳外，读 `redirect` search 参数（登录后回跳，`safeRedirect` 防开放重定向）。
 - **边界**：登出纯客户端（JWT 无状态）。Elysia 先校验 body 再跑 guard（未带 token 但 body 非法 → 422 而非 401）。

@@ -30,7 +30,7 @@ export const accounts = pgTable('accounts', {
 	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
 	name: text('name').notNull(),
 	email: citext('email').notNull().unique(),
-	// Platform-level admin flag — the adminGuard re-reads it from the DB per
+	// Platform-level admin flag — the role guard re-reads it from the DB per
 	// request (the row, not the token, is the source of truth), so revoking
 	// admin takes effect immediately. Bootstrap: the first registered account
 	// is created with it set (auth service); everyone after is a regular user.
