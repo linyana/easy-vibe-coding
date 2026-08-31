@@ -11,6 +11,42 @@ import { normalizeEmail } from '../../../libs/email';
 import { Errors } from '../../../libs/error';
 import { escapeLikePattern } from '../../../libs/like';
 
+// The transaction handle type — the callback param of db.transaction, typed
+// once so the owner guard's mutation callback stays tx-compatible.
+type DbTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+// Serialize owner-count mutations: lock the workspace's owner rows so two
+// concurrent demotions/removals can't both read a stale count and leave a
+// workspace owner-less (the old read-then-check TOCTOU). FOR UPDATE + READ
+// COMMITTED: a transaction blocked on the lock re-reads after it is released,
+// so the second sees the first's commit — the demoted row no longer matches
+// `role = 'owner'` — and the check and the write commit atomically.
+const withOwnerGuard = async <T>(
+	workspaceId: number,
+	accountId: number,
+	act: (tx: DbTx) => Promise<T>,
+): Promise<T> => {
+	return db.transaction(async (tx) => {
+		const owners = await tx
+			.select({ accountId: workspaceMembers.accountId })
+			.from(workspaceMembers)
+			.where(
+				and(
+					eq(workspaceMembers.workspaceId, workspaceId),
+					eq(workspaceMembers.role, 'owner'),
+				),
+			)
+			.for('update');
+		if (
+			owners.length <= 1 &&
+			owners.some((owner) => owner.accountId === accountId)
+		) {
+			throw Errors.conflict('A workspace must keep at least one owner');
+		}
+		return act(tx);
+	});
+};
+
 // Admin member management on the entered workspace — split out of
 // modules/admin/workspaces (which keeps the platform workspace CRUD). The
 // workspace id comes from the `workspace` guard's session resolution (the
@@ -97,7 +133,9 @@ export const adminMemberService = {
 
 	// Change a member's role. The "no owner-less workspace" invariant (every
 	// workspace is born with its creator as owner) is enforced here: the last
-	// owner cannot be demoted.
+	// owner cannot be demoted. Demotions run under the owner-row lock (see
+	// withOwnerGuard) so concurrent demotions can't both pass a stale count;
+	// promotions only grow the count and need no lock.
 	async updateMemberRole({
 		workspaceId,
 		accountId,
@@ -108,7 +146,22 @@ export const adminMemberService = {
 		data: MemberAdminRoleUpdate;
 	}) {
 		if (data.role !== 'owner') {
-			await this.assertNotLastOwner({ workspaceId, accountId });
+			return withOwnerGuard(workspaceId, accountId, async (tx) => {
+				const updated = await tx
+					.update(workspaceMembers)
+					.set({ role: data.role })
+					.where(
+						and(
+							eq(workspaceMembers.workspaceId, workspaceId),
+							eq(workspaceMembers.accountId, accountId),
+						),
+					)
+					.returning({ id: workspaceMembers.id });
+				if (updated.length === 0) {
+					throw Errors.notFound('This account is not a member');
+				}
+				return { success: true };
+			});
 		}
 		const updated = await db
 			.update(workspaceMembers)
@@ -145,7 +198,17 @@ export const adminMemberService = {
 			throw Errors.notFound('This account is not a member');
 		}
 		if (member.role === 'owner') {
-			await this.assertNotLastOwner({ workspaceId, accountId });
+			return withOwnerGuard(workspaceId, accountId, async (tx) => {
+				await tx
+					.delete(workspaceMembers)
+					.where(
+						and(
+							eq(workspaceMembers.workspaceId, workspaceId),
+							eq(workspaceMembers.accountId, accountId),
+						),
+					);
+				return { success: true };
+			});
 		}
 		await db
 			.delete(workspaceMembers)
@@ -156,38 +219,5 @@ export const adminMemberService = {
 				),
 			);
 		return { success: true };
-	},
-
-	async assertNotLastOwner({
-		workspaceId,
-		accountId,
-	}: {
-		workspaceId: number;
-		accountId: number;
-	}) {
-		const [row] = await db
-			.select({ count: sql<number>`count(*)::int` })
-			.from(workspaceMembers)
-			.where(
-				and(
-					eq(workspaceMembers.workspaceId, workspaceId),
-					eq(workspaceMembers.role, 'owner'),
-				),
-			);
-		if ((row?.count ?? 0) <= 1) {
-			const isOwner = await db.query.workspaceMembers.findFirst({
-				where: and(
-					eq(workspaceMembers.workspaceId, workspaceId),
-					eq(workspaceMembers.accountId, accountId),
-					eq(workspaceMembers.role, 'owner'),
-				),
-				columns: { id: true },
-			});
-			if (isOwner) {
-				throw Errors.conflict(
-					'A workspace must keep at least one owner',
-				);
-			}
-		}
 	},
 };
