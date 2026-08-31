@@ -63,11 +63,6 @@ export function WorkspaceList({
 						list={list}
 						columns={columns}
 						emptyMessage="No workspaces found"
-						// A row click enters the workspace (the list is the entry
-						// gate) — the row actions still hold the rest.
-						onRowClick={(workspace) =>
-							onAction({ kind: 'enter', workspace })
-						}
 					/>
 				</div>
 			</Card>

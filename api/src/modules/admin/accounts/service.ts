@@ -83,7 +83,6 @@ export const adminAccountsService = {
 					name: data.name,
 					email: normalizeEmail(data.email),
 					passwordHash,
-					isAdmin: data.isAdmin ?? false,
 				})
 				.returning();
 			return account!;

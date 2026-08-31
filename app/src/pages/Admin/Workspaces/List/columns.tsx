@@ -1,7 +1,9 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { Actions, features } from '@/components';
+import { LogIn } from 'lucide-react';
+import { features } from '@/components';
 import { formatDateTime } from '@/libs/dates';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import type { AdminWorkspacesAction, Workspace } from '../types';
 
@@ -54,13 +56,6 @@ export function createColumns({
 				const workspace = row.original;
 				return (
 					<div className="flex items-center gap-2">
-						{workspace.disabled ? (
-							<Badge variant="secondary">Disabled</Badge>
-						) : (
-							<span className="text-muted-foreground">
-								Active
-							</span>
-						)}
 						<Switch
 							checked={!workspace.disabled}
 							disabled={togglePending}
@@ -69,9 +64,6 @@ export function createColumns({
 									? `Enable ${workspace.slug}`
 									: `Disable ${workspace.slug}`
 							}
-							// The row click enters the workspace — the switch's click
-							// must not bubble into it (same as the Actions trigger).
-							onClick={(event) => event.stopPropagation()}
 							onCheckedChange={(checked) =>
 								onAction({
 									kind: 'toggle',
@@ -89,19 +81,19 @@ export function createColumns({
 			meta: { align: 'center', fixed: 'right' },
 			header: 'Actions',
 			cell: ({ row }) => (
-				<Actions
-					items={[
-						{
-							label: 'Enter',
-							icon: { name: 'LogIn' },
-							onClick: () =>
-								onAction({
-									kind: 'enter',
-									workspace: row.original,
-								}),
-						},
-					]}
-				/>
+				<Button
+					size="sm"
+					variant="outline"
+					onClick={() =>
+						onAction({
+							kind: 'enter',
+							workspace: row.original,
+						})
+					}
+				>
+					<LogIn className="size-4" />
+					Enter
+				</Button>
 			),
 		},
 	];

@@ -10,11 +10,6 @@ import { Input } from '@/components/ui/input';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 import { WorkspaceRow } from '@/providers/workspace/Row';
 
-// The admin's quick workspace hop (workspace-mode sidebar, mirroring the
-// reference admin's tenant switcher): lists every workspace (platform list —
-// the admin may not be a member) and switches without leaving the current
-// page — the page re-scopes because its query keys hang off the workspace id
-// in context.
 export function AdminWorkspaceSwitcher({
 	open,
 	onOpenChange,

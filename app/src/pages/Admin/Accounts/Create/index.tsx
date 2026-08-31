@@ -2,7 +2,6 @@ import { accountCreateSchema } from '@easy-vibe-coding/shared';
 import { API } from '@/libs/api';
 import { Dialog, Form, FormField, FormSubmitButton } from '@/components';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { useForm } from '@/hooks/useForm';
 
@@ -15,7 +14,7 @@ export function CreateAccountDialog({
 }) {
 	const form = useForm({
 		schema: accountCreateSchema,
-		initialValues: { name: '', email: '', password: '', isAdmin: false },
+		initialValues: { name: '', email: '', password: '' },
 		submit: {
 			call: (values) => API.accounts.post(values),
 			queryKey: ['accounts'],
@@ -69,14 +68,6 @@ export function CreateAccountDialog({
 						placeholder="Initial password"
 						autoComplete="new-password"
 					/>
-				</FormField>
-				<FormField
-					form={form}
-					name="isAdmin"
-					label="Admin"
-					tooltip="Platform admins can manage accounts and workspaces."
-				>
-					<Checkbox />
 				</FormField>
 			</Form>
 		</Dialog>
