@@ -122,3 +122,33 @@ export type Workspace = typeof workspaces.$inferSelect;
 export type NewWorkspace = typeof workspaces.$inferInsert;
 export type WorkspaceMember = typeof workspaceMembers.$inferSelect;
 export type NewWorkspaceMember = typeof workspaceMembers.$inferInsert;
+
+// One row = one platform account (multiple Shopify accounts = multiple rows).
+// `config` holds the platform-specific non-secret fields ({ shopUrl } |
+// { storeHash }) as JSONB — adding a platform field needs no migration. The
+// access token is NOT here: it has its own encrypted column (libs/crypto,
+// AES-256-GCM) and never crosses the wire (responses carry `hasToken` only).
+export const connections = pgTable('connections', {
+	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+	workspaceId: integer('workspace_id')
+		.notNull()
+		.references(() => workspaces.id, { onDelete: 'cascade' }),
+	name: text('name').notNull(),
+	// Bound at creation — edit never changes it (a platform switch means a
+	// new connection). text + $type narrows to the shared platform union.
+	platform: text('platform').notNull().$type<'shopify' | 'bigcommerce'>(),
+	config: jsonb('config').notNull(),
+	// AES-256-GCM ciphertext (libs/crypto encryptSecret) — plaintext token
+	// never touches the DB.
+	accessToken: text('access_token').notNull(),
+	createdAt: timestamptz('created_at')
+		.notNull()
+		.default(sql`now()`),
+	updatedAt: timestamptz('updated_at')
+		.notNull()
+		.default(sql`now()`)
+		.$onUpdate(() => new Date().toISOString()),
+});
+
+export type Connection = typeof connections.$inferSelect;
+export type NewConnection = typeof connections.$inferInsert;

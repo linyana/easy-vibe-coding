@@ -4,4 +4,5 @@ export * from './Admin/Settings';
 export * from './Admin/Workspaces';
 export * from './Admin/Workspace';
 export * from './Members';
+export * from './Connections';
 export * from './Auth';

@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { FileRoutesByTo } from '@/routeTree.gen';
-import { type LucideIcon } from 'lucide-react';
+import { ChevronDown, type LucideIcon } from 'lucide-react';
+import { cn } from '@/libs/utils';
 
 import {
 	SidebarGroup,
@@ -9,13 +11,62 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	SidebarMenuSub,
+	SidebarMenuSubButton,
+	SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 
 export type NavItem = {
 	title: string;
 	to?: keyof FileRoutesByTo;
 	icon?: LucideIcon;
+	/** Expandable second level (like the platform pages under Connections) —
+	 *  the parent toggles open/closed, children are plain links. */
+	children?: NavItem[];
 };
+
+// One collapsible sub-menu: the parent button toggles a chevron + the child
+// list; active state rides each child Link's own prefix matching.
+function SubMenu({ item }: { item: NavItem & { children: NavItem[] } }) {
+	const [open, setOpen] = useState(false);
+	return (
+		<SidebarMenuItem>
+			<SidebarMenuButton
+				onClick={() => setOpen((value) => !value)}
+				tooltip={item.title}
+			>
+				{item.icon && <item.icon />}
+				<span>{item.title}</span>
+				<ChevronDown
+					className={cn(
+						'ml-auto size-4 transition-transform',
+						open && 'rotate-180',
+					)}
+				/>
+			</SidebarMenuButton>
+			{open && (
+				<SidebarMenuSub>
+					{item.children.map((child) =>
+						child.to ? (
+							<SidebarMenuSubItem key={child.to}>
+								<SidebarMenuSubButton asChild>
+									<Link
+										to={child.to}
+										activeOptions={{ includeSearch: false }}
+										activeProps={{ 'data-active': true }}
+									>
+										{child.icon && <child.icon />}
+										<span>{child.title}</span>
+									</Link>
+								</SidebarMenuSubButton>
+							</SidebarMenuSubItem>
+						) : null,
+					)}
+				</SidebarMenuSub>
+			)}
+		</SidebarMenuItem>
+	);
+}
 
 export function NavGroup({
 	label,
@@ -32,7 +83,12 @@ export function NavGroup({
 			<SidebarGroupContent>
 				<SidebarMenu>
 					{items.map((item) =>
-						item.to ? (
+						item.children?.length ? (
+							<SubMenu
+								key={item.title}
+								item={item as NavItem & { children: NavItem[] }}
+							/>
+						) : item.to ? (
 							<SidebarMenuItem key={item.to}>
 								<SidebarMenuButton asChild tooltip={item.title}>
 									<Link

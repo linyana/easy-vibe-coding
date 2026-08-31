@@ -1,6 +1,12 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { ChevronsUpDown, Users } from 'lucide-react';
+import {
+	ChevronsUpDown,
+	PlugZap,
+	ShoppingBag,
+	Store,
+	Users,
+} from 'lucide-react';
 import {
 	Sidebar,
 	SidebarMenu,
@@ -66,7 +72,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			context={<WorkspaceSwitcher />}
 			groups={[
 				{
-					items: [{ title: 'Members', to: '/members', icon: Users }],
+					// One group — Members and the Connections submenu sit flush
+					// (a second group would add its own p-2 padding between them).
+					items: [
+						{
+							title: 'Members',
+							to: '/members',
+							icon: Users,
+						},
+						{
+							title: 'Connections',
+							icon: PlugZap,
+							// Expandable second level (SubMenu) — ai-lab style: the
+							// parent toggles the platform pages.
+							children: [
+								{
+									title: 'Shopify',
+									to: '/connections/shopify',
+									icon: ShoppingBag,
+								},
+								{
+									title: 'BigCommerce',
+									to: '/connections/bigcommerce',
+									icon: Store,
+								},
+							],
+						},
+					],
 				},
 			]}
 		/>

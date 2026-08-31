@@ -2,6 +2,7 @@ import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysia/openapi';
 import { adminAccountsController } from './modules/admin/accounts/controller';
+import { connectionsController } from './modules/connections/controller';
 import { adminMembersController } from './modules/admin/members/controller';
 import { adminSettingsController } from './modules/admin/settings/controller';
 import { adminWorkspacesController } from './modules/admin/workspaces/controller';
@@ -50,6 +51,11 @@ export const app = new Elysia({ prefix: '/api' })
 						description:
 							'Platform-level settings — one get/set pair per settings module (admin-only).',
 					},
+					{
+						name: 'Connections',
+						description:
+							'Platform connections (Shopify / BigCommerce) — workspace-scoped credentials plus a live product lookup.',
+					},
 				],
 			},
 		}),
@@ -60,6 +66,7 @@ export const app = new Elysia({ prefix: '/api' })
 		return body;
 	})
 	.use(adminAccountsController)
+	.use(connectionsController)
 	.use(adminSettingsController)
 	.use(workspacesController)
 	.use(adminWorkspacesController)
