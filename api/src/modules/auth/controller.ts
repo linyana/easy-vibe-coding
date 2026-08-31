@@ -8,7 +8,7 @@ import {
 	switchWorkspaceSchema,
 } from '@easy-vibe-coding/shared';
 import { authService } from './service';
-import { authGuard } from '../../libs/guards';
+import { guards } from '../../libs/guards';
 import { createRateLimiter } from '../../libs/rateLimit';
 
 const ipRateLimiter = createRateLimiter({
@@ -26,7 +26,7 @@ export const authController = new Elysia({
 		tags: ['Auth'],
 	},
 })
-	.use(authGuard)
+	.use(guards)
 	.post(
 		'/register',
 		({ body, request, server }) => {

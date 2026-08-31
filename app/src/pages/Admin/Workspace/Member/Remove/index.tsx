@@ -20,8 +20,8 @@ export function RemoveMemberDialog({
 
 	const mutation = useAPIMutation({
 		call: () =>
-			API.workspaces.admin.members({ accountId: member.id }).delete(),
-		queryKey: ['workspaces', 'admin', 'members', workspace?.id],
+			API.admin.workspaces.members({ accountId: member.id }).delete(),
+		queryKey: ['admin', 'workspaces', 'members', workspace?.id],
 		successMessage: 'Member removed',
 		onSuccess: () => onOpenChange(false),
 	});

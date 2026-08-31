@@ -1,1 +1,0 @@
-ALTER TABLE "workspaces" ADD COLUMN "disabled" boolean DEFAULT false NOT NULL;

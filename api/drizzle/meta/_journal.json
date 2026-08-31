@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1788067756250,
-      "tag": "0000_lazy_darwin",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1788067763071,
-      "tag": "0001_tough_jackpot",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1788144877693,
-      "tag": "0002_small_blob",
+      "when": 1788154688499,
+      "tag": "0000_initial",
       "breakpoints": true
     }
   ]

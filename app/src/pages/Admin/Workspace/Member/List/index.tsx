@@ -29,8 +29,8 @@ export function MemberList({
 	const list = useAPIList({
 		// Keyed by id: switching workspace from the sidebar swaps the context
 		// → a fresh fetch under the new workspace.
-		queryKey: ['workspaces', 'admin', 'members', workspace?.id],
-		call: API.workspaces.admin.members.get,
+		queryKey: ['admin', 'workspaces', 'members', workspace?.id],
+		call: API.admin.workspaces.members.get,
 	});
 
 	const columns = useMemo(() => createColumns({ onAction }), [onAction]);

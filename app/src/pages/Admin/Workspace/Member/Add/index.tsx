@@ -1,4 +1,4 @@
-import { workspaceMemberAddSchema } from '@easy-vibe-coding/shared';
+import { memberAdminAddSchema } from '@easy-vibe-coding/shared';
 import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { Dialog, Form, FormField, FormSubmitButton } from '@/components';
@@ -19,11 +19,11 @@ export function AddMemberDialog({
 	const { workspace } = useGlobal();
 
 	const form = useForm({
-		schema: workspaceMemberAddSchema,
+		schema: memberAdminAddSchema,
 		initialValues: { email: '' },
 		submit: {
-			call: (values) => API.workspaces.admin.members.post(values),
-			queryKey: ['workspaces', 'admin', 'members', workspace?.id],
+			call: (values) => API.admin.workspaces.members.post(values),
+			queryKey: ['admin', 'workspaces', 'members', workspace?.id],
 			successMessage: 'Member added',
 			onSuccess: () => onOpenChange(false),
 		},

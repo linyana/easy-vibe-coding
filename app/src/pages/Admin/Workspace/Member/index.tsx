@@ -21,8 +21,8 @@ export const AdminWorkspaceMember = () => {
 	// prefix invalidates the list after success.
 	const changeRole = useAPIMutation({
 		call: ({ accountId, role }: { accountId: number; role: MemberRole }) =>
-			API.workspaces.admin.members({ accountId }).patch({ role }),
-		queryKey: ['workspaces', 'admin', 'members', workspace?.id],
+			API.admin.workspaces.members({ accountId }).patch({ role }),
+		queryKey: ['admin', 'workspaces', 'members', workspace?.id],
 		successMessage: 'Role updated',
 	});
 

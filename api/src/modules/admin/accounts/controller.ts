@@ -14,7 +14,7 @@ import {
 	successResponseSchema,
 } from '@easy-vibe-coding/shared';
 import { adminAccountsService } from './service';
-import { authGuard } from '../../../libs/guards';
+import { guards } from '../../../libs/guards';
 
 export const adminAccountsController = new Elysia({
 	prefix: '/accounts',
@@ -22,7 +22,7 @@ export const adminAccountsController = new Elysia({
 		tags: ['Accounts'],
 	},
 })
-	.use(authGuard)
+	.use(guards)
 	// The whole module is the platform-level account management surface —
 	// admins only. (Register/login live in the auth module; the accounts
 	// module is the admin CRUD.)

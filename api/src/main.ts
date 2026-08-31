@@ -2,6 +2,7 @@ import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysia/openapi';
 import { adminAccountsController } from './modules/admin/accounts/controller';
+import { adminMembersController } from './modules/admin/members/controller';
 import { adminWorkspacesController } from './modules/admin/workspaces/controller';
 import { workspacesController } from './modules/workspaces/controller';
 import { membersController } from './modules/members/controller';
@@ -31,12 +32,12 @@ export const app = new Elysia({ prefix: '/api' })
 					{
 						name: 'Workspaces',
 						description:
-							'Workspace containers — membership-scoped list/creation (users) + platform CRUD and member management under /admin (admins).',
+							'Workspace containers — membership-scoped list/creation (users) + platform CRUD under /workspaces/admin (admins).',
 					},
 					{
 						name: 'Members',
 						description:
-							"Workspace roster — the current workspace's accounts.",
+							"Workspace roster — the current workspace's accounts (users) and the entered workspace's member management under /admin/workspaces/members (admins).",
 					},
 					{
 						name: 'Auth',
@@ -55,6 +56,7 @@ export const app = new Elysia({ prefix: '/api' })
 	.use(adminAccountsController)
 	.use(workspacesController)
 	.use(adminWorkspacesController)
+	.use(adminMembersController)
 	.use(membersController)
 	.use(authController);
 

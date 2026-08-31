@@ -1,5 +1,5 @@
 {
-  "id": "39f7df2f-b2dc-494c-afb9-07dbb36bb778",
+  "id": "1b85386b-b31e-4ff2-a438-4c413b3a5a41",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -36,6 +36,13 @@
           "type": "citext",
           "primaryKey": false,
           "notNull": true
+        },
+        "is_admin": {
+          "name": "is_admin",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "password_hash": {
           "name": "password_hash",
@@ -198,6 +205,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "disabled": {
+          "name": "disabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "created_at": {
           "name": "created_at",

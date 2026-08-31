@@ -4,6 +4,7 @@ CREATE TABLE "accounts" (
 	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "accounts_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
 	"name" text NOT NULL,
 	"email" "citext" NOT NULL,
+	"is_admin" boolean DEFAULT false NOT NULL,
 	"password_hash" text NOT NULL,
 	"created_at" timestamptz DEFAULT now() NOT NULL,
 	"updated_at" timestamptz DEFAULT now() NOT NULL,
@@ -23,6 +24,7 @@ CREATE TABLE "workspaces" (
 	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "workspaces_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
 	"slug" text NOT NULL,
 	"name" text NOT NULL,
+	"disabled" boolean DEFAULT false NOT NULL,
 	"created_at" timestamptz DEFAULT now() NOT NULL,
 	"updated_at" timestamptz DEFAULT now() NOT NULL,
 	CONSTRAINT "workspaces_slug_unique" UNIQUE("slug")

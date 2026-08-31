@@ -5,7 +5,7 @@ import {
 	workspaceResponseSchema,
 } from '@easy-vibe-coding/shared';
 import { workspaceService } from './service';
-import { authGuard } from '../../libs/guards';
+import { guards } from '../../libs/guards';
 
 // User-facing workspace surface: the picker's membership list + creation.
 // The platform-level surface (/workspaces/admin*) lives in modules/admin/workspaces.
@@ -15,7 +15,7 @@ export const workspacesController = new Elysia({
 		tags: ['Workspaces'],
 	},
 })
-	.use(authGuard)
+	.use(guards)
 	.guard({ auth: true })
 	.get('/', ({ auth }) => workspaceService.list(auth.accountId), {
 		response: workspaceListResponseSchema,
