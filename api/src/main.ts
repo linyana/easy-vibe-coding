@@ -3,6 +3,7 @@ import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysia/openapi';
 import { adminAccountsController } from './modules/admin/accounts/controller';
 import { connectionsController } from './modules/connections/controller';
+import { llmController } from './modules/llm/controller';
 import { adminMembersController } from './modules/admin/members/controller';
 import { adminSettingsController } from './modules/admin/settings/controller';
 import { adminWorkspacesController } from './modules/admin/workspaces/controller';
@@ -56,6 +57,11 @@ export const app = new Elysia({ prefix: '/api' })
 						description:
 							'Platform connections (Shopify / BigCommerce) — workspace-scoped credentials plus a live product lookup.',
 					},
+					{
+						name: 'LLM',
+						description:
+							'Personal LLM providers (Anthropic / OpenAI) — stored keys, a default model choice, and the pickable model catalog per account.',
+					},
 				],
 			},
 		}),
@@ -67,6 +73,7 @@ export const app = new Elysia({ prefix: '/api' })
 	})
 	.use(adminAccountsController)
 	.use(connectionsController)
+	.use(llmController)
 	.use(adminSettingsController)
 	.use(workspacesController)
 	.use(adminWorkspacesController)

@@ -51,6 +51,7 @@ const extractValue = (payload: unknown) =>
 
 export type BoundControlProps =
 	| { value?: unknown; onChange?: unknown }
+	| { value?: unknown; onValueChange?: unknown }
 	| { checked?: unknown; onCheckedChange?: unknown };
 
 interface FormFieldBaseProps<T, Name extends keyof T & string> {
@@ -63,8 +64,9 @@ interface FormFieldBaseProps<T, Name extends keyof T & string> {
 	/** The prop the control receives its value through — 'value' by default,
 	 * 'checked' for Radix Switch/Checkbox. */
 	valuePropName?: 'value' | 'checked';
-	/** The prop the control reports changes through — 'onChange' by default. */
-	changePropName?: 'onChange' | 'onCheckedChange';
+	/** The prop the control reports changes through — 'onChange' by default,
+	 * 'onValueChange' for Radix Select, 'onCheckedChange' for Radix Switch/Checkbox. */
+	changePropName?: 'onChange' | 'onValueChange' | 'onCheckedChange';
 	children: ReactElement<BoundControlProps & { 'aria-invalid'?: boolean }>;
 }
 

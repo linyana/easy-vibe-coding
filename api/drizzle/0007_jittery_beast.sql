@@ -1,0 +1,1 @@
+ALTER TABLE "llm_providers" ALTER COLUMN "preset" SET DEFAULT null;

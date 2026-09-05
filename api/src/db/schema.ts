@@ -152,3 +152,62 @@ export const connections = pgTable('connections', {
 
 export type Connection = typeof connections.$inferSelect;
 export type NewConnection = typeof connections.$inferInsert;
+
+// Personal LLM providers — one row = one saved credential, owned by an
+// account (NOT a workspace: these are personal settings, usable from any
+// surface incl. admin). A row is either a built-in preset (preset id set;
+// api/base_url/name echo the shared registry at creation) or a custom
+// supplier (preset null; api/base_url/name stored on the row). The key is
+// AES-256-GCM ciphertext (libs/crypto encryptSecret) and never crosses the
+// wire; keySuffix is the last 4 chars of the plaintext, captured at write.
+export const llmProviders = pgTable('llm_providers', {
+	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+	accountId: integer('account_id')
+		.notNull()
+		.references(() => accounts.id, { onDelete: 'cascade' }),
+	// null = custom supplier (name/base_url/api describe it).
+	preset: text('preset').default(sql`null`),
+	// Wire-protocol family (shared llmApiKindSchema): anthropic-messages |
+	// openai-completions | openai-responses.
+	api: text('api').notNull().default(''),
+	name: text('name').notNull().default(''),
+	baseUrl: text('base_url').notNull().default(''),
+	apiKey: text('api_key').notNull(),
+	keySuffix: text('key_suffix').notNull(),
+	createdAt: timestamptz('created_at')
+		.notNull()
+		.default(sql`now()`),
+	updatedAt: timestamptz('updated_at')
+		.notNull()
+		.default(sql`now()`)
+		.$onUpdate(() => new Date().toISOString()),
+});
+
+export type LlmProvider = typeof llmProviders.$inferSelect;
+export type NewLlmProvider = typeof llmProviders.$inferInsert;
+
+// The account's default model choice — one row per account (unique
+// accountId). providerId points at the account's own provider row (deleting
+// that row cascades away the selection: no default = no stale pointer);
+// model is a catalog id of the provider's kind.
+export const llmSelections = pgTable('llm_selections', {
+	id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
+	accountId: integer('account_id')
+		.notNull()
+		.unique()
+		.references(() => accounts.id, { onDelete: 'cascade' }),
+	providerId: integer('provider_id')
+		.notNull()
+		.references(() => llmProviders.id, { onDelete: 'cascade' }),
+	model: text('model').notNull(),
+	createdAt: timestamptz('created_at')
+		.notNull()
+		.default(sql`now()`),
+	updatedAt: timestamptz('updated_at')
+		.notNull()
+		.default(sql`now()`)
+		.$onUpdate(() => new Date().toISOString()),
+});
+
+export type LlmSelection = typeof llmSelections.$inferSelect;
+export type NewLlmSelection = typeof llmSelections.$inferInsert;
