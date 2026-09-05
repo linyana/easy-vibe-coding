@@ -1,25 +1,13 @@
+import type { ReactNode } from 'react';
+import { Navigate } from '@tanstack/react-router';
 import { useGlobal } from '@/hooks/useGlobal';
-import { WorkspaceSelect } from './Select';
-import { Card } from '@/components';
 
 // Gate, not a route: an authenticated session without a workspace has no
-// workspace context yet — the picker replaces the whole app until the token
-// is exchanged for a workspace-scoped one. The switcher stays mounted for
-// the gate's lifetime (active always), so it loads on entry.
-export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
+// workspace context, so the workspace surfaces (/_app/*) can't render. The
+// personal shell (/profile) is context-free and hosts the workspace picker —
+// the gate hands off there instead of showing a bare full-screen card.
+export function WorkspaceProvider({ children }: { children: ReactNode }) {
 	const { workspace } = useGlobal();
-	if (workspace == null) return <WorkspacePicker />;
+	if (workspace == null) return <Navigate to="/profile/workspaces" replace />;
 	return <>{children}</>;
-}
-
-function WorkspacePicker() {
-	return (
-		<div className="flex min-h-dvh items-center justify-center p-4 sm:p-6">
-			<div className="w-full sm:w-3/5">
-				<Card>
-					<WorkspaceSelect active headerVariant="page" />
-				</Card>
-			</div>
-		</div>
-	);
 }

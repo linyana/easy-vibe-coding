@@ -14,14 +14,14 @@ import {
 	SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { TitleBlock } from '@/components/data/TitleBlock';
-import { Banner } from './Banner';
 import { useGlobal } from '@/hooks/useGlobal';
 import { WorkspaceSelect } from '@/providers/workspace/Select';
 import { Dialog } from '@/components';
 import { ShellSidebar } from './ShellSidebar';
 
-// The app surface's context row — the workspace switcher. Renders only with
-// an active workspace; the admin shell has its own platform-level switcher.
+// The workspace surface's context row — the workspace switcher. Renders only
+// with an active workspace; the profile shell's picker is the other
+// workspace-selection surface.
 function WorkspaceSwitcher() {
 	const { workspace } = useGlobal();
 	const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -62,13 +62,14 @@ function WorkspaceSwitcher() {
 	);
 }
 
-// The app surface — workspace-scoped user nav. Route lists live here; the
-// shell owns the chrome (header / context / footer / group positions).
+// The workspace app surface — entered from the profile shell's picker. The
+// header leads back there (the entry gate), mirroring admin's workspace-mode
+// sidebar; the context row switches workspace without leaving the app.
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
 		<ShellSidebar
 			{...props}
-			header={<Banner />}
+			back={{ to: '/profile/workspaces', label: 'Back to profile' }}
 			context={<WorkspaceSwitcher />}
 			groups={[
 				{

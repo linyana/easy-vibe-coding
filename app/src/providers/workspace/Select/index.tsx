@@ -13,11 +13,12 @@ import { WorkspaceRow } from '../Row';
 import { CreateWorkspaceDialog } from '../Create';
 import type { TitleBlockProps } from '@/components/data/TitleBlock';
 
-// The one workspace-selection flow, shared by the picker gate (embedded in a
-// Card) and the app sidebar's nav dialog. The query runs only while `active`
-// — the dialog fetches on open, never on page entry; the gate passes true
-// since it only mounts without a workspace. The admin surface is reached by
-// URL (/admin), never from here — this picker only ever chooses workspaces.
+// The one workspace-selection flow, shared by the profile shell's Workspaces
+// page (entering a workspace leaves the profile for the app) and the app
+// sidebar's nav dialog. The query runs only while `active` — the dialog
+// fetches on open, never on page entry; the page passes true since it only
+// exists to pick. The admin surface is reached by URL (/admin), never from
+// here — this picker only ever chooses workspaces.
 export function WorkspaceSelect({
 	active,
 	onSwitched,
@@ -66,7 +67,7 @@ export function WorkspaceSelect({
 			<TitleBlock
 				variant={headerVariant}
 				title="Choose workspace"
-				description="Choose the workspace you want to enter from the top menu."
+				description="Pick the workspace you want to enter — the session re-scopes to it."
 				className="pb-4"
 			/>
 			<div className="space-y-2">

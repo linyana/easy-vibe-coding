@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppConnectionsRouteImport } from './routes/_app/connections'
@@ -21,6 +22,9 @@ import { Route as AdminAccountsRouteImport } from './routes/admin/accounts'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminWorkspaceRouteImport } from './routes/admin/workspace'
 import { Route as AdminWorkspacesRouteImport } from './routes/admin/workspaces'
+import { Route as ProfileIndexRouteImport } from './routes/profile/index'
+import { Route as ProfileLlmRouteImport } from './routes/profile/llm'
+import { Route as ProfileWorkspacesRouteImport } from './routes/profile/workspaces'
 import { Route as AppConnectionsIndexRouteImport } from './routes/_app/connections/index'
 import { Route as AppConnectionsBigcommerceRouteImport } from './routes/_app/connections/bigcommerce'
 import { Route as AppConnectionsShopifyRouteImport } from './routes/_app/connections/shopify'
@@ -39,6 +43,11 @@ const AdminRoute = AdminRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -86,6 +95,21 @@ const AdminWorkspacesRoute = AdminWorkspacesRouteImport.update({
   path: '/workspaces',
   getParentRoute: () => AdminRoute,
 } as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfileLlmRoute = ProfileLlmRouteImport.update({
+  id: '/llm',
+  path: '/llm',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfileWorkspacesRoute = ProfileWorkspacesRouteImport.update({
+  id: '/workspaces',
+  path: '/workspaces',
+  getParentRoute: () => ProfileRoute,
+} as any)
 const AppConnectionsIndexRoute = AppConnectionsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -117,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/register': typeof RegisterRoute
   '/connections': typeof AppConnectionsRouteWithChildren
   '/members': typeof AppMembersRoute
@@ -124,7 +149,10 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/workspace': typeof AdminWorkspaceRouteWithChildren
   '/admin/workspaces': typeof AdminWorkspacesRoute
+  '/profile/llm': typeof ProfileLlmRoute
+  '/profile/workspaces': typeof ProfileWorkspacesRoute
   '/admin/': typeof AdminIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/connections/bigcommerce': typeof AppConnectionsBigcommerceRoute
   '/connections/shopify': typeof AppConnectionsShopifyRoute
   '/admin/workspace/member': typeof AdminWorkspaceMemberRoute
@@ -138,8 +166,11 @@ export interface FileRoutesByTo {
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/workspaces': typeof AdminWorkspacesRoute
+  '/profile/llm': typeof ProfileLlmRoute
+  '/profile/workspaces': typeof ProfileWorkspacesRoute
   '/': typeof AppIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/profile': typeof ProfileIndexRoute
   '/connections/bigcommerce': typeof AppConnectionsBigcommerceRoute
   '/connections/shopify': typeof AppConnectionsShopifyRoute
   '/admin/workspace/member': typeof AdminWorkspaceMemberRoute
@@ -151,6 +182,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/register': typeof RegisterRoute
   '/_app/connections': typeof AppConnectionsRouteWithChildren
   '/_app/members': typeof AppMembersRoute
@@ -158,8 +190,11 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/workspace': typeof AdminWorkspaceRouteWithChildren
   '/admin/workspaces': typeof AdminWorkspacesRoute
+  '/profile/llm': typeof ProfileLlmRoute
+  '/profile/workspaces': typeof ProfileWorkspacesRoute
   '/_app/': typeof AppIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/_app/connections/bigcommerce': typeof AppConnectionsBigcommerceRoute
   '/_app/connections/shopify': typeof AppConnectionsShopifyRoute
   '/admin/workspace/member': typeof AdminWorkspaceMemberRoute
@@ -172,6 +207,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
+    | '/profile'
     | '/register'
     | '/connections'
     | '/members'
@@ -179,7 +215,10 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/workspace'
     | '/admin/workspaces'
+    | '/profile/llm'
+    | '/profile/workspaces'
     | '/admin/'
+    | '/profile/'
     | '/connections/bigcommerce'
     | '/connections/shopify'
     | '/admin/workspace/member'
@@ -193,8 +232,11 @@ export interface FileRouteTypes {
     | '/admin/accounts'
     | '/admin/settings'
     | '/admin/workspaces'
+    | '/profile/llm'
+    | '/profile/workspaces'
     | '/'
     | '/admin'
+    | '/profile'
     | '/connections/bigcommerce'
     | '/connections/shopify'
     | '/admin/workspace/member'
@@ -205,6 +247,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/admin'
     | '/login'
+    | '/profile'
     | '/register'
     | '/_app/connections'
     | '/_app/members'
@@ -212,8 +255,11 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/workspace'
     | '/admin/workspaces'
+    | '/profile/llm'
+    | '/profile/workspaces'
     | '/_app/'
     | '/admin/'
+    | '/profile/'
     | '/_app/connections/bigcommerce'
     | '/_app/connections/shopify'
     | '/admin/workspace/member'
@@ -225,6 +271,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRouteWithChildren
   RegisterRoute: typeof RegisterRoute
 }
 
@@ -249,6 +296,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -313,6 +367,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/workspaces'
       preLoaderRoute: typeof AdminWorkspacesRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/profile/': {
+      id: '/profile/'
+      path: '/'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/llm': {
+      id: '/profile/llm'
+      path: '/llm'
+      fullPath: '/profile/llm'
+      preLoaderRoute: typeof ProfileLlmRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/workspaces': {
+      id: '/profile/workspaces'
+      path: '/workspaces'
+      fullPath: '/profile/workspaces'
+      preLoaderRoute: typeof ProfileWorkspacesRouteImport
+      parentRoute: typeof ProfileRoute
     }
     '/_app/connections/': {
       id: '/_app/connections/'
@@ -414,10 +489,26 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface ProfileRouteChildren {
+  ProfileLlmRoute: typeof ProfileLlmRoute
+  ProfileWorkspacesRoute: typeof ProfileWorkspacesRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
+}
+
+const ProfileRouteChildren: ProfileRouteChildren = {
+  ProfileLlmRoute: ProfileLlmRoute,
+  ProfileWorkspacesRoute: ProfileWorkspacesRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
+}
+
+const ProfileRouteWithChildren =
+  ProfileRoute._addFileChildren(ProfileRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRouteWithChildren,
   RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport

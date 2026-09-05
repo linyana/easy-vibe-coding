@@ -1,11 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import {
-	ArrowLeftIcon,
-	ChevronsUpDown,
-	ShieldCheckIcon,
-	UsersIcon,
-} from 'lucide-react';
+import { ChevronsUpDown, ShieldCheckIcon, UsersIcon } from 'lucide-react';
 import {
 	Sidebar,
 	SidebarMenu,
@@ -14,7 +9,6 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from './NavGroup';
 import { TitleBlock } from '@/components/data/TitleBlock';
-import { Link } from '@tanstack/react-router';
 import { useGlobal } from '@/hooks/useGlobal';
 import { AdminWorkspaceSwitcher } from './AdminWorkspaceSwitcher';
 import { ShellSidebar } from './ShellSidebar';
@@ -68,18 +62,7 @@ export function AdminWorkspaceSidebar({
 	return (
 		<ShellSidebar
 			{...props}
-			header={
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton asChild>
-							<Link to="/admin/workspaces">
-								<ArrowLeftIcon className="size-4" />
-								<span>Back to admin</span>
-							</Link>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-				</SidebarMenu>
-			}
+			back={{ to: '/admin/workspaces', label: 'Back to admin' }}
 			context={<WorkspaceCard />}
 			groups={[{ items: navWorkspace }]}
 		/>

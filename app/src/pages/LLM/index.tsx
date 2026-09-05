@@ -5,9 +5,10 @@ import { CreateLlmProviderDialog } from './Create';
 import { EditLlmProviderDialog } from './Edit';
 import { DeleteLlmProviderDialog } from './Delete';
 
-// The LLM providers section of the Personal settings dialog: the List owns
-// the data surface; this orchestrator only decides which dialog is open and
-// for which provider (Edit/Delete remount per row via key).
+// The LLM providers surface — mounted on the profile shell's /profile/llm
+// page: the List owns the data surface; this orchestrator only decides which
+// dialog is open and for which provider (Edit/Delete remount per row via
+// key).
 export function LlmProvidersSettings() {
 	const [action, setAction] = useState<LlmProvidersAction | null>(null);
 	const [open, setOpen] = useState(false);

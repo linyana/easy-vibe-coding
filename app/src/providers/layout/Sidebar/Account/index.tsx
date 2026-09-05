@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { MoreVertical, LogOut, Settings2 } from 'lucide-react';
+import { LogOut, MoreVertical, Settings2 } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { TitleBlock } from '@/components/data/TitleBlock';
 import {
@@ -18,14 +17,12 @@ import {
 	useSidebar,
 } from '@/components/ui/sidebar';
 import { useGlobal } from '@/hooks/useGlobal';
-import { SettingsDialog } from './SettingsDialog';
 
 // Logout is client-side (JWT stateless — nothing to revoke server-side).
 export function NavAccount() {
 	const { isMobile } = useSidebar();
 	const navigate = useNavigate();
 	const { account, update } = useGlobal();
-	const [settingsOpen, setSettingsOpen] = useState(false);
 
 	const displayName = account?.name ?? 'Guest';
 	const displayEmail = account?.email ?? 'Not signed in';
@@ -70,11 +67,16 @@ export function NavAccount() {
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
 							<DropdownMenuGroup>
+								{/* The profile shell holds the account-level pages
+									plus the workspace picker — available from every
+									surface (app / admin / profile). */}
 								<DropdownMenuItem
-									onClick={() => setSettingsOpen(true)}
+									onClick={() =>
+										void navigate({ to: '/profile' })
+									}
 								>
 									<Settings2 />
-									Personal settings
+									Profile
 								</DropdownMenuItem>
 							</DropdownMenuGroup>
 							<DropdownMenuGroup>
@@ -87,10 +89,6 @@ export function NavAccount() {
 					</DropdownMenu>
 				</SidebarMenuItem>
 			</SidebarMenu>
-			<SettingsDialog
-				open={settingsOpen}
-				onOpenChange={setSettingsOpen}
-			/>
 		</>
 	);
 }

@@ -1,9 +1,15 @@
 import * as React from 'react';
+import { Link } from '@tanstack/react-router';
+import { ArrowLeftIcon } from 'lucide-react';
+import type { FileRoutesByTo } from '@/routeTree.gen';
 import {
 	Sidebar,
 	SidebarContent,
 	SidebarFooter,
 	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
 	SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { NavGroup, type NavItem } from '../NavGroup';
@@ -18,17 +24,27 @@ export type ShellGroup = {
 	at?: 'top' | 'bottom';
 };
 
+// The hub-return header row — entered-workspace surfaces (app / admin
+// workspace) point back to the context-free shell that launched them.
+export type ShellBackLink = {
+	to: keyof FileRoutesByTo;
+	label: string;
+};
+
 // The one sidebar chrome, shared by every surface (app / admin / admin
-// workspace). Surfaces only supply what differs: header, the workspace
-// selector row (a React node — surfaces without one omit it), and the nav
-// groups. Route vocab lives at the surface, never here.
+// workspace / profile). Surfaces only supply what differs: a custom header, a
+// back link (entered-workspace modes — replaces the brand header), the
+// workspace selector row (a React node — surfaces without one omit it), and
+// the nav groups. Route vocab lives at the surface, never here.
 export function ShellSidebar({
 	header,
+	back,
 	context,
 	groups,
 	...props
 }: {
 	header?: React.ReactNode;
+	back?: ShellBackLink;
 	/** The workspace selector row — render null/omit when the surface has none. */
 	context?: React.ReactNode;
 	groups: ShellGroup[];
@@ -38,9 +54,9 @@ export function ShellSidebar({
 
 	return (
 		<Sidebar collapsible="offcanvas" {...props}>
-			{(header || context) && (
+			{(header || back || context) && (
 				<SidebarHeader>
-					{header}
+					{header ?? (back && <BackToHubLink {...back} />)}
 					{context}
 				</SidebarHeader>
 			)}
@@ -68,5 +84,20 @@ export function ShellSidebar({
 				<NavAccount />
 			</SidebarFooter>
 		</Sidebar>
+	);
+}
+
+function BackToHubLink({ to, label }: ShellBackLink) {
+	return (
+		<SidebarMenu>
+			<SidebarMenuItem>
+				<SidebarMenuButton asChild>
+					<Link to={to}>
+						<ArrowLeftIcon className="size-4" />
+						<span>{label}</span>
+					</Link>
+				</SidebarMenuButton>
+			</SidebarMenuItem>
+		</SidebarMenu>
 	);
 }

@@ -3,6 +3,7 @@ export * from './Admin/Accounts';
 export * from './Admin/Settings';
 export * from './Admin/Workspaces';
 export * from './Admin/Workspace';
+export * from './Profile';
 export * from './Members';
 export * from './Connections';
 export * from './Auth';

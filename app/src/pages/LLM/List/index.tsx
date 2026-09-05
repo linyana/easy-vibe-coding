@@ -27,7 +27,7 @@ const API_LABELS: Record<string, string> = {
 const isOpenAIFamily = (api: string) =>
 	api === 'openai-completions' || api === 'openai-responses';
 
-// The LLM providers surface (inside the Personal settings dialog): the
+// The LLM providers surface (the /profile/llm page): the
 // account's own provider rows + the one-per-account default model choice.
 // Model lists are NOT a stored catalog — the user fetches them live per
 // provider (or types the id by hand). Data lives here under the ['llm']
