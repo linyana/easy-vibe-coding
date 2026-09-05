@@ -25,7 +25,7 @@ function WorkspaceSlugLayout() {
 			key={slug}
 			slug={slug}
 			variant="member"
-			backTo="/profile/workspaces"
+			backTo="/personal/workspaces"
 		>
 			<LayoutProvider>
 				<Outlet />

@@ -1,5 +1,5 @@
-import { LogOut, MoreVertical, Settings2 } from 'lucide-react';
-import { useNavigate } from '@tanstack/react-router';
+import { LogOut, MoreVertical, ShieldCheckIcon, UserIcon } from 'lucide-react';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 import { TitleBlock } from '@/components/data/TitleBlock';
 import {
 	DropdownMenu,
@@ -22,7 +22,15 @@ import { useGlobal } from '@/hooks/useGlobal';
 export function NavAccount() {
 	const { isMobile } = useSidebar();
 	const navigate = useNavigate();
+	const { pathname } = useLocation();
 	const { account, update } = useGlobal();
+
+	// Platform admin is URL-reachable by design (/admin) — this is its one
+	// in-app door. Hidden on admin-platform paths (the item would point at the
+	// shell you are already in); the workspace app and the personal shell
+	// both show it. The API re-checks isAdmin per request regardless.
+	const showAdmin =
+		(account?.isAdmin ?? false) && !pathname.startsWith('/admin');
 
 	const displayName = account?.name ?? 'Guest';
 	const displayEmail = account?.email ?? 'Not signed in';
@@ -66,17 +74,29 @@ export function NavAccount() {
 								</div>
 							</DropdownMenuLabel>
 							<DropdownMenuSeparator />
+							{/* The personal shell (Account / LLM providers / the
+								workspace picker) is reachable from every non-admin
+								surface. The Admin item is the reverse door —
+								platform surfaces, admins only; hidden while one is
+								already in /admin. */}
 							<DropdownMenuGroup>
-								{/* The profile shell holds the account-level pages
-									plus the workspace picker — available from every
-									surface (app / admin / profile). */}
+								{showAdmin && (
+									<DropdownMenuItem
+										onClick={() =>
+											void navigate({ to: '/admin' })
+										}
+									>
+										<ShieldCheckIcon />
+										Admin
+									</DropdownMenuItem>
+								)}
 								<DropdownMenuItem
 									onClick={() =>
-										void navigate({ to: '/profile' })
+										void navigate({ to: '/personal' })
 									}
 								>
-									<Settings2 />
-									Profile
+									<UserIcon />
+									Personal
 								</DropdownMenuItem>
 							</DropdownMenuGroup>
 							<DropdownMenuGroup>

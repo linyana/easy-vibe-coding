@@ -33,7 +33,7 @@ export const API = treaty<App>(baseUrl, {
 			...(token ? { Authorization: `Bearer ${token}` } : {}),
 			// The workspace being addressed — the server resolves + re-validates
 			// it per request (membership/role gates). No workspace header on
-			// non-workspace surfaces (login/profile/admin platform) — those
+			// non-workspace surfaces (login/personal/admin platform) — those
 			// endpoints are account-scoped only.
 			...(slug ? { 'X-Workspace-Slug': slug } : {}),
 		};

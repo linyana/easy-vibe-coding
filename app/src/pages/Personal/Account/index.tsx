@@ -2,10 +2,10 @@ import { useGlobal } from '@/hooks/useGlobal';
 import { usePageHeader } from '@/hooks';
 import { Card } from '@/components';
 
-// The profile home — the account's identity, read from the session store
+// The personal home — the account's identity, read from the session store
 // (booted from /auth/me), so no request of its own. Future editable fields
 // (name, password, …) replace the read-only rows, not the surface.
-export function ProfileAccountPage() {
+export function PersonalAccountPage() {
 	const { account, workspace } = useGlobal();
 	const displayName = account?.name ?? 'Signed in';
 	const displayEmail = account?.email ?? '—';
@@ -14,7 +14,7 @@ export function ProfileAccountPage() {
 		title: 'Account',
 		description: 'Who you are signed in as.',
 		// With an entered workspace, the header arrow returns to the workspace
-		// app — the profile sidebar holds no workspace-surface links.
+		// app — the personal sidebar holds no workspace-surface links.
 		back: workspace ? { to: '/', label: 'Back to workspace' } : undefined,
 	});
 

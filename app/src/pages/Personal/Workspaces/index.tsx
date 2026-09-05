@@ -3,11 +3,11 @@ import { usePageHeader } from '@/hooks';
 import { Card } from '@/components';
 import { WorkspaceSelect } from '@/providers/workspace/Select';
 
-// The profile's workspace selection — the picker the no-workspace gate and the
-// app sidebar hand off to. Choosing a workspace opens it in a NEW TAB (the URL
-// is the address, no session exchange) and leaves this page open — pick the
-// next one, or stay here as the hub.
-export function ProfileWorkspacesPage() {
+// The personal shell's workspace selection — the picker the no-workspace gate
+// and the app sidebar hand off to. Choosing a workspace opens it in a NEW TAB
+// (the URL is the address, no session exchange) and leaves this page open —
+// pick the next one, or stay here as the hub.
+export function PersonalWorkspacesPage() {
 	const { workspace } = useGlobal();
 
 	usePageHeader({

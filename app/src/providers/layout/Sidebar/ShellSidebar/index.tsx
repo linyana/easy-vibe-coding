@@ -32,7 +32,7 @@ export type ShellBackLink = {
 };
 
 // The one sidebar chrome, shared by every surface (app / admin / admin
-// workspace / profile). Surfaces only supply what differs: a custom header, a
+// workspace / personal). Surfaces only supply what differs: a custom header, a
 // back link (entered-workspace modes — replaces the brand header), the
 // workspace selector row (a React node — surfaces without one omit it), and
 // the nav groups. Route vocab lives at the surface, never here.

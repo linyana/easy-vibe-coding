@@ -12,16 +12,16 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as WorkspacesRouteImport } from './routes/workspaces'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAccountsRouteImport } from './routes/admin/accounts'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminWorkspacesRouteImport } from './routes/admin/workspaces'
-import { Route as ProfileIndexRouteImport } from './routes/profile/index'
-import { Route as ProfileLlmRouteImport } from './routes/profile/llm'
-import { Route as ProfileWorkspacesRouteImport } from './routes/profile/workspaces'
+import { Route as PersonalIndexRouteImport } from './routes/personal/index'
+import { Route as PersonalLlmRouteImport } from './routes/personal/llm'
+import { Route as PersonalWorkspacesRouteImport } from './routes/personal/workspaces'
 import { Route as WorkspacesIndexRouteImport } from './routes/workspaces/index'
 import { Route as WorkspacesSlugRouteImport } from './routes/workspaces/$slug'
 import { Route as AdminWorkspacesIndexRouteImport } from './routes/admin/workspaces/index'
@@ -50,9 +50,9 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
+const PersonalRoute = PersonalRouteImport.update({
+  id: '/personal',
+  path: '/personal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -85,20 +85,20 @@ const AdminWorkspacesRoute = AdminWorkspacesRouteImport.update({
   path: '/workspaces',
   getParentRoute: () => AdminRoute,
 } as any)
-const ProfileIndexRoute = ProfileIndexRouteImport.update({
+const PersonalIndexRoute = PersonalIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => ProfileRoute,
+  getParentRoute: () => PersonalRoute,
 } as any)
-const ProfileLlmRoute = ProfileLlmRouteImport.update({
+const PersonalLlmRoute = PersonalLlmRouteImport.update({
   id: '/llm',
   path: '/llm',
-  getParentRoute: () => ProfileRoute,
+  getParentRoute: () => PersonalRoute,
 } as any)
-const ProfileWorkspacesRoute = ProfileWorkspacesRouteImport.update({
+const PersonalWorkspacesRoute = PersonalWorkspacesRouteImport.update({
   id: '/workspaces',
   path: '/workspaces',
-  getParentRoute: () => ProfileRoute,
+  getParentRoute: () => PersonalRoute,
 } as any)
 const WorkspacesIndexRoute = WorkspacesIndexRouteImport.update({
   id: '/',
@@ -171,17 +171,17 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
-  '/profile': typeof ProfileRouteWithChildren
+  '/personal': typeof PersonalRouteWithChildren
   '/register': typeof RegisterRoute
   '/workspaces': typeof WorkspacesRouteWithChildren
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/workspaces': typeof AdminWorkspacesRouteWithChildren
-  '/profile/llm': typeof ProfileLlmRoute
-  '/profile/workspaces': typeof ProfileWorkspacesRoute
+  '/personal/llm': typeof PersonalLlmRoute
+  '/personal/workspaces': typeof PersonalWorkspacesRoute
   '/workspaces/$slug': typeof WorkspacesSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
-  '/profile/': typeof ProfileIndexRoute
+  '/personal/': typeof PersonalIndexRoute
   '/workspaces/': typeof WorkspacesIndexRoute
   '/admin/workspaces/$slug': typeof AdminWorkspacesSlugRouteWithChildren
   '/workspaces/$slug/connections': typeof WorkspacesSlugConnectionsRouteWithChildren
@@ -200,10 +200,10 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/profile/llm': typeof ProfileLlmRoute
-  '/profile/workspaces': typeof ProfileWorkspacesRoute
+  '/personal/llm': typeof PersonalLlmRoute
+  '/personal/workspaces': typeof PersonalWorkspacesRoute
   '/admin': typeof AdminIndexRoute
-  '/profile': typeof ProfileIndexRoute
+  '/personal': typeof PersonalIndexRoute
   '/workspaces': typeof WorkspacesIndexRoute
   '/workspaces/$slug/members': typeof WorkspacesSlugMembersRoute
   '/admin/workspaces': typeof AdminWorkspacesIndexRoute
@@ -219,17 +219,17 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
-  '/profile': typeof ProfileRouteWithChildren
+  '/personal': typeof PersonalRouteWithChildren
   '/register': typeof RegisterRoute
   '/workspaces': typeof WorkspacesRouteWithChildren
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/workspaces': typeof AdminWorkspacesRouteWithChildren
-  '/profile/llm': typeof ProfileLlmRoute
-  '/profile/workspaces': typeof ProfileWorkspacesRoute
+  '/personal/llm': typeof PersonalLlmRoute
+  '/personal/workspaces': typeof PersonalWorkspacesRoute
   '/workspaces/$slug': typeof WorkspacesSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
-  '/profile/': typeof ProfileIndexRoute
+  '/personal/': typeof PersonalIndexRoute
   '/workspaces/': typeof WorkspacesIndexRoute
   '/admin/workspaces/$slug': typeof AdminWorkspacesSlugRouteWithChildren
   '/workspaces/$slug/connections': typeof WorkspacesSlugConnectionsRouteWithChildren
@@ -248,17 +248,17 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
-    | '/profile'
+    | '/personal'
     | '/register'
     | '/workspaces'
     | '/admin/accounts'
     | '/admin/settings'
     | '/admin/workspaces'
-    | '/profile/llm'
-    | '/profile/workspaces'
+    | '/personal/llm'
+    | '/personal/workspaces'
     | '/workspaces/$slug'
     | '/admin/'
-    | '/profile/'
+    | '/personal/'
     | '/workspaces/'
     | '/admin/workspaces/$slug'
     | '/workspaces/$slug/connections'
@@ -277,10 +277,10 @@ export interface FileRouteTypes {
     | '/register'
     | '/admin/accounts'
     | '/admin/settings'
-    | '/profile/llm'
-    | '/profile/workspaces'
+    | '/personal/llm'
+    | '/personal/workspaces'
     | '/admin'
-    | '/profile'
+    | '/personal'
     | '/workspaces'
     | '/workspaces/$slug/members'
     | '/admin/workspaces'
@@ -295,17 +295,17 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
-    | '/profile'
+    | '/personal'
     | '/register'
     | '/workspaces'
     | '/admin/accounts'
     | '/admin/settings'
     | '/admin/workspaces'
-    | '/profile/llm'
-    | '/profile/workspaces'
+    | '/personal/llm'
+    | '/personal/workspaces'
     | '/workspaces/$slug'
     | '/admin/'
-    | '/profile/'
+    | '/personal/'
     | '/workspaces/'
     | '/admin/workspaces/$slug'
     | '/workspaces/$slug/connections'
@@ -323,7 +323,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
-  ProfileRoute: typeof ProfileRouteWithChildren
+  PersonalRoute: typeof PersonalRouteWithChildren
   RegisterRoute: typeof RegisterRoute
   WorkspacesRoute: typeof WorkspacesRouteWithChildren
 }
@@ -351,11 +351,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
+    '/personal': {
+      id: '/personal'
+      path: '/personal'
+      fullPath: '/personal'
+      preLoaderRoute: typeof PersonalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -400,26 +400,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWorkspacesRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/profile/': {
-      id: '/profile/'
+    '/personal/': {
+      id: '/personal/'
       path: '/'
-      fullPath: '/profile/'
-      preLoaderRoute: typeof ProfileIndexRouteImport
-      parentRoute: typeof ProfileRoute
+      fullPath: '/personal/'
+      preLoaderRoute: typeof PersonalIndexRouteImport
+      parentRoute: typeof PersonalRoute
     }
-    '/profile/llm': {
-      id: '/profile/llm'
+    '/personal/llm': {
+      id: '/personal/llm'
       path: '/llm'
-      fullPath: '/profile/llm'
-      preLoaderRoute: typeof ProfileLlmRouteImport
-      parentRoute: typeof ProfileRoute
+      fullPath: '/personal/llm'
+      preLoaderRoute: typeof PersonalLlmRouteImport
+      parentRoute: typeof PersonalRoute
     }
-    '/profile/workspaces': {
-      id: '/profile/workspaces'
+    '/personal/workspaces': {
+      id: '/personal/workspaces'
       path: '/workspaces'
-      fullPath: '/profile/workspaces'
-      preLoaderRoute: typeof ProfileWorkspacesRouteImport
-      parentRoute: typeof ProfileRoute
+      fullPath: '/personal/workspaces'
+      preLoaderRoute: typeof PersonalWorkspacesRouteImport
+      parentRoute: typeof PersonalRoute
     }
     '/workspaces/': {
       id: '/workspaces/'
@@ -551,20 +551,21 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface ProfileRouteChildren {
-  ProfileLlmRoute: typeof ProfileLlmRoute
-  ProfileWorkspacesRoute: typeof ProfileWorkspacesRoute
-  ProfileIndexRoute: typeof ProfileIndexRoute
+interface PersonalRouteChildren {
+  PersonalLlmRoute: typeof PersonalLlmRoute
+  PersonalWorkspacesRoute: typeof PersonalWorkspacesRoute
+  PersonalIndexRoute: typeof PersonalIndexRoute
 }
 
-const ProfileRouteChildren: ProfileRouteChildren = {
-  ProfileLlmRoute: ProfileLlmRoute,
-  ProfileWorkspacesRoute: ProfileWorkspacesRoute,
-  ProfileIndexRoute: ProfileIndexRoute,
+const PersonalRouteChildren: PersonalRouteChildren = {
+  PersonalLlmRoute: PersonalLlmRoute,
+  PersonalWorkspacesRoute: PersonalWorkspacesRoute,
+  PersonalIndexRoute: PersonalIndexRoute,
 }
 
-const ProfileRouteWithChildren =
-  ProfileRoute._addFileChildren(ProfileRouteChildren)
+const PersonalRouteWithChildren = PersonalRoute._addFileChildren(
+  PersonalRouteChildren,
+)
 
 interface WorkspacesSlugConnectionsRouteChildren {
   WorkspacesSlugConnectionsBigcommerceRoute: typeof WorkspacesSlugConnectionsBigcommerceRoute
@@ -620,7 +621,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
-  ProfileRoute: ProfileRouteWithChildren,
+  PersonalRoute: PersonalRouteWithChildren,
   RegisterRoute: RegisterRoute,
   WorkspacesRoute: WorkspacesRouteWithChildren,
 }

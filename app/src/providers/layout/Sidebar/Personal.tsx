@@ -9,7 +9,7 @@ import { ShellSidebar } from './ShellSidebar';
 // (Account, LLM providers) plus the workspace picker to enter a workspace.
 // Reached from the account footer menu on every surface; the no-workspace
 // gate hands off here instead of rendering a bare full-screen picker.
-export function ProfileSidebar({
+export function PersonalSidebar({
 	...props
 }: React.ComponentProps<typeof Sidebar>) {
 	return (
@@ -21,17 +21,17 @@ export function ProfileSidebar({
 					items: [
 						{
 							title: 'Account',
-							to: '/profile',
+							to: '/personal',
 							icon: UserIcon,
 						},
 						{
 							title: 'LLM providers',
-							to: '/profile/llm',
+							to: '/personal/llm',
 							icon: BotIcon,
 						},
 						{
 							title: 'Workspaces',
-							to: '/profile/workspaces',
+							to: '/personal/workspaces',
 							icon: Building2Icon,
 						},
 					],

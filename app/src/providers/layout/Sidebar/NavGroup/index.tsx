@@ -98,7 +98,7 @@ export function NavGroup({
 									<Link
 										to={item.to}
 										params={item.params}
-										// 索引页（/、/admin、/profile）精确匹配：/admin 的兄弟页
+										// 索引页（/、/admin、/personal）精确匹配：/admin 的兄弟页
 										// （Accounts/Workspaces）是并列页不是子页，前缀匹配
 										// 会让 Overview 一直高亮；其余条目按路径前缀匹配，
 										// 未来加子路由（/accounts/:id）时父条目仍保持高亮。
@@ -106,7 +106,7 @@ export function NavGroup({
 											exact:
 												item.to === '/' ||
 												item.to === '/admin' ||
-												item.to === '/profile',
+												item.to === '/personal',
 											includeSearch: false,
 										}}
 										// Link 自带 aria-current="page"；data-active

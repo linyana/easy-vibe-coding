@@ -10,7 +10,7 @@ import { DotsRingLoading } from '@/components/loading/DotsRing';
 // The authenticated shells' pre-route token check — no token → sign-in,
 // remembering where the user was heading (login returns there via
 // `redirect`; searchStr is the raw query string). Shared by every
-// authenticated surface (workspaces / admin / profile). Also drops the
+// authenticated surface (workspaces / admin / personal). Also drops the
 // request-scope workspace slug (libs/api) — a slug layout's own beforeLoad
 // re-sets it right after (ancestors run first, so the leaf wins).
 export function sessionBeforeLoad({ location }: { location: ParsedLocation }) {

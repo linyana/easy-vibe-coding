@@ -75,7 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
 		<ShellSidebar
 			{...props}
-			back={{ to: '/profile/workspaces', label: 'Back to profile' }}
+			back={{ to: '/personal/workspaces', label: 'Back to Personal' }}
 			context={<WorkspaceSwitcher />}
 			groups={[
 				{

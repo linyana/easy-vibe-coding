@@ -1,5 +1,5 @@
 // The personal shell — context-free (workspace-independent), deliberately
-// OUTSIDE the workspace-scoped _app: profile pages (Account, LLM providers)
+// OUTSIDE the workspace-scoped _app: personal pages (Account, LLM providers)
 // and the workspace picker work whether or not a workspace is entered. Same
 // shared session gate as _app / admin; only the sidebar differs.
 import { Outlet, createFileRoute } from '@tanstack/react-router';
@@ -8,17 +8,17 @@ import {
 	SessionProvider,
 	sessionBeforeLoad,
 } from '@/providers';
-import { ProfileSidebar } from '@/providers/layout/Sidebar/Profile';
+import { PersonalSidebar } from '@/providers/layout/Sidebar/Personal';
 
-export const Route = createFileRoute('/profile')({
+export const Route = createFileRoute('/personal')({
 	beforeLoad: sessionBeforeLoad,
-	component: ProfileShell,
+	component: PersonalShell,
 });
 
-function ProfileShell() {
+function PersonalShell() {
 	return (
 		<SessionProvider>
-			<LayoutProvider sidebar={<ProfileSidebar variant="inset" />}>
+			<LayoutProvider sidebar={<PersonalSidebar variant="inset" />}>
 				<Outlet />
 			</LayoutProvider>
 		</SessionProvider>

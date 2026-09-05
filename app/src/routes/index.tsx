@@ -22,6 +22,6 @@ export const Route = createFileRoute('/')({
 		if (last) {
 			throw redirect({ to: '/workspaces/$slug', params: { slug: last } });
 		}
-		throw redirect({ to: '/profile/workspaces' });
+		throw redirect({ to: '/personal/workspaces' });
 	},
 });

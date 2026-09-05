@@ -5,7 +5,7 @@ import { CreateLlmProviderDialog } from './Create';
 import { EditLlmProviderDialog } from './Edit';
 import { DeleteLlmProviderDialog } from './Delete';
 
-// The LLM providers surface — mounted on the profile shell's /profile/llm
+// The LLM providers surface — mounted on the personal shell's /personal/llm
 // page: the List owns the data surface; this orchestrator only decides which
 // dialog is open and for which provider (Edit/Delete remount per row via
 // key).
