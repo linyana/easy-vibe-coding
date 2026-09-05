@@ -75,9 +75,11 @@ api/src/
 app/src/
   pages/<name>/     index.tsx（编排）· <Behavior>/（自包含行为模块）· types/
   routes/           薄接线层（红线 2）
+  providers/        壳的门（无可见 chrome）：session/（SessionProvider + sessionBeforeLoad）· workspace/（WorkspaceProvider + 域内 picker flow Select/Create/Row）
   libs/             api/（Eden 客户端 + callEden）· dates/（时区边界）· error/ · icons/ · queryClient/ · utils/
   hooks/            读/写/表单/会话/全局状态/主题/页头 hooks —— 职责见各自文件头注释
   components/       顶层 barrel + 分类子文件夹
+  components/layout/ 壳的帧与导航 chrome（LayoutProvider 帧 + AppSidebar/AdminSidebar/PersonalSidebar/AdminWorkspaceSidebar + SiteHeader/ThemeToggle + ShellSidebar/NavGroup/NavAccount/Banner/AdminWorkspaceSwitcher）—— 每组件一文件夹，名字即导出名
 ```
 
 ## 契约包与两侧词汇（索引：一句话职责；深度细节在 skill）

@@ -1,7 +1,7 @@
 import { ArrowLeftIcon, InfoIcon } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { ThemeToggle } from './Theme';
+import { ThemeToggle } from '@/components/layout/ThemeToggle';
 import { useIsMobile } from '@/hooks';
 import { usePageHeaderStore } from '@/hooks/usePageHeader';
 import { Button } from '@/components/ui/button';

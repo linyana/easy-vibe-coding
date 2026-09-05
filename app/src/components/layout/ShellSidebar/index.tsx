@@ -12,8 +12,8 @@ import {
 	SidebarMenuItem,
 	SidebarSeparator,
 } from '@/components/ui/sidebar';
-import { NavGroup, type NavItem } from '../NavGroup';
-import { NavAccount } from '../Account';
+import { NavGroup, type NavItem } from '@/components/layout/NavGroup';
+import { NavAccount } from '@/components/layout/NavAccount';
 
 // One nav group in the shell: the route list + where it sits. `at: 'bottom'`
 // pins the group to the footer edge (mt-auto) — secondary nav like

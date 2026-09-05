@@ -6,8 +6,8 @@ import {
 	UsersIcon,
 } from 'lucide-react';
 import { Sidebar } from '@/components/ui/sidebar';
-import { Banner } from './Banner';
-import { ShellSidebar } from './ShellSidebar';
+import { Banner } from '@/components/layout/Banner';
+import { ShellSidebar } from '@/components/layout/ShellSidebar';
 
 // The admin platform surface — global nav. The entered-workspace surface is a
 // separate component (AdminWorkspaceSidebar); routes/admin picks by path.

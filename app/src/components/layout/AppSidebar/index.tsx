@@ -19,7 +19,7 @@ import { useGlobal } from '@/hooks/useGlobal';
 import { segmentAfter } from '@/libs/utils';
 import { WorkspaceSelect } from '@/providers/workspace/Select';
 import { Dialog } from '@/components';
-import { ShellSidebar } from './ShellSidebar';
+import { ShellSidebar } from '@/components/layout/ShellSidebar';
 
 // The workspace surface's context row — the workspace switcher. The URL slug
 // is the address, so the row just opens the picker (which navigates); the

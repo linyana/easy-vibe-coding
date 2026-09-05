@@ -1,6 +1,6 @@
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from './Sidebar';
-import { SiteHeader } from './Header';
+import { AppSidebar } from '@/components/layout/AppSidebar';
+import { SiteHeader } from '@/components/layout/SiteHeader';
 
 type IPropsType = {
 	children: React.ReactNode;

@@ -11,8 +11,8 @@ import {
 import { TitleBlock } from '@/components/data/TitleBlock';
 import { useGlobal } from '@/hooks/useGlobal';
 import { segmentAfter } from '@/libs/utils';
-import { AdminWorkspaceSwitcher } from './AdminWorkspaceSwitcher';
-import { ShellSidebar } from './ShellSidebar';
+import { AdminWorkspaceSwitcher } from '@/components/layout/AdminWorkspaceSwitcher';
+import { ShellSidebar } from '@/components/layout/ShellSidebar';
 
 // The workspace card + nav of the entered workspace — /admin/workspaces/:slug/*
 // only (routes/admin picks this sidebar by path). Permission is a planned

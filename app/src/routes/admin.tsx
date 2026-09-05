@@ -12,13 +12,10 @@ import {
 } from '@tanstack/react-router';
 import { ShieldCheckIcon, ArrowLeftIcon } from 'lucide-react';
 import { useGlobal } from '@/hooks/useGlobal';
-import {
-	LayoutProvider,
-	SessionProvider,
-	sessionBeforeLoad,
-} from '@/providers';
-import { AdminSidebar } from '@/providers/layout/Sidebar/Admin';
-import { AdminWorkspaceSidebar } from '@/providers/layout/Sidebar/AdminWorkspace';
+import { SessionProvider, sessionBeforeLoad } from '@/providers';
+import { LayoutProvider } from '@/components/layout/LayoutProvider';
+import { AdminSidebar } from '@/components/layout/AdminSidebar';
+import { AdminWorkspaceSidebar } from '@/components/layout/AdminWorkspaceSidebar';
 import { Button } from '@/components/ui/button';
 
 // Workspace mode = an ENTERED workspace (a slug child of the platform list:

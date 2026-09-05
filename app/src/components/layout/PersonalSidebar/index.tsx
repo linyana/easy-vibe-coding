@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { Building2Icon, BotIcon, UserIcon } from 'lucide-react';
 import { Sidebar } from '@/components/ui/sidebar';
-import { Banner } from './Banner';
-import { ShellSidebar } from './ShellSidebar';
+import { Banner } from '@/components/layout/Banner';
+import { ShellSidebar } from '@/components/layout/ShellSidebar';
 
 // The personal surface — context-free (workspace-independent), mirrors the
 // admin platform surface's chrome: the shell holds the account's own pages

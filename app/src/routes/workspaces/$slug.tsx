@@ -8,7 +8,7 @@
 // a stale context.
 import { Outlet, createFileRoute } from '@tanstack/react-router';
 import { setCurrentWorkspaceSlug } from '@/libs/api';
-import { LayoutProvider } from '@/providers';
+import { LayoutProvider } from '@/components/layout/LayoutProvider';
 import { WorkspaceProvider } from '@/providers/workspace';
 
 export const Route = createFileRoute('/workspaces/$slug')({
