@@ -19,6 +19,9 @@ import {
 export type NavItem = {
 	title: string;
 	to?: keyof FileRoutesByTo;
+	/** Path params for a parameterized target (a workspace slug route) — the
+	 *  surface that defines the item supplies them (from its own location). */
+	params?: Record<string, string>;
 	icon?: LucideIcon;
 	/** Expandable second level (like the platform pages under Connections) —
 	 *  the parent toggles open/closed, children are plain links. */
@@ -52,6 +55,7 @@ function SubMenu({ item }: { item: NavItem & { children: NavItem[] } }) {
 								<SidebarMenuSubButton asChild>
 									<Link
 										to={child.to}
+										params={child.params}
 										activeOptions={{ includeSearch: false }}
 										activeProps={{ 'data-active': true }}
 									>
@@ -93,6 +97,7 @@ export function NavGroup({
 								<SidebarMenuButton asChild tooltip={item.title}>
 									<Link
 										to={item.to}
+										params={item.params}
 										// 索引页（/、/admin、/profile）精确匹配：/admin 的兄弟页
 										// （Accounts/Workspaces）是并列页不是子页，前缀匹配
 										// 会让 Overview 一直高亮；其余条目按路径前缀匹配，

@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { SearchIcon } from 'lucide-react';
 import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
-import { useAPIMutation } from '@/hooks/useAPIMutation';
 import { Dialog, ErrorState } from '@/components';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,8 @@ export function AdminWorkspaceSwitcher({
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }) {
-	const { workspace, update } = useGlobal();
+	const { workspace } = useGlobal();
+	const navigate = useNavigate();
 	const [search, setSearch] = useState('');
 
 	const list = useAPIQuery({
@@ -28,15 +29,15 @@ export function AdminWorkspaceSwitcher({
 		toastError: false,
 	});
 
-	const switchMutation = useAPIMutation({
-		call: (slug: string) => API.workspaces.admin.switch.post({ slug }),
-		queryKey: ['auth'],
-		// A context change, not a write — no toast.
-		onSuccess: ({ token, workspace }) => {
-			update({ token, workspace });
-			onOpenChange(false);
-		},
-	});
+	// URL-addressable: switching = navigating to the new slug's pages (the
+	// gate remounts and refetches; no token exchange anymore).
+	const enter = (slug: string) => {
+		onOpenChange(false);
+		void navigate({
+			to: '/admin/workspaces/$slug/member',
+			params: { slug },
+		});
+	};
 
 	const keyword = search.trim().toLowerCase();
 	const filtered = (list.data?.items ?? []).filter(
@@ -54,7 +55,7 @@ export function AdminWorkspaceSwitcher({
 			onOpenChange={onOpenChange}
 			icon={{ name: 'Building2' }}
 			title="Switch workspace"
-			description="Jump to another workspace — the current page re-scopes to it."
+			description="Jump to another workspace — its sections open here."
 			contentClassName="sm:w-3/5 sm:max-w-none"
 			footer={
 				<Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -89,8 +90,7 @@ export function AdminWorkspaceSwitcher({
 								<WorkspaceRow
 									workspace={item}
 									current={item.id === workspace?.id}
-									disabled={switchMutation.isPending}
-									onSelect={switchMutation.mutate}
+									onSelect={enter}
 								/>
 							</li>
 						))}

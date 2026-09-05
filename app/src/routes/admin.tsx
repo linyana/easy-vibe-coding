@@ -1,7 +1,7 @@
 // The admin shell — platform-level, deliberately OUTSIDE the workspace-scoped
-// _app: admins manage accounts/workspaces, not a workspace. Reuses the shared
+// app: admins manage accounts/workspaces, not a workspace. Reuses the shared
 // session gate + standard app chrome; only the isAdmin gate and the sidebar
-// differ. The entered-workspace surface (/admin/workspace/*) swaps in a
+// differ. The entered-workspace surface (/admin/workspaces/:slug/*) swaps in a
 // workspace-mode sidebar (the shell picks by path — the surfaces never switch
 // modes themselves).
 import {
@@ -21,8 +21,11 @@ import { AdminSidebar } from '@/providers/layout/Sidebar/Admin';
 import { AdminWorkspaceSidebar } from '@/providers/layout/Sidebar/AdminWorkspace';
 import { Button } from '@/components/ui/button';
 
+// Workspace mode = an ENTERED workspace (a slug child of the platform list:
+// /admin/workspaces/:slug/...). The bare list itself (/admin/workspaces)
+// stays platform mode.
 const isWorkspacePath = (pathname: string) =>
-	pathname === '/admin/workspace' || pathname.startsWith('/admin/workspace/');
+	/^\/admin\/workspaces\/[^/]+/.test(pathname);
 
 export const Route = createFileRoute('/admin')({
 	beforeLoad: sessionBeforeLoad,

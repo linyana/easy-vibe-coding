@@ -1,20 +1,13 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type {
 	AuthLogin,
 	AuthRegister,
 	AuthResponse,
 	AccountResponse,
 	MeResponse,
-	SwitchWorkspaceResponse,
-	WorkspaceRef,
 } from '@easy-vibe-coding/shared';
 import { db } from '../../db/client';
-import {
-	accounts,
-	workspaceMembers,
-	workspaces,
-	type Account,
-} from '../../db/schema';
+import { accounts, type Account } from '../../db/schema';
 import { signAuthToken } from '../../libs/auth';
 import { isUniqueViolation } from '../../libs/dbError';
 import { normalizeEmail } from '../../libs/email';
@@ -107,11 +100,11 @@ export const authService = {
 		};
 	},
 
-	// Guard already verified the token; re-read the row so renames apply immediately.
-	async me(
-		accountId: number,
-		workspaceId: number | undefined,
-	): Promise<MeResponse> {
+	// Guard already verified the token; re-read the row so renames apply
+	// immediately. The workspace is deliberately absent: workspace pages
+	// address the workspace by URL slug and the server resolves it per
+	// request — me only re-establishes the account.
+	async me(accountId: number): Promise<MeResponse> {
 		const account = await db.query.accounts.findFirst({
 			where: eq(accounts.id, accountId),
 		});
@@ -119,99 +112,6 @@ export const authService = {
 			throw Errors.unauthorized('This account no longer exists');
 		}
 
-		// The token's workspaceId claim is echoed only while the workspace
-		// still exists, (for regular accounts) membership still holds, and the
-		// workspace is not soft-deleted — a deleted or disabled workspace or a
-		// removed member drops back to null (the client re-picks) instead of
-		// lingering in a phantom workspace until the token's TTL expires.
-		// Admins echo ANY workspace: the platform switch lets them enter
-		// workspaces they don't belong to, so membership can't be the gate for
-		// them, and a disabled workspace is theirs to inspect and re-enable.
-		let workspace: WorkspaceRef | null = null;
-		if (workspaceId !== undefined) {
-			if (account.isAdmin) {
-				const row = await db.query.workspaces.findFirst({
-					where: eq(workspaces.id, workspaceId),
-					columns: { id: true, slug: true, name: true },
-				});
-				if (row) workspace = row;
-			} else {
-				const member = await db
-					.select({
-						id: workspaces.id,
-						slug: workspaces.slug,
-						name: workspaces.name,
-					})
-					.from(workspaceMembers)
-					.innerJoin(
-						workspaces,
-						eq(workspaceMembers.workspaceId, workspaces.id),
-					)
-					.where(
-						and(
-							eq(workspaceMembers.accountId, accountId),
-							eq(workspaceMembers.workspaceId, workspaceId),
-							eq(workspaces.disabled, false),
-						),
-					)
-					.limit(1);
-				if (member[0]) workspace = member[0];
-			}
-		}
-
-		return { account: pickAccount(account), workspace };
-	},
-
-	// Exchange for a workspace-scoped token. Membership is the gate: an account
-	// can only enter workspaces it belongs to — 403, not 404, because whether
-	// the workspace exists is not the question.
-	async switchWorkspace({
-		accountId,
-		slug,
-	}: {
-		accountId: number;
-		slug: string;
-	}): Promise<SwitchWorkspaceResponse> {
-		const member = await db
-			.select({
-				id: workspaces.id,
-				slug: workspaces.slug,
-				name: workspaces.name,
-				disabled: workspaces.disabled,
-			})
-			.from(workspaceMembers)
-			.innerJoin(
-				workspaces,
-				eq(workspaceMembers.workspaceId, workspaces.id),
-			)
-			.where(
-				and(
-					eq(workspaceMembers.accountId, accountId),
-					eq(workspaces.slug, slug),
-				),
-			)
-			.limit(1);
-		if (!member[0]) {
-			throw Errors.forbidden('You are not a member of this workspace');
-		}
-		// Soft-delete gate (same rule as the role guard): a closed workspace
-		// rejects non-admin members; admins keep the override (their own switch
-		// endpoint and surfaces stay open). tokenVersion rides on the fresh
-		// token so a reset password still revokes this new session.
-		const account = await db.query.accounts.findFirst({
-			where: eq(accounts.id, accountId),
-			columns: { isAdmin: true, tokenVersion: true },
-		});
-		if (member[0].disabled && !account?.isAdmin) {
-			throw Errors.forbidden('This workspace has been disabled');
-		}
-		return {
-			token: await signAuthToken({
-				accountId,
-				workspaceId: member[0].id,
-				tokenVersion: account?.tokenVersion ?? 0,
-			}),
-			workspace: member[0],
-		};
+		return { account: pickAccount(account) };
 	},
 };

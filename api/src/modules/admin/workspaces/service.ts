@@ -4,10 +4,9 @@ import type {
 	WorkspaceUpdate,
 } from '@easy-vibe-coding/shared';
 import { db } from '../../../db/client';
-import { accounts, workspaces } from '../../../db/schema';
+import { workspaces } from '../../../db/schema';
 import { isUniqueViolation } from '../../../libs/dbError';
 import { Errors } from '../../../libs/error';
-import { signAuthToken } from '../../../libs/auth';
 import { escapeLikePattern } from '../../../libs/like';
 
 // Platform-level workspace service — the admin counterpart of the
@@ -84,7 +83,7 @@ export const adminWorkspaceService = {
 
 	// Soft-delete flip (idempotent): the row and memberships stay, but the
 	// workspace behaves as deleted for non-admin members until re-enabled —
-	// enforced at the role guard, switch, me, and member-list gates.
+	// enforced at the role guard (members) and the admin detail/roster gates.
 	async setDisabled({ id, disabled }: { id: number; disabled: boolean }) {
 		const [workspace] = await db
 			.update(workspaces)
@@ -93,35 +92,5 @@ export const adminWorkspaceService = {
 			.returning();
 		if (!workspace) throw Errors.notFound('Workspace not found');
 		return workspace;
-	},
-
-	// Enter ANY workspace from the platform list — the admin counterpart of
-	// /auth/switch-workspace (whose gate is membership). The token gets the
-	// same workspaceId claim, so after entering the session is
-	// workspace-scoped exactly like a member's.
-	async switchWorkspace({
-		accountId,
-		slug,
-	}: {
-		accountId: number;
-		slug: string;
-	}) {
-		const workspace = await db.query.workspaces.findFirst({
-			where: eq(workspaces.slug, slug),
-			columns: { id: true, slug: true, name: true },
-		});
-		if (!workspace) throw Errors.notFound('Workspace not found');
-		const account = await db.query.accounts.findFirst({
-			where: eq(accounts.id, accountId),
-			columns: { tokenVersion: true },
-		});
-		return {
-			token: await signAuthToken({
-				accountId,
-				workspaceId: workspace.id,
-				tokenVersion: account?.tokenVersion ?? 0,
-			}),
-			workspace,
-		};
 	},
 };

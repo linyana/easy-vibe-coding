@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
+import { useLocation } from '@tanstack/react-router';
 import {
 	ChevronsUpDown,
 	PlugZap,
@@ -15,13 +16,14 @@ import {
 } from '@/components/ui/sidebar';
 import { TitleBlock } from '@/components/data/TitleBlock';
 import { useGlobal } from '@/hooks/useGlobal';
+import { segmentAfter } from '@/libs/utils';
 import { WorkspaceSelect } from '@/providers/workspace/Select';
 import { Dialog } from '@/components';
 import { ShellSidebar } from './ShellSidebar';
 
-// The workspace surface's context row — the workspace switcher. Renders only
-// with an active workspace; the profile shell's picker is the other
-// workspace-selection surface.
+// The workspace surface's context row — the workspace switcher. The URL slug
+// is the address, so the row just opens the picker (which navigates); the
+// header leads back to the picker that launched the app.
 function WorkspaceSwitcher() {
 	const { workspace } = useGlobal();
 	const [switcherOpen, setSwitcherOpen] = useState(false);
@@ -62,10 +64,14 @@ function WorkspaceSwitcher() {
 	);
 }
 
-// The workspace app surface — entered from the profile shell's picker. The
-// header leads back there (the entry gate), mirroring admin's workspace-mode
-// sidebar; the context row switches workspace without leaving the app.
+// The workspace app surface — nav targets are slug-parameterized routes; the
+// current slug comes from the pathname (the sidebar only renders under
+// /workspaces/:slug/*), so links stay valid even before the workspace's
+// detail fetch lands.
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	const { pathname } = useLocation();
+	const slug = segmentAfter(pathname, '/workspaces/') ?? '';
+
 	return (
 		<ShellSidebar
 			{...props}
@@ -78,23 +84,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					items: [
 						{
 							title: 'Members',
-							to: '/members',
+							to: '/workspaces/$slug/members',
+							params: { slug },
 							icon: Users,
 						},
 						{
 							title: 'Connections',
 							icon: PlugZap,
-							// Expandable second level (SubMenu) — ai-lab style: the
-							// parent toggles the platform pages.
+							// Expandable second level (SubMenu) — the parent
+							// toggles the platform pages.
 							children: [
 								{
 									title: 'Shopify',
-									to: '/connections/shopify',
+									to: '/workspaces/$slug/connections/shopify',
+									params: { slug },
 									icon: ShoppingBag,
 								},
 								{
 									title: 'BigCommerce',
-									to: '/connections/bigcommerce',
+									to: '/workspaces/$slug/connections/bigcommerce',
+									params: { slug },
 									icon: Store,
 								},
 							],

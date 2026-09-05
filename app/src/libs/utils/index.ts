@@ -13,6 +13,14 @@ export function safeRedirect(redirect: string | undefined): string {
 		: '/';
 }
 
+/** The first path segment right after a prefix — e.g. the workspace slug out of
+ * `/workspaces/:slug/...` or `/admin/workspaces/:slug/...`. Returns null when
+ * the pathname isn't under the prefix at all. */
+export function segmentAfter(pathname: string, prefix: string): string | null {
+	if (!pathname.startsWith(prefix)) return null;
+	return pathname.slice(prefix.length).split('/')[0] || null;
+}
+
 /** Structural equality over plain data (primitives, dates, arrays, nested objects). */
 export function deepEqual(a: unknown, b: unknown): boolean {
 	if (Object.is(a, b)) return true;

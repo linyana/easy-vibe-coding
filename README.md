@@ -59,7 +59,7 @@ Pattern skills live in [`.agents/skills/`](./.agents/skills/) — loaded on dema
 
 - Example features (detail/dashboard/settings archetypes)
 - Skill sync script (`bun run setup`) for tools that read skills from their own directories
-- Auth is done: JWT bearer (jose) + argon2id (Bun.password), `/login` `/register` pages, protected `/_app` shell, 401 auto-logout. See AGENTS.md → Auth.
+- Auth is done: JWT bearer (jose) + argon2id (Bun.password), `/login` `/register` pages, session-gated shells, 401 auto-logout. Workspaces are addressed by URL slug (`/workspaces/:slug/…`) — no token exchange on workspace switch. See AGENTS.md → Workspaces / Auth.
 
 ## The manual
 

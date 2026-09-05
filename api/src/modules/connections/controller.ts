@@ -13,8 +13,8 @@ import { connectionService } from './service';
 import { guards } from '../../libs/guards';
 
 // Workspace-scoped surface (like members): the `workspace` guard resolves the
-// session's workspace, `role` gates on membership — connections are per
-// workspace, addressable by the token's workspaceId claim, never by a URL id.
+// workspace from the request's X-Workspace-Slug header (the URL slug is the
+// address), `role` gates on membership per request.
 export const connectionsController = new Elysia({
 	prefix: '/connections',
 	detail: {

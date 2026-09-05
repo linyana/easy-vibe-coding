@@ -5,8 +5,10 @@ import { Errors } from '../../error';
 import { db } from '../../../db/client';
 import { accounts } from '../../../db/schema';
 
-// The authenticated session the `auth` macro injects.
-export type AuthShape = { accountId: number; workspaceId?: number };
+// The authenticated session the `auth` macro injects. No workspace: workspace
+// pages address the workspace by URL slug (the X-Workspace-Slug header), and
+// the workspace guard resolves it per request.
+export type AuthShape = { accountId: number };
 
 // Platform admin gate: re-checks accounts.isAdmin against the DB row per
 // request — the row is the source of truth, so revoking takes effect
@@ -25,16 +27,15 @@ const resolveAdmin = async (context: { auth: AuthShape }) => {
 // re-reads the account row — existence (a deleted account's tokens die on
 // every surface, not just /me) and the tokenVersion counter (tokens signed
 // before a password reset/change are revoked immediately). It injects
-// `{ auth: { accountId, workspaceId? } }`. `admin: true` composes it with
-// the per-request isAdmin re-check. Workspace-scoped surfaces build on this
-// with the `workspace`/`role` macros from the sibling modules.
+// `{ auth: { accountId } }`. `admin: true` composes it with the per-request
+// isAdmin re-check. Workspace-scoped surfaces build on this with the
+// `workspace`/`role` macros from the sibling modules.
 export const authGuard = new Elysia({ name: 'libs/guards/auth' })
 	.macro('auth', {
 		resolve: async ({ headers }) => {
 			const token = extractBearerToken(headers.authorization);
 			if (!token) throw Errors.unauthorized('Missing access token');
-			const { accountId, workspaceId, tokenVersion } =
-				await verifyAuthToken(token);
+			const { accountId, tokenVersion } = await verifyAuthToken(token);
 			const account = await db.query.accounts.findFirst({
 				where: eq(accounts.id, accountId),
 				columns: { tokenVersion: true },
@@ -47,7 +48,7 @@ export const authGuard = new Elysia({ name: 'libs/guards/auth' })
 					'This session has been revoked. Please sign in again.',
 				);
 			}
-			return { auth: { accountId, workspaceId } };
+			return { auth: { accountId } };
 		},
 	})
 	.macro('admin', {

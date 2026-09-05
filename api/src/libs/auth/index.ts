@@ -2,11 +2,12 @@ import { SignJWT, jwtVerify } from 'jose';
 import { ENV } from '../../env';
 import { Errors } from '../error';
 
-// JWT primitives — the token carries the accountId claim (sub mirrors it), a
-// workspaceId claim after a workspace switch (the int PK, immutable — renaming
-// a slug never orphans in-flight sessions), and the tokenVersion claim (the
-// session-revocation counter). The DB row is the source of truth: the auth guard
-// re-reads tokenVersion per request and rejects any token signed before a bump.
+// JWT primitives — the token carries the accountId claim (sub mirrors it) and
+// the tokenVersion claim (the session-revocation counter). There is no
+// workspace claim anymore: workspace pages address the workspace by URL slug,
+// and the workspace guard resolves + re-validates it per request. The DB row
+// is the source of truth: the auth guard re-reads tokenVersion per request and
+// rejects any token signed before a bump.
 
 const secret = new TextEncoder().encode(ENV.AUTH_SECRET);
 
@@ -14,18 +15,12 @@ export const TOKEN_TTL = '7d';
 
 export function signAuthToken({
 	accountId,
-	workspaceId,
 	tokenVersion,
 }: {
 	accountId: number;
-	workspaceId?: number;
 	tokenVersion: number;
 }): Promise<string> {
-	return new SignJWT({
-		accountId,
-		tokenVersion,
-		...(workspaceId !== undefined ? { workspaceId } : {}),
-	})
+	return new SignJWT({ accountId, tokenVersion })
 		.setProtectedHeader({ alg: 'HS256' })
 		.setSubject(String(accountId))
 		.setIssuedAt()
@@ -35,7 +30,6 @@ export function signAuthToken({
 
 export async function verifyAuthToken(token: string): Promise<{
 	accountId: number;
-	workspaceId?: number;
 	tokenVersion: number;
 }> {
 	try {
@@ -48,17 +42,10 @@ export async function verifyAuthToken(token: string): Promise<{
 		if (!Number.isInteger(accountId)) {
 			throw new Error('Malformed token subject');
 		}
-		const workspaceId = Number(payload.workspaceId);
-		// Pre-id-claim tokens carry no workspaceId — treated as unscoped (the
-		// workspace guard 403s them; the user re-enters for a fresh claim).
-		const workspace =
-			Number.isInteger(workspaceId) && workspaceId > 0
-				? workspaceId
-				: undefined;
 		// ?? 0: tokens signed before this feature carry no claim and stay valid
 		// while the row version is still 0 — the bump is what revokes them.
 		const tokenVersion = Number(payload.tokenVersion ?? 0);
-		return { accountId, workspaceId: workspace, tokenVersion };
+		return { accountId, tokenVersion };
 	} catch {
 		throw Errors.unauthorized(
 			'Invalid or expired session. Please sign in again.',

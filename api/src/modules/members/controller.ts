@@ -3,8 +3,9 @@ import { memberListResponseSchema } from '@easy-vibe-coding/shared';
 import { memberService } from './service';
 import { guards } from '../../libs/guards';
 
-// The member roster of the current workspace — the shared `workspace` guard
-// resolves the session's workspace and injects it; `role` gates on membership.
+// The member roster of the workspace the request names — the shared
+// `workspace` guard resolves the X-Workspace-Slug header and injects it;
+// `role` gates on membership per request.
 export const membersController = new Elysia({
 	prefix: '/members',
 	detail: {

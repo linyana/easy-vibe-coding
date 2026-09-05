@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import type { AdminWorkspacesAction } from './types';
 import { WorkspaceList } from './List';
@@ -7,27 +7,33 @@ import { CreateWorkspaceDialog } from './Create';
 import { EditWorkspaceDialog } from './Edit';
 import { DeleteWorkspaceDialog } from './Delete';
 import { API } from '@/libs/api';
-import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIMutation } from '@/hooks/useAPIMutation';
 
 export const AdminWorkspaces = () => {
 	const [action, setAction] = useState<AdminWorkspacesAction | null>(null);
 	const [open, setOpen] = useState(false);
-	const { update } = useGlobal();
 	const navigate = useNavigate();
+	const router = useRouter();
 
-	// Enter = exchange for a workspace-scoped token (admin switch, any
-	// workspace) then land on the workspace surface. Not a dialog: the row
-	// action navigates straight there.
-	const enterMutation = useAPIMutation({
-		call: (slug: string) => API.workspaces.admin.switch.post({ slug }),
-		queryKey: ['auth'],
-		// Entering a workspace is a context change, not a write — no toast.
-		onSuccess: ({ token, workspace }) => {
-			update({ token, workspace });
-			void navigate({ to: '/admin/workspace/member' });
-		},
-	});
+	// Enter = open the workspace's admin slug pages in a NEW TAB (URL-addressed
+	// — admins can enter any workspace; the admin guard re-validates per
+	// request). The list stays open so the admin can enter several. If the
+	// browser blocks the popup, fall back to navigating this tab.
+	const enter = (slug: string) => {
+		const href = router.buildLocation({
+			to: '/admin/workspaces/$slug/member',
+			params: { slug },
+		}).href;
+		const opened = window.open(href, '_blank');
+		if (opened) {
+			opened.opener = null;
+			return;
+		}
+		void navigate({
+			to: '/admin/workspaces/$slug/member',
+			params: { slug },
+		});
+	};
 
 	// Disable/enable (soft delete) — same non-dialog shape as enter: the
 	// switch flips, the list refetches, and the gates on the API side enforce
@@ -46,7 +52,7 @@ export const AdminWorkspaces = () => {
 	const handleAction = useCallback(
 		(action: AdminWorkspacesAction) => {
 			if (action.kind === 'enter') {
-				enterMutation.mutate(action.workspace.slug);
+				enter(action.workspace.slug);
 				return;
 			}
 			if (action.kind === 'toggle') {
@@ -59,7 +65,7 @@ export const AdminWorkspaces = () => {
 			setAction(action);
 			setOpen(true);
 		},
-		[enterMutation, toggleMutation],
+		[toggleMutation, enter],
 	);
 
 	const handleOpenChange = useCallback((open: boolean) => setOpen(open), []);

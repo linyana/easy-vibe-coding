@@ -1,5 +1,5 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { LogIn } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { features } from '@/components';
 import { formatDateTime } from '@/libs/dates';
 import { Button } from '@/components/ui/button';
@@ -90,7 +90,7 @@ export function createColumns({
 						})
 					}
 				>
-					<LogIn className="size-4" />
+					<ExternalLink className="size-4" />
 					Enter
 				</Button>
 			),

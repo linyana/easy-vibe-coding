@@ -49,12 +49,12 @@ const withOwnerGuard = async <T>(
 
 // Admin member management on the entered workspace — split out of
 // modules/admin/workspaces (which keeps the platform workspace CRUD). The
-// workspace id comes from the `workspace` guard's session resolution (the
-// token's workspaceId claim), never a URL param.
+// workspace id comes from the `workspace` guard's resolution of the request's
+// X-Workspace-Slug header (the URL slug is the address), never a URL id.
 export const adminMemberService = {
-	// Roster by workspace id (the member module's roster is scoped by the
-	// token's workspaceId claim; this is the admin's by-id view). Paginated +
-	// searchable like the other platform lists; search hits name and email.
+	// Roster by workspace id (the member module's roster resolves the same
+	// request slug; this is the admin's by-id view). Paginated + searchable
+	// like the other platform lists; search hits name and email.
 	async listMembers(
 		workspaceId: number,
 		{ page, pageSize, search }: MemberAdminListQuery,

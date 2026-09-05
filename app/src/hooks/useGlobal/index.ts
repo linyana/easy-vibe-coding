@@ -16,9 +16,11 @@ interface GlobalStateData {
 	/** Memory-only: set from login/register/me. */
 	account: SessionAccount | null;
 	/**
-	 * The workspace the session is scoped to — memory-only. Seeded from /auth/me
-	 * on boot and from the switch-workspace exchange; never persisted, so the
-	 * server (via the token claim) stays the single source of truth.
+	 * The workspace of the slug page currently rendered — memory-only. Set by
+	 * the slug shell's WorkspaceProvider after its detail fetch (the URL slug
+	 * is the address; the server re-validated membership on that fetch).
+	 * Never persisted: storage can't seed a workspace the session may not
+	 * reach, and it drops to null when the shell unmounts.
 	 */
 	workspace: WorkspaceRef | null;
 }
@@ -54,8 +56,8 @@ export const useGlobal = create<GlobalState>()(
 			name: 'easy-vibe-global',
 			// Persist theme + token only — a persisted stale account would lie
 			// about the session (me refetches it on boot). workspace is never
-			// persisted: the server is its source of truth (me echoes it from the
-			// token claim), so a reload can't carry a stale workspace context.
+			// persisted: the URL slug is its address, and the slug shell's
+			// WorkspaceProvider refetches it on every slug page mount.
 			partialize: (state) => ({
 				themeMode: state.themeMode,
 				token: state.token,

@@ -12,9 +12,10 @@ import { guards } from '../../../libs/guards';
 
 // The admin's entered-workspace member surface — split out of
 // modules/admin/workspaces (which keeps the platform workspace CRUD). The
-// workspace comes from the session's token slug claim (the `workspace` guard
-// injects it), never a URL id. There is no role gate: an admin manages the
-// workspace they entered whether or not they are a member of it.
+// workspace comes from the request's X-Workspace-Slug header (the `workspace`
+// guard resolves it — the URL slug is the address), never a URL id. There is
+// no role gate: an admin manages the workspace they entered whether or not
+// they are a member of it.
 export const adminMembersController = new Elysia({
 	prefix: '/admin/workspaces/members',
 	detail: {

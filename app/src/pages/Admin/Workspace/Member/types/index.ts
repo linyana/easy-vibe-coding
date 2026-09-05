@@ -1,9 +1,9 @@
 import type { API, UseAPIItem } from '@/libs/api';
 import type { MemberRole } from '@easy-vibe-coding/shared';
 
-// Members live under the admin route without a workspace id — the workspace
-// comes from the session (the `workspace` guard resolves the token's slug
-// claim), not the URL.
+// Members of the admin's entered workspace — addressed by the URL slug
+// (/admin/workspaces/:slug/*): the route writes the request-scope slug, the
+// workspace guard resolves it per request. Never an id param.
 type MembersGet = typeof API.admin.workspaces.members.get;
 
 export type Member = UseAPIItem<MembersGet>;

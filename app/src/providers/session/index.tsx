@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, redirect } from '@tanstack/react-router';
 import type { ParsedLocation } from '@tanstack/react-router';
+import { setCurrentWorkspaceSlug } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useSession } from '@/hooks/useSession';
 import { ErrorState } from '@/components';
@@ -9,8 +10,11 @@ import { DotsRingLoading } from '@/components/loading/DotsRing';
 // The authenticated shells' pre-route token check — no token → sign-in,
 // remembering where the user was heading (login returns there via
 // `redirect`; searchStr is the raw query string). Shared by every
-// authenticated surface (_app / admin / profile).
+// authenticated surface (workspaces / admin / profile). Also drops the
+// request-scope workspace slug (libs/api) — a slug layout's own beforeLoad
+// re-sets it right after (ancestors run first, so the leaf wins).
 export function sessionBeforeLoad({ location }: { location: ParsedLocation }) {
+	setCurrentWorkspaceSlug(null);
 	if (!useGlobal.getState().token) {
 		throw redirect({
 			to: '/login',

@@ -5,6 +5,20 @@ import { useGlobal } from '@/hooks/useGlobal';
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
 
+// The workspace the CURRENT route is addressing — written by the slug layouts'
+// beforeLoad (deterministic order: ancestors first, so the header is current
+// before any child query fires), nulled by the shared session gate on every
+// non-slug shell. Module state, not zustand: it is request-scope context for
+// the API door, per-tab by construction (each tab parses its own routes), and
+// never persisted.
+let currentWorkspaceSlug: string | null = null;
+
+export const setCurrentWorkspaceSlug = (slug: string | null) => {
+	currentWorkspaceSlug = slug;
+};
+
+export const getCurrentWorkspaceSlug = () => currentWorkspaceSlug;
+
 // The app's single door to the API — response types flow from here (inferred
 // off the client; app may only type-import api, lint-enforced).
 export const API = treaty<App>(baseUrl, {
@@ -14,7 +28,15 @@ export const API = treaty<App>(baseUrl, {
 	// recreating the client after login/logout.
 	headers: () => {
 		const token = useGlobal.getState().token;
-		return token ? { Authorization: `Bearer ${token}` } : undefined;
+		const slug = currentWorkspaceSlug;
+		return {
+			...(token ? { Authorization: `Bearer ${token}` } : {}),
+			// The workspace being addressed — the server resolves + re-validates
+			// it per request (membership/role gates). No workspace header on
+			// non-workspace surfaces (login/profile/admin platform) — those
+			// endpoints are account-scoped only.
+			...(slug ? { 'X-Workspace-Slug': slug } : {}),
+		};
 	},
 	// 401 → drop the session (the _app gate then redirects to /login). Idempotent:
 	// bad-credential 401s find no session to clear.

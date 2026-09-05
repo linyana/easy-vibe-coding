@@ -5,14 +5,16 @@ import { usePageHeader } from '@/hooks';
 import { Card, ErrorState, TitleBlock } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
 
-// The workspace's single surface: a read-only roster scoped by the token's
-// workspaceId claim (member management is a later step).
+// The workspace's roster — a read-only list scoped to the workspace the URL
+// addresses (the request carries X-Workspace-Slug; member management is a
+// later step).
 export function MembersPage() {
 	const { workspace } = useGlobal();
 	const { data, error, refetch } = useAPIQuery({
-		// Scoped by the workspace slug (the cache key): an in-place switch (the
-		// header dialog) changes the key → a fresh fetch under the new token,
-		// no stale roster.
+		// Scoped by the workspace slug (the cache key): the slug shell commits
+		// the workspace before children mount, so this key is stable from the
+		// first render — switching workspace remounts the shell (new slug →
+		// fresh fetch, no stale roster).
 		queryKey: ['members', workspace?.slug],
 		queryFn: () => API.members.get(),
 		toastError: false,

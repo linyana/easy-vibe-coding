@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import { API } from '@/libs/api';
 import { useGlobal } from '@/hooks/useGlobal';
 import { useAPIQuery } from '@/hooks/useAPIQuery';
-import { useAPIMutation } from '@/hooks/useAPIMutation';
+import { setLastWorkspaceSlug } from '@/libs/lastWorkspace';
 import { Button } from '@/components/ui/button';
 import { ErrorState, TitleBlock, SearchInput } from '@/components';
 import { DotsRingLoading } from '@/components/loading/DotsRing';
@@ -14,22 +15,31 @@ import { CreateWorkspaceDialog } from '../Create';
 import type { TitleBlockProps } from '@/components/data/TitleBlock';
 
 // The one workspace-selection flow, shared by the profile shell's Workspaces
-// page (entering a workspace leaves the profile for the app) and the app
-// sidebar's nav dialog. The query runs only while `active` — the dialog
-// fetches on open, never on page entry; the page passes true since it only
-// exists to pick. The admin surface is reached by URL (/admin), never from
-// here — this picker only ever chooses workspaces.
+// page and the app sidebar's nav dialog. The query runs only while `active` —
+// the dialog fetches on open, never on page entry; the page passes true since
+// it only exists to pick. The admin surface is reached by URL (/admin), never
+// from here. Entering a workspace is pure navigation: the URL slug is the
+// address, so the shell fetch + the server's per-request membership check do
+// the work the token exchange used to do. The host decides WHERE entering
+// lands — the picker page opens a new tab (keep picking), the in-app dialog
+// replaces the current tab (a switch).
 export function WorkspaceSelect({
 	active,
 	onSwitched,
 	headerVariant,
+	newTab = false,
 }: {
 	active: boolean;
-	/** Fired after the session switched — the dialog closes itself here. */
+	/** Fired after navigation — the dialog closes itself here. */
 	onSwitched?: () => void;
 	headerVariant: TitleBlockProps['variant'];
+	/** Open the chosen workspace in a NEW TAB (selection page host — the
+	 *  current page stays so the user can pick the next one). */
+	newTab?: boolean;
 }) {
-	const { workspace, update } = useGlobal();
+	const { workspace } = useGlobal();
+	const navigate = useNavigate();
+	const router = useRouter();
 	const [createOpen, setCreateOpen] = useState(false);
 	const [search, setSearch] = useState<string | undefined>();
 
@@ -40,15 +50,33 @@ export function WorkspaceSelect({
 		toastError: false,
 	});
 
-	const switchMutation = useAPIMutation({
-		call: (slug: string) => API.auth['switch-workspace'].post({ slug }),
-		queryKey: ['auth'],
-		// Entering a workspace is a context change, not a write — no toast.
-		onSuccess: ({ token, workspace }) => {
-			update({ token, workspace });
+	// The selected workspace's slug home — the slug page's own detail fetch
+	// re-validates membership server-side.
+	const enter = (slug: string) => {
+		if (!newTab && slug === workspace?.slug) {
+			// Already in it — nothing to navigate; just close the dialog.
 			onSwitched?.();
-		},
-	});
+			return;
+		}
+		setLastWorkspaceSlug(slug);
+		if (newTab) {
+			const href = router.buildLocation({
+				to: '/workspaces/$slug',
+				params: { slug },
+			}).href;
+			// Null-check doubles as the popup guard: null = the browser
+			// blocked it (no user gesture — create-then-enter is async), so
+			// fall back to replacing the current tab.
+			const opened = window.open(href, '_blank');
+			if (opened) {
+				opened.opener = null;
+				onSwitched?.();
+				return;
+			}
+		}
+		void navigate({ to: '/workspaces/$slug', params: { slug } });
+		onSwitched?.();
+	};
 
 	const { data, error, refetch } = workspaces;
 
@@ -64,33 +92,27 @@ export function WorkspaceSelect({
 
 	return (
 		<>
-			<TitleBlock
-				variant={headerVariant}
-				title="Choose workspace"
-				description="Pick the workspace you want to enter — the session re-scopes to it."
-				className="pb-4"
-			/>
-			<div className="space-y-2">
-				{data && data.items.length > 0 && (
-					<SearchInput
-						value={search}
-						onChange={setSearch}
-						placeholder="Search by name or slug…"
+			<div className="space-y-3">
+				<div className="space-y-2">
+					<TitleBlock
+						variant={headerVariant}
+						title="Workspaces"
+						description="Pick one to open — the URL addresses it, so nothing is exchanged."
 					/>
-				)}
+					<SearchInput value={search} onChange={setSearch} />
+				</div>
 				<SelectList
 					items={filtered}
 					search={search}
 					error={error}
 					currentSlug={workspace?.slug}
-					disabled={switchMutation.isPending}
-					onSelect={switchMutation.mutate}
+					openInNewTab={newTab}
+					onSelect={enter}
 					onRetry={() => void refetch()}
 				/>
 				<Button
 					variant="outline"
 					className="w-full"
-					disabled={switchMutation.isPending}
 					onClick={() => setCreateOpen(true)}
 				>
 					<PlusIcon className="size-4" />
@@ -100,7 +122,7 @@ export function WorkspaceSelect({
 			<CreateWorkspaceDialog
 				open={createOpen}
 				onOpenChange={setCreateOpen}
-				onCreated={switchMutation.mutate}
+				onCreated={enter}
 			/>
 		</>
 	);
@@ -112,7 +134,7 @@ function SelectList({
 	search,
 	error,
 	currentSlug,
-	disabled,
+	openInNewTab,
 	onSelect,
 	onRetry,
 }: {
@@ -121,9 +143,10 @@ function SelectList({
 	 * matches" instead of "no workspaces yet". */
 	search?: string;
 	error: UseAPIError | null;
-	/** The session's current workspace slug — that row renders marked and non-interactive. */
+	/** The workspace the page currently renders — that row is marked, not navigable. */
 	currentSlug?: string | null;
-	disabled?: boolean;
+	/** Selecting opens the workspace in a new tab (see WorkspaceRow). */
+	openInNewTab?: boolean;
 	onSelect: (slug: string) => void;
 	onRetry: () => void;
 }) {
@@ -151,7 +174,7 @@ function SelectList({
 					<WorkspaceRow
 						workspace={workspace}
 						current={workspace.slug === currentSlug}
-						disabled={disabled}
+						openInNewTab={openInNewTab}
 						onSelect={onSelect}
 					/>
 				</li>

@@ -9,30 +9,35 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AppRouteImport } from './routes/_app'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as RegisterRouteImport } from './routes/register'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AppConnectionsRouteImport } from './routes/_app/connections'
-import { Route as AppMembersRouteImport } from './routes/_app/members'
+import { Route as WorkspacesRouteImport } from './routes/workspaces'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAccountsRouteImport } from './routes/admin/accounts'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
-import { Route as AdminWorkspaceRouteImport } from './routes/admin/workspace'
 import { Route as AdminWorkspacesRouteImport } from './routes/admin/workspaces'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as ProfileLlmRouteImport } from './routes/profile/llm'
 import { Route as ProfileWorkspacesRouteImport } from './routes/profile/workspaces'
-import { Route as AppConnectionsIndexRouteImport } from './routes/_app/connections/index'
-import { Route as AppConnectionsBigcommerceRouteImport } from './routes/_app/connections/bigcommerce'
-import { Route as AppConnectionsShopifyRouteImport } from './routes/_app/connections/shopify'
-import { Route as AdminWorkspaceIndexRouteImport } from './routes/admin/workspace/index'
-import { Route as AdminWorkspaceMemberRouteImport } from './routes/admin/workspace/member'
+import { Route as WorkspacesIndexRouteImport } from './routes/workspaces/index'
+import { Route as WorkspacesSlugRouteImport } from './routes/workspaces/$slug'
+import { Route as AdminWorkspacesIndexRouteImport } from './routes/admin/workspaces/index'
+import { Route as AdminWorkspacesSlugRouteImport } from './routes/admin/workspaces/$slug'
+import { Route as WorkspacesSlugIndexRouteImport } from './routes/workspaces/$slug/index'
+import { Route as WorkspacesSlugConnectionsRouteImport } from './routes/workspaces/$slug/connections'
+import { Route as WorkspacesSlugMembersRouteImport } from './routes/workspaces/$slug/members'
+import { Route as AdminWorkspacesSlugIndexRouteImport } from './routes/admin/workspaces/$slug/index'
+import { Route as AdminWorkspacesSlugMemberRouteImport } from './routes/admin/workspaces/$slug/member'
+import { Route as WorkspacesSlugConnectionsIndexRouteImport } from './routes/workspaces/$slug/connections/index'
+import { Route as WorkspacesSlugConnectionsBigcommerceRouteImport } from './routes/workspaces/$slug/connections/bigcommerce'
+import { Route as WorkspacesSlugConnectionsShopifyRouteImport } from './routes/workspaces/$slug/connections/shopify'
 
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -55,20 +60,10 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppConnectionsRoute = AppConnectionsRouteImport.update({
-  id: '/connections',
-  path: '/connections',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppMembersRoute = AppMembersRouteImport.update({
-  id: '/members',
-  path: '/members',
-  getParentRoute: () => AppRoute,
+const WorkspacesRoute = WorkspacesRouteImport.update({
+  id: '/workspaces',
+  path: '/workspaces',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
@@ -83,11 +78,6 @@ const AdminAccountsRoute = AdminAccountsRouteImport.update({
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminWorkspaceRoute = AdminWorkspaceRouteImport.update({
-  id: '/workspace',
-  path: '/workspace',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminWorkspacesRoute = AdminWorkspacesRouteImport.update({
@@ -110,96 +100,147 @@ const ProfileWorkspacesRoute = ProfileWorkspacesRouteImport.update({
   path: '/workspaces',
   getParentRoute: () => ProfileRoute,
 } as any)
-const AppConnectionsIndexRoute = AppConnectionsIndexRouteImport.update({
+const WorkspacesIndexRoute = WorkspacesIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppConnectionsRoute,
+  getParentRoute: () => WorkspacesRoute,
 } as any)
-const AppConnectionsBigcommerceRoute =
-  AppConnectionsBigcommerceRouteImport.update({
+const WorkspacesSlugRoute = WorkspacesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => WorkspacesRoute,
+} as any)
+const AdminWorkspacesIndexRoute = AdminWorkspacesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminWorkspacesRoute,
+} as any)
+const AdminWorkspacesSlugRoute = AdminWorkspacesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AdminWorkspacesRoute,
+} as any)
+const WorkspacesSlugIndexRoute = WorkspacesSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WorkspacesSlugRoute,
+} as any)
+const WorkspacesSlugConnectionsRoute =
+  WorkspacesSlugConnectionsRouteImport.update({
+    id: '/connections',
+    path: '/connections',
+    getParentRoute: () => WorkspacesSlugRoute,
+  } as any)
+const WorkspacesSlugMembersRoute = WorkspacesSlugMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => WorkspacesSlugRoute,
+} as any)
+const AdminWorkspacesSlugIndexRoute =
+  AdminWorkspacesSlugIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AdminWorkspacesSlugRoute,
+  } as any)
+const AdminWorkspacesSlugMemberRoute =
+  AdminWorkspacesSlugMemberRouteImport.update({
+    id: '/member',
+    path: '/member',
+    getParentRoute: () => AdminWorkspacesSlugRoute,
+  } as any)
+const WorkspacesSlugConnectionsIndexRoute =
+  WorkspacesSlugConnectionsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => WorkspacesSlugConnectionsRoute,
+  } as any)
+const WorkspacesSlugConnectionsBigcommerceRoute =
+  WorkspacesSlugConnectionsBigcommerceRouteImport.update({
     id: '/bigcommerce',
     path: '/bigcommerce',
-    getParentRoute: () => AppConnectionsRoute,
+    getParentRoute: () => WorkspacesSlugConnectionsRoute,
   } as any)
-const AppConnectionsShopifyRoute = AppConnectionsShopifyRouteImport.update({
-  id: '/shopify',
-  path: '/shopify',
-  getParentRoute: () => AppConnectionsRoute,
-} as any)
-const AdminWorkspaceIndexRoute = AdminWorkspaceIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminWorkspaceRoute,
-} as any)
-const AdminWorkspaceMemberRoute = AdminWorkspaceMemberRouteImport.update({
-  id: '/member',
-  path: '/member',
-  getParentRoute: () => AdminWorkspaceRoute,
-} as any)
+const WorkspacesSlugConnectionsShopifyRoute =
+  WorkspacesSlugConnectionsShopifyRouteImport.update({
+    id: '/shopify',
+    path: '/shopify',
+    getParentRoute: () => WorkspacesSlugConnectionsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
+  '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRouteWithChildren
   '/register': typeof RegisterRoute
-  '/connections': typeof AppConnectionsRouteWithChildren
-  '/members': typeof AppMembersRoute
+  '/workspaces': typeof WorkspacesRouteWithChildren
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/admin/workspace': typeof AdminWorkspaceRouteWithChildren
-  '/admin/workspaces': typeof AdminWorkspacesRoute
+  '/admin/workspaces': typeof AdminWorkspacesRouteWithChildren
   '/profile/llm': typeof ProfileLlmRoute
   '/profile/workspaces': typeof ProfileWorkspacesRoute
+  '/workspaces/$slug': typeof WorkspacesSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/profile/': typeof ProfileIndexRoute
-  '/connections/bigcommerce': typeof AppConnectionsBigcommerceRoute
-  '/connections/shopify': typeof AppConnectionsShopifyRoute
-  '/admin/workspace/member': typeof AdminWorkspaceMemberRoute
-  '/connections/': typeof AppConnectionsIndexRoute
-  '/admin/workspace/': typeof AdminWorkspaceIndexRoute
+  '/workspaces/': typeof WorkspacesIndexRoute
+  '/admin/workspaces/$slug': typeof AdminWorkspacesSlugRouteWithChildren
+  '/workspaces/$slug/connections': typeof WorkspacesSlugConnectionsRouteWithChildren
+  '/workspaces/$slug/members': typeof WorkspacesSlugMembersRoute
+  '/admin/workspaces/': typeof AdminWorkspacesIndexRoute
+  '/workspaces/$slug/': typeof WorkspacesSlugIndexRoute
+  '/admin/workspaces/$slug/member': typeof AdminWorkspacesSlugMemberRoute
+  '/workspaces/$slug/connections/bigcommerce': typeof WorkspacesSlugConnectionsBigcommerceRoute
+  '/workspaces/$slug/connections/shopify': typeof WorkspacesSlugConnectionsShopifyRoute
+  '/admin/workspaces/$slug/': typeof AdminWorkspacesSlugIndexRoute
+  '/workspaces/$slug/connections/': typeof WorkspacesSlugConnectionsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/members': typeof AppMembersRoute
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/admin/workspaces': typeof AdminWorkspacesRoute
   '/profile/llm': typeof ProfileLlmRoute
   '/profile/workspaces': typeof ProfileWorkspacesRoute
-  '/': typeof AppIndexRoute
   '/admin': typeof AdminIndexRoute
   '/profile': typeof ProfileIndexRoute
-  '/connections/bigcommerce': typeof AppConnectionsBigcommerceRoute
-  '/connections/shopify': typeof AppConnectionsShopifyRoute
-  '/admin/workspace/member': typeof AdminWorkspaceMemberRoute
-  '/connections': typeof AppConnectionsIndexRoute
-  '/admin/workspace': typeof AdminWorkspaceIndexRoute
+  '/workspaces': typeof WorkspacesIndexRoute
+  '/workspaces/$slug/members': typeof WorkspacesSlugMembersRoute
+  '/admin/workspaces': typeof AdminWorkspacesIndexRoute
+  '/workspaces/$slug': typeof WorkspacesSlugIndexRoute
+  '/admin/workspaces/$slug/member': typeof AdminWorkspacesSlugMemberRoute
+  '/workspaces/$slug/connections/bigcommerce': typeof WorkspacesSlugConnectionsBigcommerceRoute
+  '/workspaces/$slug/connections/shopify': typeof WorkspacesSlugConnectionsShopifyRoute
+  '/admin/workspaces/$slug': typeof AdminWorkspacesSlugIndexRoute
+  '/workspaces/$slug/connections': typeof WorkspacesSlugConnectionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_app': typeof AppRouteWithChildren
+  '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/profile': typeof ProfileRouteWithChildren
   '/register': typeof RegisterRoute
-  '/_app/connections': typeof AppConnectionsRouteWithChildren
-  '/_app/members': typeof AppMembersRoute
+  '/workspaces': typeof WorkspacesRouteWithChildren
   '/admin/accounts': typeof AdminAccountsRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/admin/workspace': typeof AdminWorkspaceRouteWithChildren
-  '/admin/workspaces': typeof AdminWorkspacesRoute
+  '/admin/workspaces': typeof AdminWorkspacesRouteWithChildren
   '/profile/llm': typeof ProfileLlmRoute
   '/profile/workspaces': typeof ProfileWorkspacesRoute
-  '/_app/': typeof AppIndexRoute
+  '/workspaces/$slug': typeof WorkspacesSlugRouteWithChildren
   '/admin/': typeof AdminIndexRoute
   '/profile/': typeof ProfileIndexRoute
-  '/_app/connections/bigcommerce': typeof AppConnectionsBigcommerceRoute
-  '/_app/connections/shopify': typeof AppConnectionsShopifyRoute
-  '/admin/workspace/member': typeof AdminWorkspaceMemberRoute
-  '/_app/connections/': typeof AppConnectionsIndexRoute
-  '/admin/workspace/': typeof AdminWorkspaceIndexRoute
+  '/workspaces/': typeof WorkspacesIndexRoute
+  '/admin/workspaces/$slug': typeof AdminWorkspacesSlugRouteWithChildren
+  '/workspaces/$slug/connections': typeof WorkspacesSlugConnectionsRouteWithChildren
+  '/workspaces/$slug/members': typeof WorkspacesSlugMembersRoute
+  '/admin/workspaces/': typeof AdminWorkspacesIndexRoute
+  '/workspaces/$slug/': typeof WorkspacesSlugIndexRoute
+  '/admin/workspaces/$slug/member': typeof AdminWorkspacesSlugMemberRoute
+  '/workspaces/$slug/connections/bigcommerce': typeof WorkspacesSlugConnectionsBigcommerceRoute
+  '/workspaces/$slug/connections/shopify': typeof WorkspacesSlugConnectionsShopifyRoute
+  '/admin/workspaces/$slug/': typeof AdminWorkspacesSlugIndexRoute
+  '/workspaces/$slug/connections/': typeof WorkspacesSlugConnectionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -209,79 +250,91 @@ export interface FileRouteTypes {
     | '/login'
     | '/profile'
     | '/register'
-    | '/connections'
-    | '/members'
+    | '/workspaces'
     | '/admin/accounts'
     | '/admin/settings'
-    | '/admin/workspace'
     | '/admin/workspaces'
     | '/profile/llm'
     | '/profile/workspaces'
+    | '/workspaces/$slug'
     | '/admin/'
     | '/profile/'
-    | '/connections/bigcommerce'
-    | '/connections/shopify'
-    | '/admin/workspace/member'
-    | '/connections/'
-    | '/admin/workspace/'
+    | '/workspaces/'
+    | '/admin/workspaces/$slug'
+    | '/workspaces/$slug/connections'
+    | '/workspaces/$slug/members'
+    | '/admin/workspaces/'
+    | '/workspaces/$slug/'
+    | '/admin/workspaces/$slug/member'
+    | '/workspaces/$slug/connections/bigcommerce'
+    | '/workspaces/$slug/connections/shopify'
+    | '/admin/workspaces/$slug/'
+    | '/workspaces/$slug/connections/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/login'
     | '/register'
-    | '/members'
     | '/admin/accounts'
     | '/admin/settings'
-    | '/admin/workspaces'
     | '/profile/llm'
     | '/profile/workspaces'
-    | '/'
     | '/admin'
     | '/profile'
-    | '/connections/bigcommerce'
-    | '/connections/shopify'
-    | '/admin/workspace/member'
-    | '/connections'
-    | '/admin/workspace'
+    | '/workspaces'
+    | '/workspaces/$slug/members'
+    | '/admin/workspaces'
+    | '/workspaces/$slug'
+    | '/admin/workspaces/$slug/member'
+    | '/workspaces/$slug/connections/bigcommerce'
+    | '/workspaces/$slug/connections/shopify'
+    | '/admin/workspaces/$slug'
+    | '/workspaces/$slug/connections'
   id:
     | '__root__'
-    | '/_app'
+    | '/'
     | '/admin'
     | '/login'
     | '/profile'
     | '/register'
-    | '/_app/connections'
-    | '/_app/members'
+    | '/workspaces'
     | '/admin/accounts'
     | '/admin/settings'
-    | '/admin/workspace'
     | '/admin/workspaces'
     | '/profile/llm'
     | '/profile/workspaces'
-    | '/_app/'
+    | '/workspaces/$slug'
     | '/admin/'
     | '/profile/'
-    | '/_app/connections/bigcommerce'
-    | '/_app/connections/shopify'
-    | '/admin/workspace/member'
-    | '/_app/connections/'
-    | '/admin/workspace/'
+    | '/workspaces/'
+    | '/admin/workspaces/$slug'
+    | '/workspaces/$slug/connections'
+    | '/workspaces/$slug/members'
+    | '/admin/workspaces/'
+    | '/workspaces/$slug/'
+    | '/admin/workspaces/$slug/member'
+    | '/workspaces/$slug/connections/bigcommerce'
+    | '/workspaces/$slug/connections/shopify'
+    | '/admin/workspaces/$slug/'
+    | '/workspaces/$slug/connections/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppRoute: typeof AppRouteWithChildren
+  IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRouteWithChildren
   RegisterRoute: typeof RegisterRoute
+  WorkspacesRoute: typeof WorkspacesRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_app': {
-      id: '/_app'
-      path: ''
+    '/': {
+      id: '/'
+      path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -312,26 +365,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/': {
-      id: '/_app/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/connections': {
-      id: '/_app/connections'
-      path: '/connections'
-      fullPath: '/connections'
-      preLoaderRoute: typeof AppConnectionsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/members': {
-      id: '/_app/members'
-      path: '/members'
-      fullPath: '/members'
-      preLoaderRoute: typeof AppMembersRouteImport
-      parentRoute: typeof AppRoute
+    '/workspaces': {
+      id: '/workspaces'
+      path: '/workspaces'
+      fullPath: '/workspaces'
+      preLoaderRoute: typeof WorkspacesRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/': {
       id: '/admin/'
@@ -352,13 +391,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/workspace': {
-      id: '/admin/workspace'
-      path: '/workspace'
-      fullPath: '/admin/workspace'
-      preLoaderRoute: typeof AdminWorkspaceRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/workspaces': {
@@ -389,101 +421,131 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileWorkspacesRouteImport
       parentRoute: typeof ProfileRoute
     }
-    '/_app/connections/': {
-      id: '/_app/connections/'
+    '/workspaces/': {
+      id: '/workspaces/'
       path: '/'
-      fullPath: '/connections/'
-      preLoaderRoute: typeof AppConnectionsIndexRouteImport
-      parentRoute: typeof AppConnectionsRoute
+      fullPath: '/workspaces/'
+      preLoaderRoute: typeof WorkspacesIndexRouteImport
+      parentRoute: typeof WorkspacesRoute
     }
-    '/_app/connections/bigcommerce': {
-      id: '/_app/connections/bigcommerce'
-      path: '/bigcommerce'
-      fullPath: '/connections/bigcommerce'
-      preLoaderRoute: typeof AppConnectionsBigcommerceRouteImport
-      parentRoute: typeof AppConnectionsRoute
+    '/workspaces/$slug': {
+      id: '/workspaces/$slug'
+      path: '/$slug'
+      fullPath: '/workspaces/$slug'
+      preLoaderRoute: typeof WorkspacesSlugRouteImport
+      parentRoute: typeof WorkspacesRoute
     }
-    '/_app/connections/shopify': {
-      id: '/_app/connections/shopify'
-      path: '/shopify'
-      fullPath: '/connections/shopify'
-      preLoaderRoute: typeof AppConnectionsShopifyRouteImport
-      parentRoute: typeof AppConnectionsRoute
-    }
-    '/admin/workspace/': {
-      id: '/admin/workspace/'
+    '/admin/workspaces/': {
+      id: '/admin/workspaces/'
       path: '/'
-      fullPath: '/admin/workspace/'
-      preLoaderRoute: typeof AdminWorkspaceIndexRouteImport
-      parentRoute: typeof AdminWorkspaceRoute
+      fullPath: '/admin/workspaces/'
+      preLoaderRoute: typeof AdminWorkspacesIndexRouteImport
+      parentRoute: typeof AdminWorkspacesRoute
     }
-    '/admin/workspace/member': {
-      id: '/admin/workspace/member'
+    '/admin/workspaces/$slug': {
+      id: '/admin/workspaces/$slug'
+      path: '/$slug'
+      fullPath: '/admin/workspaces/$slug'
+      preLoaderRoute: typeof AdminWorkspacesSlugRouteImport
+      parentRoute: typeof AdminWorkspacesRoute
+    }
+    '/workspaces/$slug/': {
+      id: '/workspaces/$slug/'
+      path: '/'
+      fullPath: '/workspaces/$slug/'
+      preLoaderRoute: typeof WorkspacesSlugIndexRouteImport
+      parentRoute: typeof WorkspacesSlugRoute
+    }
+    '/workspaces/$slug/connections': {
+      id: '/workspaces/$slug/connections'
+      path: '/connections'
+      fullPath: '/workspaces/$slug/connections'
+      preLoaderRoute: typeof WorkspacesSlugConnectionsRouteImport
+      parentRoute: typeof WorkspacesSlugRoute
+    }
+    '/workspaces/$slug/members': {
+      id: '/workspaces/$slug/members'
+      path: '/members'
+      fullPath: '/workspaces/$slug/members'
+      preLoaderRoute: typeof WorkspacesSlugMembersRouteImport
+      parentRoute: typeof WorkspacesSlugRoute
+    }
+    '/admin/workspaces/$slug/': {
+      id: '/admin/workspaces/$slug/'
+      path: '/'
+      fullPath: '/admin/workspaces/$slug/'
+      preLoaderRoute: typeof AdminWorkspacesSlugIndexRouteImport
+      parentRoute: typeof AdminWorkspacesSlugRoute
+    }
+    '/admin/workspaces/$slug/member': {
+      id: '/admin/workspaces/$slug/member'
       path: '/member'
-      fullPath: '/admin/workspace/member'
-      preLoaderRoute: typeof AdminWorkspaceMemberRouteImport
-      parentRoute: typeof AdminWorkspaceRoute
+      fullPath: '/admin/workspaces/$slug/member'
+      preLoaderRoute: typeof AdminWorkspacesSlugMemberRouteImport
+      parentRoute: typeof AdminWorkspacesSlugRoute
+    }
+    '/workspaces/$slug/connections/': {
+      id: '/workspaces/$slug/connections/'
+      path: '/'
+      fullPath: '/workspaces/$slug/connections/'
+      preLoaderRoute: typeof WorkspacesSlugConnectionsIndexRouteImport
+      parentRoute: typeof WorkspacesSlugConnectionsRoute
+    }
+    '/workspaces/$slug/connections/bigcommerce': {
+      id: '/workspaces/$slug/connections/bigcommerce'
+      path: '/bigcommerce'
+      fullPath: '/workspaces/$slug/connections/bigcommerce'
+      preLoaderRoute: typeof WorkspacesSlugConnectionsBigcommerceRouteImport
+      parentRoute: typeof WorkspacesSlugConnectionsRoute
+    }
+    '/workspaces/$slug/connections/shopify': {
+      id: '/workspaces/$slug/connections/shopify'
+      path: '/shopify'
+      fullPath: '/workspaces/$slug/connections/shopify'
+      preLoaderRoute: typeof WorkspacesSlugConnectionsShopifyRouteImport
+      parentRoute: typeof WorkspacesSlugConnectionsRoute
     }
   }
 }
 
-interface AppConnectionsRouteChildren {
-  AppConnectionsBigcommerceRoute: typeof AppConnectionsBigcommerceRoute
-  AppConnectionsShopifyRoute: typeof AppConnectionsShopifyRoute
-  AppConnectionsIndexRoute: typeof AppConnectionsIndexRoute
+interface AdminWorkspacesSlugRouteChildren {
+  AdminWorkspacesSlugMemberRoute: typeof AdminWorkspacesSlugMemberRoute
+  AdminWorkspacesSlugIndexRoute: typeof AdminWorkspacesSlugIndexRoute
 }
 
-const AppConnectionsRouteChildren: AppConnectionsRouteChildren = {
-  AppConnectionsBigcommerceRoute: AppConnectionsBigcommerceRoute,
-  AppConnectionsShopifyRoute: AppConnectionsShopifyRoute,
-  AppConnectionsIndexRoute: AppConnectionsIndexRoute,
+const AdminWorkspacesSlugRouteChildren: AdminWorkspacesSlugRouteChildren = {
+  AdminWorkspacesSlugMemberRoute: AdminWorkspacesSlugMemberRoute,
+  AdminWorkspacesSlugIndexRoute: AdminWorkspacesSlugIndexRoute,
 }
 
-const AppConnectionsRouteWithChildren = AppConnectionsRoute._addFileChildren(
-  AppConnectionsRouteChildren,
-)
+const AdminWorkspacesSlugRouteWithChildren =
+  AdminWorkspacesSlugRoute._addFileChildren(AdminWorkspacesSlugRouteChildren)
 
-interface AppRouteChildren {
-  AppConnectionsRoute: typeof AppConnectionsRouteWithChildren
-  AppMembersRoute: typeof AppMembersRoute
-  AppIndexRoute: typeof AppIndexRoute
+interface AdminWorkspacesRouteChildren {
+  AdminWorkspacesSlugRoute: typeof AdminWorkspacesSlugRouteWithChildren
+  AdminWorkspacesIndexRoute: typeof AdminWorkspacesIndexRoute
 }
 
-const AppRouteChildren: AppRouteChildren = {
-  AppConnectionsRoute: AppConnectionsRouteWithChildren,
-  AppMembersRoute: AppMembersRoute,
-  AppIndexRoute: AppIndexRoute,
+const AdminWorkspacesRouteChildren: AdminWorkspacesRouteChildren = {
+  AdminWorkspacesSlugRoute: AdminWorkspacesSlugRouteWithChildren,
+  AdminWorkspacesIndexRoute: AdminWorkspacesIndexRoute,
 }
 
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
-
-interface AdminWorkspaceRouteChildren {
-  AdminWorkspaceMemberRoute: typeof AdminWorkspaceMemberRoute
-  AdminWorkspaceIndexRoute: typeof AdminWorkspaceIndexRoute
-}
-
-const AdminWorkspaceRouteChildren: AdminWorkspaceRouteChildren = {
-  AdminWorkspaceMemberRoute: AdminWorkspaceMemberRoute,
-  AdminWorkspaceIndexRoute: AdminWorkspaceIndexRoute,
-}
-
-const AdminWorkspaceRouteWithChildren = AdminWorkspaceRoute._addFileChildren(
-  AdminWorkspaceRouteChildren,
+const AdminWorkspacesRouteWithChildren = AdminWorkspacesRoute._addFileChildren(
+  AdminWorkspacesRouteChildren,
 )
 
 interface AdminRouteChildren {
   AdminAccountsRoute: typeof AdminAccountsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
-  AdminWorkspaceRoute: typeof AdminWorkspaceRouteWithChildren
-  AdminWorkspacesRoute: typeof AdminWorkspacesRoute
+  AdminWorkspacesRoute: typeof AdminWorkspacesRouteWithChildren
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAccountsRoute: AdminAccountsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
-  AdminWorkspaceRoute: AdminWorkspaceRouteWithChildren,
-  AdminWorkspacesRoute: AdminWorkspacesRoute,
+  AdminWorkspacesRoute: AdminWorkspacesRouteWithChildren,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -504,12 +566,63 @@ const ProfileRouteChildren: ProfileRouteChildren = {
 const ProfileRouteWithChildren =
   ProfileRoute._addFileChildren(ProfileRouteChildren)
 
+interface WorkspacesSlugConnectionsRouteChildren {
+  WorkspacesSlugConnectionsBigcommerceRoute: typeof WorkspacesSlugConnectionsBigcommerceRoute
+  WorkspacesSlugConnectionsShopifyRoute: typeof WorkspacesSlugConnectionsShopifyRoute
+  WorkspacesSlugConnectionsIndexRoute: typeof WorkspacesSlugConnectionsIndexRoute
+}
+
+const WorkspacesSlugConnectionsRouteChildren: WorkspacesSlugConnectionsRouteChildren =
+  {
+    WorkspacesSlugConnectionsBigcommerceRoute:
+      WorkspacesSlugConnectionsBigcommerceRoute,
+    WorkspacesSlugConnectionsShopifyRoute:
+      WorkspacesSlugConnectionsShopifyRoute,
+    WorkspacesSlugConnectionsIndexRoute: WorkspacesSlugConnectionsIndexRoute,
+  }
+
+const WorkspacesSlugConnectionsRouteWithChildren =
+  WorkspacesSlugConnectionsRoute._addFileChildren(
+    WorkspacesSlugConnectionsRouteChildren,
+  )
+
+interface WorkspacesSlugRouteChildren {
+  WorkspacesSlugConnectionsRoute: typeof WorkspacesSlugConnectionsRouteWithChildren
+  WorkspacesSlugMembersRoute: typeof WorkspacesSlugMembersRoute
+  WorkspacesSlugIndexRoute: typeof WorkspacesSlugIndexRoute
+}
+
+const WorkspacesSlugRouteChildren: WorkspacesSlugRouteChildren = {
+  WorkspacesSlugConnectionsRoute: WorkspacesSlugConnectionsRouteWithChildren,
+  WorkspacesSlugMembersRoute: WorkspacesSlugMembersRoute,
+  WorkspacesSlugIndexRoute: WorkspacesSlugIndexRoute,
+}
+
+const WorkspacesSlugRouteWithChildren = WorkspacesSlugRoute._addFileChildren(
+  WorkspacesSlugRouteChildren,
+)
+
+interface WorkspacesRouteChildren {
+  WorkspacesSlugRoute: typeof WorkspacesSlugRouteWithChildren
+  WorkspacesIndexRoute: typeof WorkspacesIndexRoute
+}
+
+const WorkspacesRouteChildren: WorkspacesRouteChildren = {
+  WorkspacesSlugRoute: WorkspacesSlugRouteWithChildren,
+  WorkspacesIndexRoute: WorkspacesIndexRoute,
+}
+
+const WorkspacesRouteWithChildren = WorkspacesRoute._addFileChildren(
+  WorkspacesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  AppRoute: AppRouteWithChildren,
+  IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
   ProfileRoute: ProfileRouteWithChildren,
   RegisterRoute: RegisterRoute,
+  WorkspacesRoute: WorkspacesRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
